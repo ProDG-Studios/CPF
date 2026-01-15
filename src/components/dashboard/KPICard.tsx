@@ -26,39 +26,39 @@ const KPICard = ({
   onClick,
   isClickable = false 
 }: KPICardProps) => {
-  const variantStyles = {
-    default: 'bg-card border border-border',
-    accent: 'bg-card border border-accent',
-    success: 'bg-card border border-success',
-    warning: 'bg-card border border-warning',
-    secondary: 'bg-card border border-border',
-  };
-
   const iconStyles = {
     default: 'bg-primary/10 text-primary',
-    accent: 'bg-accent/15 text-foreground',
+    accent: 'bg-accent/10 text-accent',
     success: 'bg-success/10 text-success',
-    warning: 'bg-warning/15 text-warning',
+    warning: 'bg-warning/10 text-warning',
     secondary: 'bg-muted text-muted-foreground',
+  };
+
+  const borderStyles = {
+    default: '',
+    accent: 'border-l-2 border-l-accent',
+    success: 'border-l-2 border-l-success',
+    warning: 'border-l-2 border-l-warning',
+    secondary: '',
   };
 
   return (
     <div 
       onClick={onClick}
       className={cn(
-        "relative overflow-hidden rounded-lg p-6 transition-colors duration-200",
-        variantStyles[variant],
-        isClickable && "cursor-pointer"
+        "relative bg-card border border-border rounded-lg p-4 transition-colors duration-150",
+        borderStyles[variant],
+        isClickable && "cursor-pointer hover:bg-muted/30"
       )}
     >
-      <div className="flex items-start justify-between mb-4">
-        <div className={cn("p-3 rounded-lg", iconStyles[variant])}>
-          <Icon className="w-5 h-5" />
+      <div className="flex items-start justify-between mb-3">
+        <div className={cn("p-2 rounded-md", iconStyles[variant])}>
+          <Icon className="w-4 h-4" />
         </div>
         {trend && (
           <div className={cn(
-            "flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-full",
-            trend.isPositive ? "bg-success/20 text-success" : "bg-destructive/20 text-destructive"
+            "flex items-center gap-1 text-xs font-medium",
+            trend.isPositive ? "text-success" : "text-destructive"
           )}>
             {trend.isPositive ? (
               <TrendingUp className="w-3 h-3" />
@@ -70,15 +70,15 @@ const KPICard = ({
         )}
       </div>
       
-      <h3 className="text-2xl md:text-3xl font-display font-bold text-foreground mb-1">
+      <h3 className="text-2xl font-bold text-foreground mb-0.5 font-display">
         {value}
       </h3>
-      <p className="text-sm text-muted-foreground">{title}</p>
+      <p className="text-xs text-muted-foreground font-medium">{title}</p>
       {subtitle && (
-        <p className="text-xs text-muted-foreground/70 mt-1">{subtitle}</p>
+        <p className="text-xs text-muted-foreground/70 mt-0.5">{subtitle}</p>
       )}
       {trend?.label && (
-        <p className="text-xs text-muted-foreground mt-2">{trend.label}</p>
+        <p className="text-xs text-muted-foreground mt-1.5">{trend.label}</p>
       )}
     </div>
   );

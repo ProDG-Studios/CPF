@@ -4,13 +4,13 @@ import { useNavigate } from 'react-router-dom';
 import { useFilters } from '@/contexts/FilterContext';
 
 const colors = [
-  'hsl(222, 47%, 20%)',
-  'hsl(142, 76%, 36%)',
-  'hsl(43, 96%, 56%)',
-  'hsl(173, 58%, 39%)',
-  'hsl(38, 92%, 50%)',
-  'hsl(0, 72%, 51%)',
-  'hsl(215, 16%, 47%)',
+  'hsl(220, 60%, 15%)',
+  'hsl(210, 100%, 45%)',
+  'hsl(152, 70%, 35%)',
+  'hsl(38, 95%, 50%)',
+  'hsl(0, 84%, 50%)',
+  'hsl(280, 60%, 45%)',
+  'hsl(180, 60%, 35%)',
 ];
 
 const CategoryChart = () => {
@@ -23,49 +23,51 @@ const CategoryChart = () => {
   };
 
   return (
-    <div className="glass-card p-6">
-      <div className="flex items-center justify-between mb-6">
+    <div className="glass-card p-5">
+      <div className="flex items-center justify-between mb-5">
         <div>
-          <h3 className="font-display text-lg font-bold text-foreground">
-            Bills by Category
-          </h3>
-          <p className="text-sm text-muted-foreground">Click bars to filter</p>
+          <h3 className="font-semibold text-foreground">Bills by Category</h3>
+          <p className="text-xs text-muted-foreground">Click bars to filter</p>
         </div>
       </div>
 
-      <div className="h-80">
+      <div className="h-72">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart 
             data={categoryBreakdown} 
             layout="vertical"
-            margin={{ left: 100, right: 20 }}
+            margin={{ left: 90, right: 15 }}
           >
-            <CartesianGrid strokeDasharray="3 3" stroke="hsl(220, 13%, 91%)" />
+            <CartesianGrid strokeDasharray="3 3" stroke="hsl(220, 14%, 90%)" horizontal={true} vertical={false} />
             <XAxis 
               type="number"
-              stroke="hsl(215, 16%, 47%)"
-              tick={{ fill: 'hsl(215, 16%, 47%)', fontSize: 12 }}
+              stroke="hsl(220, 10%, 45%)"
+              tick={{ fill: 'hsl(220, 10%, 45%)', fontSize: 11 }}
               tickFormatter={(value) => `${value}B`}
+              axisLine={false}
+              tickLine={false}
             />
             <YAxis 
               type="category"
               dataKey="category"
-              stroke="hsl(215, 16%, 47%)"
-              tick={{ fill: 'hsl(215, 16%, 47%)', fontSize: 12 }}
-              width={100}
+              stroke="hsl(220, 10%, 45%)"
+              tick={{ fill: 'hsl(220, 10%, 45%)', fontSize: 11 }}
+              width={90}
+              axisLine={false}
+              tickLine={false}
             />
             <Tooltip
               contentStyle={{
                 backgroundColor: 'hsl(0, 0%, 100%)',
-                border: '1px solid hsl(220, 13%, 91%)',
-                borderRadius: '8px',
-                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                border: '1px solid hsl(220, 14%, 90%)',
+                borderRadius: '6px',
+                fontSize: '12px',
               }}
               formatter={(value: number) => [`KES ${value}B`, 'Amount']}
             />
             <Bar 
               dataKey="amount" 
-              radius={[0, 4, 4, 0]}
+              radius={[0, 3, 3, 0]}
               className="cursor-pointer"
               onClick={(data) => handleClick(data.category)}
             >

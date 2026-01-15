@@ -1,12 +1,12 @@
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { useNavigate } from 'react-router-dom';
 import { useFilters } from '@/contexts/FilterContext';
 
 const data = [
-  { name: 'Verified', value: 15420, color: 'hsl(142, 76%, 36%)', status: 'verified' },
-  { name: 'Processing', value: 4200, color: 'hsl(222, 47%, 20%)', status: 'processing' },
-  { name: 'Pending', value: 6170, color: 'hsl(38, 92%, 50%)', status: 'pending' },
-  { name: 'Paid', value: 2400, color: 'hsl(173, 58%, 39%)', status: 'paid' },
+  { name: 'Verified', value: 15420, color: 'hsl(152, 70%, 35%)', status: 'verified' },
+  { name: 'Processing', value: 4200, color: 'hsl(210, 100%, 45%)', status: 'processing' },
+  { name: 'Pending', value: 6170, color: 'hsl(38, 95%, 50%)', status: 'pending' },
+  { name: 'Paid', value: 2400, color: 'hsl(220, 60%, 15%)', status: 'paid' },
 ];
 
 const StatusBreakdown = () => {
@@ -18,22 +18,22 @@ const StatusBreakdown = () => {
     navigate('/bills');
   };
 
+  const total = data.reduce((sum, item) => sum + item.value, 0);
+
   return (
-    <div className="glass-card p-6 h-full">
-      <h3 className="font-display text-lg font-bold text-foreground mb-4">
-        Bills by Status
-      </h3>
+    <div className="glass-card p-5 h-full">
+      <h3 className="font-semibold text-foreground mb-4">Bills by Status</h3>
       
-      <div className="h-64">
+      <div className="h-52">
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
             <Pie
               data={data}
               cx="50%"
               cy="50%"
-              innerRadius={50}
-              outerRadius={80}
-              paddingAngle={4}
+              innerRadius={45}
+              outerRadius={70}
+              paddingAngle={2}
               dataKey="value"
               onClick={(entry) => handleClick(entry.status)}
               className="cursor-pointer"
@@ -49,9 +49,9 @@ const StatusBreakdown = () => {
             <Tooltip
               contentStyle={{
                 backgroundColor: 'hsl(0, 0%, 100%)',
-                border: '1px solid hsl(220, 13%, 91%)',
-                borderRadius: '8px',
-                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                border: '1px solid hsl(220, 14%, 90%)',
+                borderRadius: '6px',
+                fontSize: '12px',
               }}
               formatter={(value: number) => [value.toLocaleString(), 'Bills']}
             />
@@ -59,19 +59,19 @@ const StatusBreakdown = () => {
         </ResponsiveContainer>
       </div>
 
-      <div className="grid grid-cols-2 gap-2 mt-4">
+      <div className="grid grid-cols-2 gap-2 mt-3">
         {data.map((item) => (
           <button
             key={item.name}
             onClick={() => handleClick(item.status)}
-            className="flex items-center gap-2 p-2 rounded-lg hover:bg-muted/50 transition-colors text-left"
+            className="flex items-center gap-2 p-2 rounded hover:bg-muted/50 transition-colors text-left"
           >
             <div 
-              className="w-3 h-3 rounded-full" 
+              className="w-2.5 h-2.5 rounded-full shrink-0" 
               style={{ backgroundColor: item.color }}
             />
-            <div>
-              <p className="text-sm font-medium text-foreground">{item.name}</p>
+            <div className="min-w-0">
+              <p className="text-xs font-medium text-foreground">{item.name}</p>
               <p className="text-xs text-muted-foreground">{item.value.toLocaleString()}</p>
             </div>
           </button>
