@@ -12,7 +12,8 @@ import {
   DollarSign,
   Eye,
   Download,
-  X
+  X,
+  FileText
 } from 'lucide-react';
 
 const statusIcons = {
@@ -69,7 +70,7 @@ const BillsExplorer = () => {
       header: 'Bill ID',
       sortable: true,
       render: (bill: Bill) => (
-        <span className="font-mono text-sm text-primary font-medium">{bill.id}</span>
+        <span className="font-mono text-xs text-accent font-medium">{bill.id}</span>
       ),
     },
     {
@@ -77,8 +78,8 @@ const BillsExplorer = () => {
       header: 'Supplier',
       sortable: true,
       render: (bill: Bill) => (
-        <div className="max-w-[200px]">
-          <p className="font-medium truncate">{bill.supplierName}</p>
+        <div className="max-w-[180px]">
+          <p className="text-sm font-medium text-foreground truncate">{bill.supplierName}</p>
           <p className="text-xs text-muted-foreground truncate">{bill.category}</p>
         </div>
       ),
@@ -90,7 +91,7 @@ const BillsExplorer = () => {
       render: (bill: Bill) => {
         const mda = mdaData.find(m => m.id === bill.mdaId);
         return (
-          <span className="text-muted-foreground">{mda?.shortName || bill.mdaName}</span>
+          <span className="text-sm text-muted-foreground">{mda?.shortName || bill.mdaName}</span>
         );
       },
     },
@@ -100,7 +101,7 @@ const BillsExplorer = () => {
       sortable: true,
       align: 'right' as const,
       render: (bill: Bill) => (
-        <span className="font-semibold text-accent">{formatCurrency(bill.amount)}</span>
+        <span className="text-sm font-semibold text-foreground">{formatCurrency(bill.amount)}</span>
       ),
     },
     {
@@ -110,7 +111,7 @@ const BillsExplorer = () => {
       render: (bill: Bill) => {
         const Icon = statusIcons[bill.status];
         return (
-          <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${getStatusColor(bill.status)}`}>
+          <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium ${getStatusColor(bill.status)}`}>
             <Icon className={`w-3 h-3 ${bill.status === 'processing' ? 'animate-spin' : ''}`} />
             {bill.status.charAt(0).toUpperCase() + bill.status.slice(1)}
           </span>
@@ -123,12 +124,12 @@ const BillsExplorer = () => {
       sortable: true,
       render: (bill: Bill) => {
         const priorityColors = {
-          high: 'bg-destructive/20 text-destructive',
-          medium: 'bg-warning/20 text-warning',
+          high: 'bg-destructive/10 text-destructive',
+          medium: 'bg-warning/10 text-warning',
           low: 'bg-muted text-muted-foreground',
         };
         return (
-          <span className={`px-2 py-1 rounded text-xs font-medium capitalize ${priorityColors[bill.priority]}`}>
+          <span className={`px-2 py-0.5 rounded text-xs font-medium capitalize ${priorityColors[bill.priority]}`}>
             {bill.priority}
           </span>
         );
@@ -139,7 +140,7 @@ const BillsExplorer = () => {
       header: 'Due Date',
       sortable: true,
       render: (bill: Bill) => (
-        <span className="text-muted-foreground">{bill.dueDate}</span>
+        <span className="text-xs text-muted-foreground">{bill.dueDate}</span>
       ),
     },
     {
@@ -151,7 +152,7 @@ const BillsExplorer = () => {
             e.stopPropagation();
             setSelectedBill(bill);
           }}
-          className="p-2 hover:bg-muted rounded-lg transition-colors"
+          className="p-1.5 hover:bg-muted rounded transition-colors"
         >
           <Eye className="w-4 h-4 text-muted-foreground" />
         </button>
@@ -162,7 +163,7 @@ const BillsExplorer = () => {
   const totalAmount = filteredBills.reduce((sum, bill) => sum + bill.amount, 0);
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-background">
       <TopBar 
         title="Bills Explorer" 
         subtitle={`${filteredBills.length} bills • ${formatCurrency(totalAmount)}`}
@@ -171,47 +172,47 @@ const BillsExplorer = () => {
       <div className="p-6">
         <div className="flex gap-6">
           {/* Filter Panel */}
-          <div className="w-64 shrink-0">
+          <div className="w-56 shrink-0">
             <FilterPanel />
           </div>
 
           {/* Main Content */}
-          <div className="flex-1 space-y-6">
-            {/* Verification Workflow Banner */}
-            <div className="glass-card p-4 border-l-4 border-accent">
+          <div className="flex-1 space-y-4">
+            {/* Verification Banner */}
+            <div className="glass-card p-4 border-l-2 border-l-accent">
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <div className="p-2 rounded-lg bg-accent/10">
-                    <CheckCircle className="w-5 h-5 text-accent" />
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded bg-accent/10">
+                    <FileText className="w-4 h-4 text-accent" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-foreground">Bill Verification Process</h3>
-                    <p className="text-sm text-muted-foreground">
+                    <h3 className="text-sm font-semibold text-foreground">Bill Verification Process</h3>
+                    <p className="text-xs text-muted-foreground">
                       Bills must be verified by MDA before entering the securitization pool
                     </p>
                   </div>
                 </div>
-                <div className="flex items-center gap-6 text-sm">
+                <div className="flex items-center gap-5 text-sm">
                   <div className="text-center">
-                    <p className="text-2xl font-bold text-muted-foreground">{filteredBills.filter(b => b.status === 'pending').length}</p>
-                    <p className="text-xs text-muted-foreground">Awaiting Review</p>
+                    <p className="text-xl font-bold text-muted-foreground">{filteredBills.filter(b => b.status === 'pending').length}</p>
+                    <p className="text-xs text-muted-foreground">Awaiting</p>
                   </div>
                   <div className="h-8 w-px bg-border" />
                   <div className="text-center">
-                    <p className="text-2xl font-bold text-warning">{filteredBills.filter(b => b.status === 'processing').length}</p>
-                    <p className="text-xs text-muted-foreground">Under Verification</p>
+                    <p className="text-xl font-bold text-warning">{filteredBills.filter(b => b.status === 'processing').length}</p>
+                    <p className="text-xs text-muted-foreground">Verifying</p>
                   </div>
                   <div className="h-8 w-px bg-border" />
                   <div className="text-center">
-                    <p className="text-2xl font-bold text-success">{filteredBills.filter(b => b.status === 'verified').length}</p>
-                    <p className="text-xs text-muted-foreground">Verified & Eligible</p>
+                    <p className="text-xl font-bold text-success">{filteredBills.filter(b => b.status === 'verified').length}</p>
+                    <p className="text-xs text-muted-foreground">Verified</p>
                   </div>
                 </div>
               </div>
             </div>
 
             {/* Summary Cards */}
-            <div className="grid grid-cols-4 gap-4">
+            <div className="grid grid-cols-4 gap-3">
               {['verified', 'processing', 'pending', 'paid'].map((status) => {
                 const count = filteredBills.filter(b => b.status === status).length;
                 const amount = filteredBills
@@ -220,15 +221,15 @@ const BillsExplorer = () => {
                 const Icon = statusIcons[status as keyof typeof statusIcons];
                 
                 return (
-                  <div key={status} className="glass-card p-4">
-                    <div className="flex items-center gap-3">
-                      <div className={`p-2 rounded-lg ${getStatusColor(status)}`}>
-                        <Icon className="w-4 h-4" />
+                  <div key={status} className="glass-card p-3">
+                    <div className="flex items-center gap-2.5">
+                      <div className={`p-1.5 rounded ${getStatusColor(status)}`}>
+                        <Icon className="w-3.5 h-3.5" />
                       </div>
                       <div>
-                        <p className="text-2xl font-bold text-foreground">{count}</p>
+                        <p className="text-lg font-bold text-foreground">{count}</p>
                         <p className="text-xs text-muted-foreground capitalize">{status}</p>
-                        <p className="text-xs text-accent font-medium">{formatCurrency(amount, true)}</p>
+                        <p className="text-xs font-medium text-muted-foreground">{formatCurrency(amount, true)}</p>
                       </div>
                     </div>
                   </div>
@@ -238,10 +239,10 @@ const BillsExplorer = () => {
 
             {/* Table */}
             <div className="glass-card overflow-hidden">
-              <div className="flex items-center justify-between p-4 border-b border-border">
-                <h3 className="font-semibold">Bills Registry</h3>
-                <button className="flex items-center gap-2 px-3 py-1.5 text-sm bg-muted hover:bg-muted/80 rounded-lg transition-colors">
-                  <Download className="w-4 h-4" />
+              <div className="flex items-center justify-between p-3 border-b border-border">
+                <h3 className="text-sm font-semibold text-foreground">Bills Registry</h3>
+                <button className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs bg-muted hover:bg-muted/80 rounded transition-colors">
+                  <Download className="w-3.5 h-3.5" />
                   Export
                 </button>
               </div>
@@ -251,8 +252,8 @@ const BillsExplorer = () => {
                 keyExtractor={(bill) => bill.id}
                 onRowClick={(bill) => setSelectedBill(bill)}
               />
-              <div className="p-4 border-t border-border bg-muted/20">
-                <p className="text-sm text-muted-foreground text-center">
+              <div className="p-3 border-t border-border bg-muted/30">
+                <p className="text-xs text-muted-foreground text-center">
                   Showing {filteredBills.length} of {billsData.length} bills
                 </p>
               </div>
@@ -263,80 +264,64 @@ const BillsExplorer = () => {
 
       {/* Bill Detail Modal */}
       {selectedBill && (
-        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-card border border-border rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between p-6 border-b border-border">
+        <div className="fixed inset-0 bg-foreground/20 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-card border border-border rounded-lg max-w-xl w-full max-h-[85vh] overflow-y-auto">
+            <div className="flex items-center justify-between p-5 border-b border-border">
               <div>
-                <h2 className="font-display text-xl font-bold">{selectedBill.id}</h2>
-                <p className="text-sm text-muted-foreground">{selectedBill.description}</p>
+                <h2 className="font-semibold text-lg text-foreground">{selectedBill.id}</h2>
+                <p className="text-xs text-muted-foreground">{selectedBill.description}</p>
               </div>
               <button 
                 onClick={() => setSelectedBill(null)}
-                className="p-2 hover:bg-muted rounded-lg transition-colors"
+                className="p-1.5 hover:bg-muted rounded transition-colors"
               >
-                <X className="w-5 h-5" />
+                <X className="w-4 h-4 text-muted-foreground" />
               </button>
             </div>
             
-            <div className="p-6 space-y-6">
+            <div className="p-5 space-y-5">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <p className="text-sm text-muted-foreground mb-1">Supplier</p>
-                  <p className="font-medium">{selectedBill.supplierName}</p>
+                  <p className="text-xs text-muted-foreground mb-1">Supplier</p>
+                  <p className="text-sm font-medium text-foreground">{selectedBill.supplierName}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground mb-1">MDA</p>
-                  <p className="font-medium">{selectedBill.mdaName}</p>
+                  <p className="text-xs text-muted-foreground mb-1">MDA</p>
+                  <p className="text-sm font-medium text-foreground">{selectedBill.mdaName}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground mb-1">Amount</p>
-                  <p className="font-bold text-xl text-accent">{formatCurrency(selectedBill.amount)}</p>
+                  <p className="text-xs text-muted-foreground mb-1">Amount</p>
+                  <p className="text-lg font-bold text-foreground">{formatCurrency(selectedBill.amount)}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground mb-1">Status</p>
-                  <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium ${getStatusColor(selectedBill.status)}`}>
+                  <p className="text-xs text-muted-foreground mb-1">Status</p>
+                  <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium ${getStatusColor(selectedBill.status)}`}>
                     {selectedBill.status.charAt(0).toUpperCase() + selectedBill.status.slice(1)}
                   </span>
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground mb-1">Invoice Date</p>
-                  <p className="font-medium">{selectedBill.invoiceDate}</p>
+                  <p className="text-xs text-muted-foreground mb-1">Invoice Date</p>
+                  <p className="text-sm font-medium text-foreground">{selectedBill.invoiceDate}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground mb-1">Due Date</p>
-                  <p className="font-medium">{selectedBill.dueDate}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground mb-1">Category</p>
-                  <p className="font-medium">{selectedBill.category}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground mb-1">Fiscal Year</p>
-                  <p className="font-medium">{selectedBill.fiscalYear}</p>
+                  <p className="text-xs text-muted-foreground mb-1">Due Date</p>
+                  <p className="text-sm font-medium text-foreground">{selectedBill.dueDate}</p>
                 </div>
               </div>
 
               {selectedBill.verificationDate && (
-                <div className="p-4 bg-success/10 border border-success/30 rounded-lg">
-                  <p className="text-sm text-success">
+                <div className="p-3 bg-success/10 border border-success/20 rounded">
+                  <p className="text-xs text-success font-medium">
                     ✓ Verified on {selectedBill.verificationDate}
                   </p>
                 </div>
               )}
 
-              {selectedBill.paymentDate && (
-                <div className="p-4 bg-secondary/20 border border-secondary/30 rounded-lg">
-                  <p className="text-sm text-secondary-foreground">
-                    ✓ Paid on {selectedBill.paymentDate}
-                  </p>
-                </div>
-              )}
-
-              <div className="flex gap-3">
-                <button className="flex-1 px-4 py-2 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 transition-colors">
+              <div className="flex gap-2">
+                <button className="flex-1 px-4 py-2 bg-primary text-primary-foreground rounded text-sm font-medium hover:bg-primary/90 transition-colors">
                   Process Bill
                 </button>
-                <button className="px-4 py-2 bg-muted border border-border rounded-lg font-medium hover:bg-muted/80 transition-colors">
+                <button className="px-4 py-2 bg-muted border border-border rounded text-sm font-medium hover:bg-muted/80 transition-colors">
                   View Documents
                 </button>
               </div>

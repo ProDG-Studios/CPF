@@ -10,21 +10,19 @@ import {
   Settings,
   ChevronLeft,
   ChevronRight,
-  Sparkles
+  HelpCircle
 } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
-import CPFLogo from "@/components/CPFLogo";
 
 const navItems = [
-  { path: "/", icon: LayoutDashboard, label: "Dashboard", description: "Overview & KPIs" },
-  { path: "/bills", icon: FileSearch, label: "Bills Explorer", description: "Detailed bills data" },
-  { path: "/workflow", icon: Workflow, label: "Transaction Flow", description: "Settlement process" },
-  { path: "/payment-schedule", icon: Calendar, label: "Payment Schedule", description: "MDA repayment plans" },
-  { path: "/mdas", icon: Building2, label: "MDAs", description: "Ministries & Agencies" },
-  { path: "/suppliers", icon: Users, label: "Suppliers", description: "Supplier registry" },
-  { path: "/analytics", icon: TrendingUp, label: "Analytics", description: "Charts & trends" },
-  { path: "/timeline", icon: Sparkles, label: "Timeline", description: "Project milestones" },
+  { path: "/", icon: LayoutDashboard, label: "Dashboard" },
+  { path: "/bills", icon: FileSearch, label: "Bills Explorer" },
+  { path: "/workflow", icon: Workflow, label: "Transaction Flow" },
+  { path: "/payment-schedule", icon: Calendar, label: "Payment Schedule" },
+  { path: "/mdas", icon: Building2, label: "MDAs" },
+  { path: "/suppliers", icon: Users, label: "Suppliers" },
+  { path: "/analytics", icon: TrendingUp, label: "Analytics" },
 ];
 
 const Sidebar = () => {
@@ -34,17 +32,26 @@ const Sidebar = () => {
   return (
     <aside 
       className={cn(
-        "fixed left-0 top-0 h-full bg-card border-r border-border z-40 transition-all duration-300 flex flex-col",
-        collapsed ? "w-20" : "w-64"
+        "fixed left-0 top-0 h-full bg-sidebar z-40 transition-all duration-200 flex flex-col",
+        collapsed ? "w-16" : "w-56"
       )}
     >
       {/* Logo */}
-      <div className="p-4 border-b border-border/50">
-        <CPFLogo collapsed={collapsed} />
+      <div className="h-14 flex items-center justify-center border-b border-sidebar-border">
+        {collapsed ? (
+          <span className="text-lg font-bold text-sidebar-foreground">C</span>
+        ) : (
+          <div className="flex items-center gap-2">
+            <div className="w-7 h-7 rounded bg-sidebar-primary flex items-center justify-center">
+              <span className="text-xs font-bold text-white">CPF</span>
+            </div>
+            <span className="text-sm font-semibold text-sidebar-foreground">Securitization</span>
+          </div>
+        )}
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
+      <nav className="flex-1 py-4 px-2 space-y-1 overflow-y-auto">
         {navItems.map((item) => {
           const isActive = location.pathname === item.path;
           return (
@@ -52,39 +59,19 @@ const Sidebar = () => {
               key={item.path}
               to={item.path}
               className={cn(
-                "flex items-center gap-3 px-3 py-3 rounded-lg transition-colors duration-200 group relative",
+                "flex items-center gap-3 px-3 py-2.5 rounded-md transition-colors duration-150 group relative",
                 isActive 
-                  ? "bg-primary text-primary-foreground" 
-                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                  ? "bg-sidebar-accent text-sidebar-foreground" 
+                  : "text-sidebar-muted hover:text-sidebar-foreground hover:bg-sidebar-accent/50"
               )}
             >
-              <div className={cn(
-                "p-1.5 rounded-lg",
-                isActive 
-                  ? "bg-primary-foreground/20" 
-                  : ""
-              )}>
-                <item.icon className={cn(
-                  "w-5 h-5 shrink-0 transition-transform",
-                  isActive && "text-primary-foreground",
-                  "group-hover:scale-110"
-                )} />
-              </div>
+              <item.icon className="w-[18px] h-[18px] shrink-0" />
               {!collapsed && (
-                <div className="overflow-hidden flex-1 min-w-0">
-                  <span className="font-semibold text-sm block truncate">{item.label}</span>
-                  <p className={cn(
-                    "text-xs truncate mt-0.5",
-                    isActive ? "text-primary-foreground/80" : "text-muted-foreground"
-                  )}>
-                    {item.description}
-                  </p>
-                </div>
+                <span className="text-sm font-medium truncate">{item.label}</span>
               )}
               {collapsed && (
-                <div className="absolute left-full ml-3 px-3 py-2 bg-popover border border-border rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap z-50 backdrop-blur-sm">
-                  <span className="font-semibold text-sm text-foreground block">{item.label}</span>
-                  <p className="text-xs text-muted-foreground mt-0.5">{item.description}</p>
+                <div className="absolute left-full ml-2 px-2.5 py-1.5 bg-foreground text-background rounded text-xs font-medium opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap z-50">
+                  {item.label}
                 </div>
               )}
             </NavLink>
@@ -92,27 +79,31 @@ const Sidebar = () => {
         })}
       </nav>
 
-      {/* Settings */}
-      <div className="p-3 border-t border-border/50">
+      {/* Footer */}
+      <div className="p-2 border-t border-sidebar-border space-y-1">
         <button className={cn(
-          "flex items-center gap-3 px-3 py-3 rounded-lg w-full text-muted-foreground hover:bg-muted hover:text-foreground transition-colors duration-200"
+          "flex items-center gap-3 px-3 py-2.5 rounded-md w-full text-sidebar-muted hover:text-sidebar-foreground hover:bg-sidebar-accent/50 transition-colors duration-150"
         )}>
-          <div className="p-1.5 rounded-lg hover:bg-muted transition-colors">
-            <Settings className="w-5 h-5 shrink-0 transition-transform hover:rotate-90" />
-          </div>
-          {!collapsed && <span className="font-semibold text-sm">Settings</span>}
+          <Settings className="w-[18px] h-[18px] shrink-0" />
+          {!collapsed && <span className="text-sm font-medium">Settings</span>}
+        </button>
+        <button className={cn(
+          "flex items-center gap-3 px-3 py-2.5 rounded-md w-full text-sidebar-muted hover:text-sidebar-foreground hover:bg-sidebar-accent/50 transition-colors duration-150"
+        )}>
+          <HelpCircle className="w-[18px] h-[18px] shrink-0" />
+          {!collapsed && <span className="text-sm font-medium">Help</span>}
         </button>
       </div>
 
       {/* Collapse Toggle */}
       <button
         onClick={() => setCollapsed(!collapsed)}
-        className="absolute -right-3 top-20 w-6 h-6 bg-card border border-border rounded-full flex items-center justify-center hover:bg-muted transition-colors"
+        className="absolute -right-3 top-16 w-6 h-6 bg-card border border-border rounded-full flex items-center justify-center hover:bg-muted transition-colors shadow-sm"
       >
         {collapsed ? (
-          <ChevronRight className="w-4 h-4 text-muted-foreground" />
+          <ChevronRight className="w-3.5 h-3.5 text-muted-foreground" />
         ) : (
-          <ChevronLeft className="w-4 h-4 text-muted-foreground" />
+          <ChevronLeft className="w-3.5 h-3.5 text-muted-foreground" />
         )}
       </button>
     </aside>

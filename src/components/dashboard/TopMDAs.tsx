@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { useFilters } from '@/contexts/FilterContext';
 import { mdaData, formatCurrency } from '@/data/mockData';
-import { ArrowRight, Building2 } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 
 const TopMDAs = () => {
   const navigate = useNavigate();
@@ -19,23 +19,21 @@ const TopMDAs = () => {
   };
 
   return (
-    <div className="glass-card p-6">
-      <div className="flex items-center justify-between mb-6">
+    <div className="glass-card p-5">
+      <div className="flex items-center justify-between mb-4">
         <div>
-          <h3 className="font-display text-lg font-bold text-foreground">
-            Top MDAs by Value
-          </h3>
-          <p className="text-sm text-muted-foreground">Click to filter bills</p>
+          <h3 className="font-semibold text-foreground">Top MDAs by Value</h3>
+          <p className="text-xs text-muted-foreground">Click to filter bills</p>
         </div>
         <button 
           onClick={() => navigate('/mdas')}
-          className="text-sm text-primary hover:text-primary/80 flex items-center gap-1"
+          className="text-xs text-accent font-medium flex items-center gap-1 hover:underline"
         >
-          View all <ArrowRight className="w-4 h-4" />
+          View all <ArrowRight className="w-3 h-3" />
         </button>
       </div>
 
-      <div className="space-y-4">
+      <div className="space-y-3">
         {topMDAs.map((mda, index) => {
           const percentage = (mda.totalAmount / maxAmount) * 100;
           const verifiedPercentage = (mda.verifiedAmount / mda.totalAmount) * 100;
@@ -44,37 +42,33 @@ const TopMDAs = () => {
             <button
               key={mda.id}
               onClick={() => handleMDAClick(mda.id)}
-              className="w-full text-left p-3 rounded-lg hover:bg-muted/50 transition-colors group"
+              className="w-full text-left p-2.5 rounded hover:bg-muted/50 transition-colors group"
             >
-              <div className="flex items-center gap-3 mb-2">
-                <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center text-primary font-bold text-sm">
+              <div className="flex items-center gap-2.5 mb-1.5">
+                <div className="w-6 h-6 rounded bg-primary/10 flex items-center justify-center text-primary font-semibold text-xs">
                   {index + 1}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="font-medium text-foreground truncate group-hover:text-primary transition-colors">
+                  <p className="text-sm font-medium text-foreground truncate group-hover:text-accent transition-colors">
                     {mda.shortName}
                   </p>
-                  <p className="text-xs text-muted-foreground truncate">{mda.name}</p>
                 </div>
                 <div className="text-right">
-                  <p className="font-semibold text-accent">{formatCurrency(mda.totalAmount, true)}</p>
-                  <p className="text-xs text-muted-foreground">{mda.totalBills.toLocaleString()} bills</p>
+                  <p className="text-sm font-semibold text-foreground">{formatCurrency(mda.totalAmount, true)}</p>
                 </div>
               </div>
               
-              <div className="relative h-2 bg-muted rounded-full overflow-hidden">
-                <div 
-                  className="absolute inset-y-0 left-0 bg-success/50 rounded-full"
-                  style={{ width: `${percentage}%` }}
-                />
-                <div 
-                  className="absolute inset-y-0 left-0 bg-success rounded-full"
-                  style={{ width: `${(verifiedPercentage / 100) * percentage}%` }}
-                />
+              <div className="flex items-center gap-2">
+                <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
+                  <div 
+                    className="h-full bg-success rounded-full"
+                    style={{ width: `${verifiedPercentage}%` }}
+                  />
+                </div>
+                <span className="text-xs text-muted-foreground w-10 text-right">
+                  {verifiedPercentage.toFixed(0)}%
+                </span>
               </div>
-              <p className="text-xs text-muted-foreground mt-1">
-                {verifiedPercentage.toFixed(0)}% verified
-              </p>
             </button>
           );
         })}
