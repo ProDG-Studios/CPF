@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 64 64">
+  <defs>
+    <clipPath id="roundedClip">
+      <rect x="0" y="0" width="64" height="64" rx="14" ry="14"/>
+    </clipPath>
+  </defs>
+  
+  <!-- White background with rounded corners -->
+  <rect x="0" y="0" width="64" height="64" rx="14" ry="14" fill="white"/>
+  
+  <!-- Logo image with rounded corners applied via clipPath -->
+  <image 
+    x="0" 
+    y="0" 
+    width="64" 
+    height="64" 
+    xlink:href="/logo.png"
+    clip-path="url(#roundedClip)"
+    preserveAspectRatio="xMidYMid meet"
+  />
+</svg>
