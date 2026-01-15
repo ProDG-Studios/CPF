@@ -20,10 +20,11 @@ const navItems = [
   { path: "/", icon: LayoutDashboard, label: "Dashboard", description: "Overview & KPIs" },
   { path: "/bills", icon: FileSearch, label: "Bills Explorer", description: "Detailed bills data" },
   { path: "/workflow", icon: Workflow, label: "Transaction Flow", description: "Settlement process" },
+  { path: "/payment-schedule", icon: Calendar, label: "Payment Schedule", description: "MDA repayment plans" },
   { path: "/mdas", icon: Building2, label: "MDAs", description: "Ministries & Agencies" },
   { path: "/suppliers", icon: Users, label: "Suppliers", description: "Supplier registry" },
   { path: "/analytics", icon: TrendingUp, label: "Analytics", description: "Charts & trends" },
-  { path: "/timeline", icon: Calendar, label: "Timeline", description: "Project milestones" },
+  { path: "/timeline", icon: Sparkles, label: "Timeline", description: "Project milestones" },
 ];
 
 const Sidebar = () => {

@@ -176,9 +176,42 @@ const BillsExplorer = () => {
           </div>
 
           {/* Main Content */}
-          <div className="flex-1">
+          <div className="flex-1 space-y-6">
+            {/* Verification Workflow Banner */}
+            <div className="glass-card p-4 border-l-4 border-accent">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <div className="p-2 rounded-lg bg-accent/10">
+                    <CheckCircle className="w-5 h-5 text-accent" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-foreground">Bill Verification Process</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Bills must be verified by MDA before entering the securitization pool
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-6 text-sm">
+                  <div className="text-center">
+                    <p className="text-2xl font-bold text-muted-foreground">{filteredBills.filter(b => b.status === 'pending').length}</p>
+                    <p className="text-xs text-muted-foreground">Awaiting Review</p>
+                  </div>
+                  <div className="h-8 w-px bg-border" />
+                  <div className="text-center">
+                    <p className="text-2xl font-bold text-warning">{filteredBills.filter(b => b.status === 'processing').length}</p>
+                    <p className="text-xs text-muted-foreground">Under Verification</p>
+                  </div>
+                  <div className="h-8 w-px bg-border" />
+                  <div className="text-center">
+                    <p className="text-2xl font-bold text-success">{filteredBills.filter(b => b.status === 'verified').length}</p>
+                    <p className="text-xs text-muted-foreground">Verified & Eligible</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             {/* Summary Cards */}
-            <div className="grid grid-cols-4 gap-4 mb-6">
+            <div className="grid grid-cols-4 gap-4">
               {['verified', 'processing', 'pending', 'paid'].map((status) => {
                 const count = filteredBills.filter(b => b.status === status).length;
                 const amount = filteredBills
