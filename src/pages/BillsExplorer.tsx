@@ -1,0 +1,318 @@
+import { useState, useMemo } from 'react';
+import TopBar from '@/components/layout/TopBar';
+import FilterPanel from '@/components/common/FilterPanel';
+import DataTable from '@/components/common/DataTable';
+import { billsData, mdaData, formatCurrency, getStatusColor, Bill } from '@/data/mockData';
+import { useFilters } from '@/contexts/FilterContext';
+import { 
+  CheckCircle, 
+  Clock, 
+  Loader2, 
+  XCircle, 
+  DollarSign,
+  Eye,
+  Download,
+  X
+} from 'lucide-react';
+
+const statusIcons = {
+  verified: CheckCircle,
+  pending: Clock,
+  processing: Loader2,
+  rejected: XCircle,
+  paid: DollarSign,
+};
+
+const BillsExplorer = () => {
+  const { filters } = useFilters();
+  const [selectedBill, setSelectedBill] = useState<Bill | null>(null);
+
+  const filteredBills = useMemo(() => {
+    return billsData.filter(bill => {
+      if (filters.searchTerm) {
+        const search = filters.searchTerm.toLowerCase();
+        const matches = 
+          bill.id.toLowerCase().includes(search) ||
+          bill.supplierName.toLowerCase().includes(search) ||
+          bill.mdaName.toLowerCase().includes(search) ||
+          bill.description.toLowerCase().includes(search);
+        if (!matches) return false;
+      }
+
+      if (filters.status.length > 0 && !filters.status.includes(bill.status)) {
+        return false;
+      }
+
+      if (filters.mdaIds.length > 0 && !filters.mdaIds.includes(bill.mdaId)) {
+        return false;
+      }
+
+      if (filters.supplierIds.length > 0 && !filters.supplierIds.includes(bill.supplierId)) {
+        return false;
+      }
+
+      if (filters.categories.length > 0 && !filters.categories.includes(bill.category)) {
+        return false;
+      }
+
+      if (filters.priority.length > 0 && !filters.priority.includes(bill.priority)) {
+        return false;
+      }
+
+      return true;
+    });
+  }, [filters]);
+
+  const columns = [
+    {
+      key: 'id',
+      header: 'Bill ID',
+      sortable: true,
+      render: (bill: Bill) => (
+        <span className="font-mono text-sm text-primary font-medium">{bill.id}</span>
+      ),
+    },
+    {
+      key: 'supplierName',
+      header: 'Supplier',
+      sortable: true,
+      render: (bill: Bill) => (
+        <div className="max-w-[200px]">
+          <p className="font-medium truncate">{bill.supplierName}</p>
+          <p className="text-xs text-muted-foreground truncate">{bill.category}</p>
+        </div>
+      ),
+    },
+    {
+      key: 'mdaName',
+      header: 'MDA',
+      sortable: true,
+      render: (bill: Bill) => {
+        const mda = mdaData.find(m => m.id === bill.mdaId);
+        return (
+          <span className="text-muted-foreground">{mda?.shortName || bill.mdaName}</span>
+        );
+      },
+    },
+    {
+      key: 'amount',
+      header: 'Amount',
+      sortable: true,
+      align: 'right' as const,
+      render: (bill: Bill) => (
+        <span className="font-semibold text-accent">{formatCurrency(bill.amount)}</span>
+      ),
+    },
+    {
+      key: 'status',
+      header: 'Status',
+      sortable: true,
+      render: (bill: Bill) => {
+        const Icon = statusIcons[bill.status];
+        return (
+          <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${getStatusColor(bill.status)}`}>
+            <Icon className={`w-3 h-3 ${bill.status === 'processing' ? 'animate-spin' : ''}`} />
+            {bill.status.charAt(0).toUpperCase() + bill.status.slice(1)}
+          </span>
+        );
+      },
+    },
+    {
+      key: 'priority',
+      header: 'Priority',
+      sortable: true,
+      render: (bill: Bill) => {
+        const priorityColors = {
+          high: 'bg-destructive/20 text-destructive',
+          medium: 'bg-warning/20 text-warning',
+          low: 'bg-muted text-muted-foreground',
+        };
+        return (
+          <span className={`px-2 py-1 rounded text-xs font-medium capitalize ${priorityColors[bill.priority]}`}>
+            {bill.priority}
+          </span>
+        );
+      },
+    },
+    {
+      key: 'dueDate',
+      header: 'Due Date',
+      sortable: true,
+      render: (bill: Bill) => (
+        <span className="text-muted-foreground">{bill.dueDate}</span>
+      ),
+    },
+    {
+      key: 'actions',
+      header: '',
+      render: (bill: Bill) => (
+        <button 
+          onClick={(e) => {
+            e.stopPropagation();
+            setSelectedBill(bill);
+          }}
+          className="p-2 hover:bg-muted rounded-lg transition-colors"
+        >
+          <Eye className="w-4 h-4 text-muted-foreground" />
+        </button>
+      ),
+    },
+  ];
+
+  const totalAmount = filteredBills.reduce((sum, bill) => sum + bill.amount, 0);
+
+  return (
+    <div className="min-h-screen">
+      <TopBar 
+        title="Bills Explorer" 
+        subtitle={`${filteredBills.length} bills • ${formatCurrency(totalAmount)}`}
+      />
+      
+      <div className="p-6">
+        <div className="flex gap-6">
+          {/* Filter Panel */}
+          <div className="w-64 shrink-0">
+            <FilterPanel />
+          </div>
+
+          {/* Main Content */}
+          <div className="flex-1">
+            {/* Summary Cards */}
+            <div className="grid grid-cols-4 gap-4 mb-6">
+              {['verified', 'processing', 'pending', 'paid'].map((status) => {
+                const count = filteredBills.filter(b => b.status === status).length;
+                const amount = filteredBills
+                  .filter(b => b.status === status)
+                  .reduce((sum, b) => sum + b.amount, 0);
+                const Icon = statusIcons[status as keyof typeof statusIcons];
+                
+                return (
+                  <div key={status} className="glass-card p-4">
+                    <div className="flex items-center gap-3">
+                      <div className={`p-2 rounded-lg ${getStatusColor(status)}`}>
+                        <Icon className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <p className="text-2xl font-bold text-foreground">{count}</p>
+                        <p className="text-xs text-muted-foreground capitalize">{status}</p>
+                        <p className="text-xs text-accent font-medium">{formatCurrency(amount, true)}</p>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Table */}
+            <div className="glass-card overflow-hidden">
+              <div className="flex items-center justify-between p-4 border-b border-border">
+                <h3 className="font-semibold">Bills Registry</h3>
+                <button className="flex items-center gap-2 px-3 py-1.5 text-sm bg-muted hover:bg-muted/80 rounded-lg transition-colors">
+                  <Download className="w-4 h-4" />
+                  Export
+                </button>
+              </div>
+              <DataTable
+                data={filteredBills}
+                columns={columns}
+                keyExtractor={(bill) => bill.id}
+                onRowClick={(bill) => setSelectedBill(bill)}
+              />
+              <div className="p-4 border-t border-border bg-muted/20">
+                <p className="text-sm text-muted-foreground text-center">
+                  Showing {filteredBills.length} of {billsData.length} bills
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Bill Detail Modal */}
+      {selectedBill && (
+        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-card border border-border rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between p-6 border-b border-border">
+              <div>
+                <h2 className="font-display text-xl font-bold">{selectedBill.id}</h2>
+                <p className="text-sm text-muted-foreground">{selectedBill.description}</p>
+              </div>
+              <button 
+                onClick={() => setSelectedBill(null)}
+                className="p-2 hover:bg-muted rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <div className="p-6 space-y-6">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-sm text-muted-foreground mb-1">Supplier</p>
+                  <p className="font-medium">{selectedBill.supplierName}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground mb-1">MDA</p>
+                  <p className="font-medium">{selectedBill.mdaName}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground mb-1">Amount</p>
+                  <p className="font-bold text-xl text-accent">{formatCurrency(selectedBill.amount)}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground mb-1">Status</p>
+                  <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium ${getStatusColor(selectedBill.status)}`}>
+                    {selectedBill.status.charAt(0).toUpperCase() + selectedBill.status.slice(1)}
+                  </span>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground mb-1">Invoice Date</p>
+                  <p className="font-medium">{selectedBill.invoiceDate}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground mb-1">Due Date</p>
+                  <p className="font-medium">{selectedBill.dueDate}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground mb-1">Category</p>
+                  <p className="font-medium">{selectedBill.category}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground mb-1">Fiscal Year</p>
+                  <p className="font-medium">{selectedBill.fiscalYear}</p>
+                </div>
+              </div>
+
+              {selectedBill.verificationDate && (
+                <div className="p-4 bg-success/10 border border-success/30 rounded-lg">
+                  <p className="text-sm text-success">
+                    ✓ Verified on {selectedBill.verificationDate}
+                  </p>
+                </div>
+              )}
+
+              {selectedBill.paymentDate && (
+                <div className="p-4 bg-secondary/20 border border-secondary/30 rounded-lg">
+                  <p className="text-sm text-secondary-foreground">
+                    ✓ Paid on {selectedBill.paymentDate}
+                  </p>
+                </div>
+              )}
+
+              <div className="flex gap-3">
+                <button className="flex-1 px-4 py-2 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 transition-colors">
+                  Process Bill
+                </button>
+                <button className="px-4 py-2 bg-muted border border-border rounded-lg font-medium hover:bg-muted/80 transition-colors">
+                  View Documents
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default BillsExplorer;
