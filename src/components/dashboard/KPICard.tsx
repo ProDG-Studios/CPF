@@ -9,9 +9,8 @@ interface KPICardProps {
   trend?: {
     value: number;
     isPositive: boolean;
-    label?: string;
   };
-  variant?: 'default' | 'accent' | 'success' | 'warning' | 'secondary';
+  variant?: 'default' | 'accent' | 'success' | 'warning';
   onClick?: () => void;
   isClickable?: boolean;
 }
@@ -26,60 +25,47 @@ const KPICard = ({
   onClick,
   isClickable = false 
 }: KPICardProps) => {
-  const iconStyles = {
+  const accentColor = {
+    default: 'border-l-primary',
+    accent: 'border-l-accent',
+    success: 'border-l-success',
+    warning: 'border-l-warning',
+  };
+
+  const iconBg = {
     default: 'bg-primary/10 text-primary',
     accent: 'bg-accent/10 text-accent',
     success: 'bg-success/10 text-success',
     warning: 'bg-warning/10 text-warning',
-    secondary: 'bg-muted text-muted-foreground',
-  };
-
-  const borderStyles = {
-    default: '',
-    accent: 'border-l-2 border-l-accent',
-    success: 'border-l-2 border-l-success',
-    warning: 'border-l-2 border-l-warning',
-    secondary: '',
   };
 
   return (
     <div 
       onClick={onClick}
       className={cn(
-        "relative bg-card border border-border rounded-lg p-4 transition-colors duration-150",
-        borderStyles[variant],
-        isClickable && "cursor-pointer hover:bg-muted/30"
+        "glass-card p-4 border-l-2 transition-colors",
+        accentColor[variant],
+        isClickable && "cursor-pointer hover:bg-secondary/50"
       )}
     >
       <div className="flex items-start justify-between mb-3">
-        <div className={cn("p-2 rounded-md", iconStyles[variant])}>
+        <div className={cn("p-2 rounded-md", iconBg[variant])}>
           <Icon className="w-4 h-4" />
         </div>
         {trend && (
           <div className={cn(
-            "flex items-center gap-1 text-xs font-medium",
+            "flex items-center gap-0.5 text-xs font-medium",
             trend.isPositive ? "text-success" : "text-destructive"
           )}>
-            {trend.isPositive ? (
-              <TrendingUp className="w-3 h-3" />
-            ) : (
-              <TrendingDown className="w-3 h-3" />
-            )}
+            {trend.isPositive ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
             {trend.value}%
           </div>
         )}
       </div>
       
-      <h3 className="text-2xl font-bold text-foreground mb-0.5 font-display">
-        {value}
-      </h3>
-      <p className="text-xs text-muted-foreground font-medium">{title}</p>
-      {subtitle && (
-        <p className="text-xs text-muted-foreground/70 mt-0.5">{subtitle}</p>
-      )}
-      {trend?.label && (
-        <p className="text-xs text-muted-foreground mt-1.5">{trend.label}</p>
-      )}
+      <p className="text-2xl font-semibold text-foreground mb-0.5">{value}</p>
+      <p className="text-xs text-muted-foreground">{title}</p>
+      {subtitle && <p className="text-xs text-muted-foreground mt-0.5">{subtitle}</p>}
     </div>
   );
 };

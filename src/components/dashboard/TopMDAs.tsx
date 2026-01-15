@@ -11,8 +11,6 @@ const TopMDAs = () => {
     .sort((a, b) => b.totalAmount - a.totalAmount)
     .slice(0, 5);
 
-  const maxAmount = topMDAs[0]?.totalAmount || 1;
-
   const handleMDAClick = (mdaId: string) => {
     toggleArrayFilter('mdaIds', mdaId);
     navigate('/bills');
@@ -22,8 +20,8 @@ const TopMDAs = () => {
     <div className="glass-card p-5">
       <div className="flex items-center justify-between mb-4">
         <div>
-          <h3 className="font-semibold text-foreground">Top MDAs by Value</h3>
-          <p className="text-xs text-muted-foreground">Click to filter bills</p>
+          <h3 className="font-semibold text-foreground">Top MDAs</h3>
+          <p className="text-xs text-muted-foreground">By total value</p>
         </div>
         <button 
           onClick={() => navigate('/mdas')}
@@ -35,39 +33,26 @@ const TopMDAs = () => {
 
       <div className="space-y-3">
         {topMDAs.map((mda, index) => {
-          const percentage = (mda.totalAmount / maxAmount) * 100;
-          const verifiedPercentage = (mda.verifiedAmount / mda.totalAmount) * 100;
+          const verifiedPct = (mda.verifiedAmount / mda.totalAmount) * 100;
           
           return (
             <button
               key={mda.id}
               onClick={() => handleMDAClick(mda.id)}
-              className="w-full text-left p-2.5 rounded hover:bg-muted/50 transition-colors group"
+              className="w-full text-left p-2.5 rounded-md hover:bg-secondary transition-colors"
             >
               <div className="flex items-center gap-2.5 mb-1.5">
-                <div className="w-6 h-6 rounded bg-primary/10 flex items-center justify-center text-primary font-semibold text-xs">
+                <div className="w-6 h-6 rounded bg-primary/10 flex items-center justify-center text-primary text-xs font-semibold">
                   {index + 1}
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-foreground truncate group-hover:text-accent transition-colors">
-                    {mda.shortName}
-                  </p>
-                </div>
-                <div className="text-right">
-                  <p className="text-sm font-semibold text-foreground">{formatCurrency(mda.totalAmount, true)}</p>
-                </div>
+                <span className="text-sm font-medium text-foreground flex-1 truncate">{mda.shortName}</span>
+                <span className="text-sm font-medium text-foreground">{formatCurrency(mda.totalAmount, true)}</span>
               </div>
-              
-              <div className="flex items-center gap-2">
-                <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
-                  <div 
-                    className="h-full bg-success rounded-full"
-                    style={{ width: `${verifiedPercentage}%` }}
-                  />
+              <div className="flex items-center gap-2 pl-8">
+                <div className="flex-1 h-1.5 bg-secondary rounded-full overflow-hidden">
+                  <div className="h-full bg-accent rounded-full" style={{ width: `${verifiedPct}%` }} />
                 </div>
-                <span className="text-xs text-muted-foreground w-10 text-right">
-                  {verifiedPercentage.toFixed(0)}%
-                </span>
+                <span className="text-xs text-muted-foreground w-10 text-right">{verifiedPct.toFixed(0)}%</span>
               </div>
             </button>
           );
