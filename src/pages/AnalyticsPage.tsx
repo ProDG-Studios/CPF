@@ -185,12 +185,6 @@ const AnalyticsPage = () => {
               <div className="h-80">
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart data={rangeData}>
-                    <defs>
-                      <linearGradient id="colorPercent" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="hsl(222, 47%, 20%)" stopOpacity={0.3}/>
-                        <stop offset="95%" stopColor="hsl(222, 47%, 20%)" stopOpacity={0}/>
-                      </linearGradient>
-                    </defs>
                     <CartesianGrid strokeDasharray="3 3" stroke={gridColor} />
                     <XAxis 
                       dataKey="range" 
@@ -213,7 +207,8 @@ const AnalyticsPage = () => {
                       dataKey="percentByNumber" 
                       name="% by Number" 
                       stroke="hsl(222, 47%, 20%)"
-                      fill="url(#colorPercent)"
+                      fill="hsl(222, 47%, 20%)"
+                      fillOpacity={0.2}
                     />
                     <Line 
                       type="monotone" 
@@ -392,12 +387,6 @@ const AnalyticsPage = () => {
               <div className="h-72">
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart data={monthlyTrends}>
-                    <defs>
-                      <linearGradient id="colorTotal" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="hsl(43, 96%, 56%)" stopOpacity={0.4}/>
-                        <stop offset="95%" stopColor="hsl(43, 96%, 56%)" stopOpacity={0}/>
-                      </linearGradient>
-                    </defs>
                     <CartesianGrid strokeDasharray="3 3" stroke={gridColor} />
                     <XAxis 
                       dataKey="month" 
@@ -418,7 +407,8 @@ const AnalyticsPage = () => {
                       name="Total Amount" 
                       stroke="hsl(43, 96%, 56%)"
                       strokeWidth={2}
-                      fill="url(#colorTotal)"
+                      fill="hsl(43, 96%, 56%)"
+                      fillOpacity={0.2}
                     />
                   </AreaChart>
                 </ResponsiveContainer>

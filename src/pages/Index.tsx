@@ -30,13 +30,10 @@ const Index = () => {
       
       <div className="p-6">
         {/* Hero Banner */}
-        <div className="glass-card p-6 mb-6 relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-accent/20 to-transparent rounded-full blur-3xl" />
-          <div className="absolute bottom-0 left-0 w-64 h-64 bg-gradient-to-tr from-primary/20 to-transparent rounded-full blur-3xl" />
-          
-          <div className="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div className="glass-card p-6 mb-6">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
-              <div className="inline-flex items-center gap-2 px-3 py-1 bg-accent/20 rounded-full text-accent text-sm font-medium mb-3">
+              <div className="inline-flex items-center gap-2 px-3 py-1 bg-accent text-accent-foreground rounded-full text-sm font-medium mb-3">
                 <Clock className="w-4 h-4" />
                 Phase 1: Fast-Track Settlement Active
               </div>
@@ -52,13 +49,13 @@ const Index = () => {
             <div className="flex gap-3">
               <button 
                 onClick={() => navigate('/workflow')}
-                className="px-5 py-2.5 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 transition-colors"
+                className="px-5 py-2.5 bg-primary text-primary-foreground rounded-lg font-medium transition-colors"
               >
                 View Workflow
               </button>
               <button 
                 onClick={() => navigate('/bills')}
-                className="px-5 py-2.5 bg-muted border border-border text-foreground rounded-lg font-medium hover:bg-muted/80 transition-colors"
+                className="px-5 py-2.5 bg-muted border border-border text-foreground rounded-lg font-medium transition-colors"
               >
                 Explore Bills
               </button>
@@ -157,7 +154,7 @@ const Index = () => {
                   <span className="text-sm font-semibold text-foreground">54.7%</span>
                 </div>
                 <div className="h-3 bg-muted rounded-full overflow-hidden">
-                  <div className="h-full bg-gradient-to-r from-success to-success/70 rounded-full" style={{ width: '54.7%' }} />
+                  <div className="h-full bg-success rounded-full" style={{ width: '54.7%' }} />
                 </div>
               </div>
               
@@ -167,7 +164,7 @@ const Index = () => {
                   <span className="text-sm font-semibold text-foreground">17.9%</span>
                 </div>
                 <div className="h-3 bg-muted rounded-full overflow-hidden">
-                  <div className="h-full bg-gradient-to-r from-secondary to-secondary/70 rounded-full" style={{ width: '17.9%' }} />
+                  <div className="h-full bg-primary rounded-full" style={{ width: '17.9%' }} />
                 </div>
               </div>
               
@@ -177,7 +174,7 @@ const Index = () => {
                   <span className="text-sm font-semibold text-foreground">75%</span>
                 </div>
                 <div className="h-3 bg-muted rounded-full overflow-hidden">
-                  <div className="h-full bg-gradient-to-r from-primary to-primary/70 rounded-full" style={{ width: '75%' }} />
+                  <div className="h-full bg-primary rounded-full" style={{ width: '75%' }} />
                 </div>
               </div>
 
@@ -187,7 +184,7 @@ const Index = () => {
                   <span className="text-sm font-semibold text-foreground">4/9</span>
                 </div>
                 <div className="h-3 bg-muted rounded-full overflow-hidden">
-                  <div className="h-full bg-gradient-to-r from-accent to-warning rounded-full" style={{ width: '44.4%' }} />
+                  <div className="h-full bg-accent rounded-full" style={{ width: '44.4%' }} />
                 </div>
               </div>
             </div>

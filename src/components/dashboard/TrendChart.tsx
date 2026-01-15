@@ -35,36 +35,21 @@ const TrendChart = () => {
       <div className="h-80">
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart data={monthlyTrends}>
-            <defs>
-              <linearGradient id="colorVerified" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="hsl(142, 76%, 36%)" stopOpacity={0.3}/>
-                <stop offset="95%" stopColor="hsl(142, 76%, 36%)" stopOpacity={0}/>
-              </linearGradient>
-              <linearGradient id="colorPending" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="hsl(38, 92%, 50%)" stopOpacity={0.3}/>
-                <stop offset="95%" stopColor="hsl(38, 92%, 50%)" stopOpacity={0}/>
-              </linearGradient>
-              <linearGradient id="colorPaid" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="hsl(173, 58%, 39%)" stopOpacity={0.3}/>
-                <stop offset="95%" stopColor="hsl(173, 58%, 39%)" stopOpacity={0}/>
-              </linearGradient>
-            </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="hsl(220, 13%, 91%)" />
+            <CartesianGrid strokeDasharray="3 3" stroke="hsl(0, 0%, 90%)" />
             <XAxis 
               dataKey="month" 
-              stroke="hsl(215, 16%, 47%)"
-              tick={{ fill: 'hsl(215, 16%, 47%)', fontSize: 12 }}
+              stroke="hsl(0, 0%, 45%)"
+              tick={{ fill: 'hsl(0, 0%, 45%)', fontSize: 12 }}
             />
             <YAxis 
-              stroke="hsl(215, 16%, 47%)"
-              tick={{ fill: 'hsl(215, 16%, 47%)', fontSize: 12 }}
+              stroke="hsl(0, 0%, 45%)"
+              tick={{ fill: 'hsl(0, 0%, 45%)', fontSize: 12 }}
             />
             <Tooltip
               contentStyle={{
                 backgroundColor: 'hsl(0, 0%, 100%)',
-                border: '1px solid hsl(220, 13%, 91%)',
+                border: '1px solid hsl(0, 0%, 90%)',
                 borderRadius: '8px',
-                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
               }}
             />
             <Legend />
@@ -74,8 +59,8 @@ const TrendChart = () => {
               name="Verified"
               stroke="hsl(142, 76%, 36%)"
               strokeWidth={2}
-              fillOpacity={1}
-              fill="url(#colorVerified)"
+              fill="hsl(142, 76%, 36%)"
+              fillOpacity={0.15}
             />
             <Area
               type="monotone"
@@ -83,8 +68,8 @@ const TrendChart = () => {
               name="Pending"
               stroke="hsl(38, 92%, 50%)"
               strokeWidth={2}
-              fillOpacity={1}
-              fill="url(#colorPending)"
+              fill="hsl(38, 92%, 50%)"
+              fillOpacity={0.15}
             />
             <Area
               type="monotone"
@@ -92,8 +77,8 @@ const TrendChart = () => {
               name="Paid"
               stroke="hsl(173, 58%, 39%)"
               strokeWidth={2}
-              fillOpacity={1}
-              fill="url(#colorPaid)"
+              fill="hsl(173, 58%, 39%)"
+              fillOpacity={0.15}
             />
           </AreaChart>
         </ResponsiveContainer>

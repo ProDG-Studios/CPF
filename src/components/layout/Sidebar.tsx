@@ -51,18 +51,17 @@ const Sidebar = () => {
               key={item.path}
               to={item.path}
               className={cn(
-                "flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200 group relative",
-                "hover:scale-[1.02] active:scale-[0.98]",
+                "flex items-center gap-3 px-3 py-3 rounded-lg transition-colors duration-200 group relative",
                 isActive 
-                  ? "bg-gradient-to-r from-primary to-primary/80 text-primary-foreground shadow-lg shadow-primary/20" 
-                  : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
+                  ? "bg-primary text-primary-foreground" 
+                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
               )}
             >
               <div className={cn(
-                "p-1.5 rounded-lg transition-all",
+                "p-1.5 rounded-lg",
                 isActive 
                   ? "bg-primary-foreground/20" 
-                  : "group-hover:bg-muted"
+                  : ""
               )}>
                 <item.icon className={cn(
                   "w-5 h-5 shrink-0 transition-transform",
@@ -95,8 +94,7 @@ const Sidebar = () => {
       {/* Settings */}
       <div className="p-3 border-t border-border/50">
         <button className={cn(
-          "flex items-center gap-3 px-3 py-3 rounded-xl w-full text-muted-foreground hover:bg-muted/50 hover:text-foreground transition-all duration-200",
-          "hover:scale-[1.02] active:scale-[0.98]"
+          "flex items-center gap-3 px-3 py-3 rounded-lg w-full text-muted-foreground hover:bg-muted hover:text-foreground transition-colors duration-200"
         )}>
           <div className="p-1.5 rounded-lg hover:bg-muted transition-colors">
             <Settings className="w-5 h-5 shrink-0 transition-transform hover:rotate-90" />

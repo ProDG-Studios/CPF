@@ -27,16 +27,16 @@ const KPICard = ({
   isClickable = false 
 }: KPICardProps) => {
   const variantStyles = {
-    default: 'bg-card border border-border hover:border-primary/30 hover:shadow-md',
-    accent: 'bg-card border border-accent/30 hover:border-accent/50 hover:shadow-md',
-    success: 'bg-card border border-success/30 hover:border-success/50 hover:shadow-md',
-    warning: 'bg-card border border-warning/30 hover:border-warning/50 hover:shadow-md',
-    secondary: 'bg-card border border-border hover:border-primary/30 hover:shadow-md',
+    default: 'bg-card border border-border',
+    accent: 'bg-card border border-accent',
+    success: 'bg-card border border-success',
+    warning: 'bg-card border border-warning',
+    secondary: 'bg-card border border-border',
   };
 
   const iconStyles = {
     default: 'bg-primary/10 text-primary',
-    accent: 'bg-accent/15 text-accent-foreground',
+    accent: 'bg-accent/15 text-foreground',
     success: 'bg-success/10 text-success',
     warning: 'bg-warning/15 text-warning',
     secondary: 'bg-muted text-muted-foreground',
@@ -46,9 +46,9 @@ const KPICard = ({
     <div 
       onClick={onClick}
       className={cn(
-        "relative overflow-hidden rounded-xl p-6 transition-all duration-300 shadow-sm",
+        "relative overflow-hidden rounded-lg p-6 transition-colors duration-200",
         variantStyles[variant],
-        isClickable && "cursor-pointer hover:scale-[1.02]"
+        isClickable && "cursor-pointer"
       )}
     >
       <div className="flex items-start justify-between mb-4">
