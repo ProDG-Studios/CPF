@@ -157,16 +157,80 @@ export const billsData: Bill[] = [
   { id: "PB-2024-00020", supplierId: "sup-010", supplierName: "Mount Kenya Supplies", mdaId: "mda-006", mdaName: "Ministry of Agriculture", amount: 420000, originalAmount: 420000, invoiceDate: "2023-08-02", dueDate: "2023-11-02", status: "processing", category: "General Supplies", description: "Agricultural extension supplies", fiscalYear: "2023/24", priority: "medium" },
 ];
 
+// Payment Schedule interface for MDA repayment plans
+export interface PaymentSchedule {
+  id: string;
+  mdaId: string;
+  mdaName: string;
+  fiscalYear: string;
+  quarterlyPayments: {
+    quarter: string;
+    amount: number;
+    status: 'paid' | 'due' | 'upcoming';
+    dueDate: string;
+    paidDate?: string;
+  }[];
+  totalCommitted: number;
+  totalPaid: number;
+}
+
+export const paymentSchedules: PaymentSchedule[] = [
+  {
+    id: "ps-001",
+    mdaId: "mda-001",
+    mdaName: "Ministry of Roads & Infrastructure",
+    fiscalYear: "2024/25",
+    quarterlyPayments: [
+      { quarter: "Q1 2024/25", amount: 3325000000, status: "paid", dueDate: "2024-09-30", paidDate: "2024-09-28" },
+      { quarter: "Q2 2024/25", amount: 3325000000, status: "due", dueDate: "2024-12-31" },
+      { quarter: "Q3 2024/25", amount: 3325000000, status: "upcoming", dueDate: "2025-03-31" },
+      { quarter: "Q4 2024/25", amount: 3325000000, status: "upcoming", dueDate: "2025-06-30" },
+    ],
+    totalCommitted: 13300000000,
+    totalPaid: 3325000000,
+  },
+  {
+    id: "ps-002",
+    mdaId: "mda-002",
+    mdaName: "Ministry of Health",
+    fiscalYear: "2024/25",
+    quarterlyPayments: [
+      { quarter: "Q1 2024/25", amount: 1950000000, status: "paid", dueDate: "2024-09-30", paidDate: "2024-09-25" },
+      { quarter: "Q2 2024/25", amount: 1950000000, status: "due", dueDate: "2024-12-31" },
+      { quarter: "Q3 2024/25", amount: 1950000000, status: "upcoming", dueDate: "2025-03-31" },
+      { quarter: "Q4 2024/25", amount: 1950000000, status: "upcoming", dueDate: "2025-06-30" },
+    ],
+    totalCommitted: 7800000000,
+    totalPaid: 1950000000,
+  },
+  {
+    id: "ps-003",
+    mdaId: "mda-003",
+    mdaName: "Ministry of Education",
+    fiscalYear: "2024/25",
+    quarterlyPayments: [
+      { quarter: "Q1 2024/25", amount: 1475000000, status: "paid", dueDate: "2024-09-30", paidDate: "2024-09-30" },
+      { quarter: "Q2 2024/25", amount: 1475000000, status: "due", dueDate: "2024-12-31" },
+      { quarter: "Q3 2024/25", amount: 1475000000, status: "upcoming", dueDate: "2025-03-31" },
+      { quarter: "Q4 2024/25", amount: 1475000000, status: "upcoming", dueDate: "2025-06-30" },
+    ],
+    totalCommitted: 5900000000,
+    totalPaid: 1475000000,
+  },
+];
+
 export const transactionSteps: TransactionStep[] = [
-  { step: 1, title: "Receivables Sale Agreement", description: "Supplier signs receivables sale agreement to SPV and introduces the SPV to MDA to consent to terms.", entity: "Suppliers (Originator)", entityType: "supplier", status: "completed", completedDate: "2024-01-05", documents: ["Sale Agreement", "Supplier KYC Documents", "Tax Compliance Certificate"], responsible: "Supplier Legal Team" },
-  { step: 2, title: "MDA Consent", description: "MDA consents to the sale, and authorizes NT to debit its budget vote to pay suppliers for the agreed period.", entity: "MDAs (Obligor)", entityType: "mda", status: "completed", completedDate: "2024-01-08", documents: ["Consent Letter", "Budget Authorization", "Verification Certificate"], responsible: "MDA Accounting Officer" },
-  { step: 3, title: "Agreement Forward", description: "MDA forwards agreement with supplier to NT for implementation.", entity: "MDAs (Obligor)", entityType: "mda", status: "completed", completedDate: "2024-01-10", documents: ["Forwarding Letter", "Complete Agreement Package"], responsible: "MDA Finance Department" },
-  { step: 4, title: "Servicer Agreement", description: "NT signs a servicer agreement with SPV, and facilitates SPV to pay supplier.", entity: "National Treasury (Fiscal Agent)", entityType: "treasury", status: "active", estimatedDate: "2024-01-20", documents: ["Servicer Agreement", "Payment Schedule", "Collection Mandate"], responsible: "National Treasury" },
-  { step: 5, title: "Bond Issuance", description: "SPV issues the Pending Bills Liquidation Bond.", entity: "SPV (Issuer)", entityType: "spv", status: "pending", estimatedDate: "2024-02-01", documents: ["Bond Prospectus", "Credit Rating Report", "Legal Opinion"], responsible: "SPV / Transaction Advisors" },
-  { step: 6, title: "Investment Flow", description: "Funds raised from investors flow into the SPV.", entity: "Investors", entityType: "investor", status: "pending", estimatedDate: "2024-02-15", documents: ["Investment Agreement", "Fund Transfer Confirmations"], responsible: "Pension Funds / Investors" },
-  { step: 7, title: "Supplier Payment", description: "SPV disburses direct payments to suppliers, provides confirmation to NT & MDAs.", entity: "SPV (Issuer)", entityType: "spv", status: "pending", estimatedDate: "2024-02-20", documents: ["Payment Instructions", "Bank Confirmations", "Receipt Acknowledgments"], responsible: "SPV Payment Team" },
-  { step: 8, title: "NSE Listing", description: "SPV lists the bond on the NSE for Secondary trading providing investor liquidity.", entity: "SPV (Issuer)", entityType: "spv", status: "pending", estimatedDate: "2024-03-01", documents: ["NSE Listing Application", "Trading Memorandum"], responsible: "SPV / NSE" },
-  { step: 9, title: "SPV Settlement", description: "NT pays the SPV as per the agreed terms.", entity: "National Treasury (Fiscal Agent)", entityType: "treasury", status: "pending", estimatedDate: "2024-03-15", documents: ["Payment Schedule", "Settlement Confirmations"], responsible: "National Treasury" },
+  { step: 1, title: "Bill Submission & Verification", description: "Suppliers submit invoices for verification. MDA validates the authenticity, completeness, and eligibility of each pending bill against contract records.", entity: "MDAs (Obligor)", entityType: "mda", status: "completed", completedDate: "2024-01-02", documents: ["Invoice Package", "Contract Reference", "Delivery Confirmation", "Goods Receipt Note"], responsible: "MDA Verification Committee" },
+  { step: 2, title: "MDA Payment Plan Approval", description: "MDA prepares and approves a payment schedule committing future budget allocations to service the verified pending bills over the agreed repayment period.", entity: "MDAs (Obligor)", entityType: "mda", status: "completed", completedDate: "2024-01-04", documents: ["Payment Schedule", "Budget Commitment Letter", "Cash Flow Projections", "Accounting Officer Approval"], responsible: "MDA Accounting Officer" },
+  { step: 3, title: "Receivables Sale Agreement", description: "Supplier signs receivables sale agreement to SPV and introduces the SPV to MDA to consent to terms.", entity: "Suppliers (Originator)", entityType: "supplier", status: "completed", completedDate: "2024-01-05", documents: ["Sale Agreement", "Supplier KYC Documents", "Tax Compliance Certificate"], responsible: "Supplier Legal Team" },
+  { step: 4, title: "MDA Consent & Authorization", description: "MDA consents to the sale, confirms the payment plan, and authorizes NT to debit its budget vote to pay suppliers for the agreed period.", entity: "MDAs (Obligor)", entityType: "mda", status: "completed", completedDate: "2024-01-08", documents: ["Consent Letter", "Budget Authorization", "Verification Certificate", "Payment Plan Confirmation"], responsible: "MDA Accounting Officer" },
+  { step: 5, title: "Agreement Forward to Treasury", description: "MDA forwards agreement with supplier and approved payment schedule to NT for implementation.", entity: "MDAs (Obligor)", entityType: "mda", status: "completed", completedDate: "2024-01-10", documents: ["Forwarding Letter", "Complete Agreement Package", "Payment Schedule"], responsible: "MDA Finance Department" },
+  { step: 6, title: "Servicer Agreement", description: "NT signs a servicer agreement with SPV, commits to the payment schedule, and facilitates SPV to pay supplier.", entity: "National Treasury (Fiscal Agent)", entityType: "treasury", status: "active", estimatedDate: "2024-01-20", documents: ["Servicer Agreement", "Payment Schedule", "Collection Mandate", "IFMIS Integration Docs"], responsible: "National Treasury" },
+  { step: 7, title: "Bond Issuance", description: "SPV pools verified receivables and issues the Pending Bills Liquidation Bond backed by Treasury payment commitments.", entity: "SPV (Issuer)", entityType: "spv", status: "pending", estimatedDate: "2024-02-01", documents: ["Bond Prospectus", "Credit Rating Report", "Legal Opinion", "Receivables Schedule"], responsible: "SPV / Transaction Advisors" },
+  { step: 8, title: "Investment Flow", description: "Pension funds and institutional investors purchase the bond. Funds flow into the SPV.", entity: "Investors", entityType: "investor", status: "pending", estimatedDate: "2024-02-15", documents: ["Investment Agreement", "Fund Transfer Confirmations", "Investor KYC"], responsible: "Pension Funds / Investors" },
+  { step: 9, title: "Supplier Payment", description: "SPV uses investor funds to immediately settle verified supplier bills. Provides confirmation to NT & MDAs.", entity: "SPV (Issuer)", entityType: "spv", status: "pending", estimatedDate: "2024-02-20", documents: ["Payment Instructions", "Bank Confirmations", "Receipt Acknowledgments"], responsible: "SPV Payment Team" },
+  { step: 10, title: "NSE Listing", description: "SPV lists the bond on the NSE for secondary trading, providing investor liquidity.", entity: "SPV (Issuer)", entityType: "spv", status: "pending", estimatedDate: "2024-03-01", documents: ["NSE Listing Application", "Trading Memorandum", "Market Maker Agreement"], responsible: "SPV / NSE" },
+  { step: 11, title: "Treasury Servicing", description: "NT pays the SPV quarterly as per the agreed payment schedule. SPV uses these to service bond interest and principal.", entity: "National Treasury (Fiscal Agent)", entityType: "treasury", status: "pending", estimatedDate: "2024-03-15", documents: ["Quarterly Payment Schedule", "Settlement Confirmations", "Investor Distribution Report"], responsible: "National Treasury" },
 ];
 
 export const timelineEvents: TimelineEvent[] = [
