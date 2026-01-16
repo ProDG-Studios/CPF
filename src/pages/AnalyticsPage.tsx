@@ -27,14 +27,22 @@ import { generateCSV, generatePrintableReport } from '@/lib/exportUtils';
 import { Progress } from '@/components/ui/progress';
 
 const COLORS = [
-  'hsl(222, 47%, 20%)',
-  'hsl(142, 76%, 36%)',
-  'hsl(43, 96%, 56%)',
-  'hsl(173, 58%, 39%)',
-  'hsl(38, 92%, 50%)',
-  'hsl(0, 72%, 51%)',
-  'hsl(215, 16%, 47%)',
+  'hsl(262, 83%, 58%)',   // Vibrant purple
+  'hsl(142, 76%, 36%)',   // Green
+  'hsl(199, 89%, 48%)',   // Bright blue
+  'hsl(43, 96%, 56%)',    // Yellow/Gold
+  'hsl(339, 82%, 51%)',   // Pink/Magenta
+  'hsl(173, 80%, 40%)',   // Teal
+  'hsl(25, 95%, 53%)',    // Orange
+  'hsl(280, 87%, 65%)',   // Light purple
 ];
+
+const STATUS_COLORS = {
+  verified: 'hsl(142, 76%, 36%)',   // Green
+  processing: 'hsl(43, 96%, 56%)',  // Yellow
+  pending: 'hsl(25, 95%, 53%)',     // Orange
+  paid: 'hsl(199, 89%, 48%)',       // Blue
+};
 
 const tooltipStyle = {
   backgroundColor: 'hsl(0, 0%, 100%)',
@@ -71,10 +79,10 @@ const AnalyticsPage = () => {
 
   // Status distribution from live data
   const statusDistribution = useMemo(() => [
-    { name: 'Verified', value: stats.verifiedBills, amount: stats.verifiedAmount, color: 'hsl(142, 76%, 36%)' },
-    { name: 'Processing', value: stats.processingBills, amount: stats.processingAmount, color: 'hsl(43, 96%, 56%)' },
-    { name: 'Pending', value: stats.pendingBills, amount: stats.pendingAmount, color: 'hsl(38, 92%, 50%)' },
-    { name: 'Paid', value: stats.paidBills, amount: stats.paidAmount, color: 'hsl(173, 58%, 39%)' },
+    { name: 'Verified', value: stats.verifiedBills, amount: stats.verifiedAmount, color: STATUS_COLORS.verified },
+    { name: 'Processing', value: stats.processingBills, amount: stats.processingAmount, color: STATUS_COLORS.processing },
+    { name: 'Pending', value: stats.pendingBills, amount: stats.pendingAmount, color: STATUS_COLORS.pending },
+    { name: 'Paid', value: stats.paidBills, amount: stats.paidAmount, color: STATUS_COLORS.paid },
   ], [stats]);
 
   // Category breakdown from live data
@@ -359,58 +367,73 @@ const AnalyticsPage = () => {
 
         {activeTab === 'overview' && (
           <div className="space-y-6">
-            {/* Key Metrics - Live Data */}
+            {/* Key Metrics - Live Data with colorful backgrounds */}
             <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-              <div className="glass-card p-5">
+              <div className="glass-card p-5 border-l-4 border-l-[hsl(262,83%,58%)]">
                 <div className="flex items-center justify-between mb-2">
-                  <FileText className="w-5 h-5 text-muted-foreground" />
+                  <div className="p-2 rounded-lg bg-[hsl(262,83%,58%)]/10">
+                    <FileText className="w-5 h-5 text-[hsl(262,83%,58%)]" />
+                  </div>
                 </div>
                 <p className="text-2xl font-bold text-foreground">{liveStats.totalBills.toLocaleString()}</p>
                 <p className="text-xs text-muted-foreground">Total Bills</p>
               </div>
-              <div className="glass-card p-5">
+              <div className="glass-card p-5 border-l-4 border-l-[hsl(339,82%,51%)]">
                 <div className="flex items-center justify-between mb-2">
-                  <DollarSign className="w-5 h-5 text-muted-foreground" />
+                  <div className="p-2 rounded-lg bg-[hsl(339,82%,51%)]/10">
+                    <DollarSign className="w-5 h-5 text-[hsl(339,82%,51%)]" />
+                  </div>
                 </div>
-                <p className="text-2xl font-bold">{formatCurrency(liveStats.totalAmount, true)}</p>
+                <p className="text-2xl font-bold text-[hsl(339,82%,51%)]">{formatCurrency(liveStats.totalAmount, true)}</p>
                 <p className="text-xs text-muted-foreground">Total Value</p>
               </div>
-              <div className="glass-card p-5">
+              <div className="glass-card p-5 border-l-4 border-l-[hsl(142,76%,36%)]">
                 <div className="flex items-center justify-between mb-2">
-                  <CheckCircle className="w-5 h-5 text-success" />
+                  <div className="p-2 rounded-lg bg-success/10">
+                    <CheckCircle className="w-5 h-5 text-success" />
+                  </div>
                 </div>
                 <p className="text-2xl font-bold text-success">{liveStats.verifiedBills.toLocaleString()}</p>
                 <p className="text-xs text-muted-foreground">Verified Bills</p>
               </div>
-              <div className="glass-card p-5">
+              <div className="glass-card p-5 border-l-4 border-l-[hsl(25,95%,53%)]">
                 <div className="flex items-center justify-between mb-2">
-                  <Clock className="w-5 h-5 text-warning" />
+                  <div className="p-2 rounded-lg bg-[hsl(25,95%,53%)]/10">
+                    <Clock className="w-5 h-5 text-[hsl(25,95%,53%)]" />
+                  </div>
                 </div>
-                <p className="text-2xl font-bold text-warning">{liveStats.pendingBills.toLocaleString()}</p>
+                <p className="text-2xl font-bold text-[hsl(25,95%,53%)]">{liveStats.pendingBills.toLocaleString()}</p>
                 <p className="text-xs text-muted-foreground">Pending Bills</p>
               </div>
-              <div className="glass-card p-5">
+              <div className="glass-card p-5 border-l-4 border-l-[hsl(199,89%,48%)]">
                 <div className="flex items-center justify-between mb-2">
-                  <Banknote className="w-5 h-5 text-accent" />
+                  <div className="p-2 rounded-lg bg-[hsl(199,89%,48%)]/10">
+                    <Banknote className="w-5 h-5 text-[hsl(199,89%,48%)]" />
+                  </div>
                 </div>
-                <p className="text-2xl font-bold text-accent">{formatCurrency(liveStats.paidAmount, true)}</p>
+                <p className="text-2xl font-bold text-[hsl(199,89%,48%)]">{formatCurrency(liveStats.paidAmount, true)}</p>
                 <p className="text-xs text-muted-foreground">Paid Amount</p>
               </div>
             </div>
 
-            {/* Verification Progress */}
-            <div className="glass-card p-5">
+            {/* Verification Progress with gradient */}
+            <div className="glass-card p-5 bg-gradient-to-r from-[hsl(262,83%,58%)]/5 via-transparent to-[hsl(142,76%,36%)]/5">
               <div className="flex items-center justify-between mb-3">
                 <div>
                   <h3 className="font-semibold text-foreground">Overall Verification Progress</h3>
                   <p className="text-xs text-muted-foreground">Live tracking of bill verification status</p>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-success/10">
                   <TrendingUp className="w-4 h-4 text-success" />
-                  <span className="text-lg font-bold">{verificationRate}%</span>
+                  <span className="text-lg font-bold text-success">{verificationRate}%</span>
                 </div>
               </div>
-              <Progress value={parseFloat(verificationRate)} className="h-3" />
+              <div className="relative h-4 bg-secondary rounded-full overflow-hidden">
+                <div 
+                  className="absolute inset-y-0 left-0 bg-gradient-to-r from-[hsl(262,83%,58%)] via-[hsl(199,89%,48%)] to-[hsl(142,76%,36%)] rounded-full transition-all duration-500"
+                  style={{ width: `${verificationRate}%` }}
+                />
+              </div>
               <div className="flex justify-between mt-3 text-xs text-muted-foreground">
                 <span>Verified: {formatCurrency(liveStats.verifiedAmount, true)}</span>
                 <span>Remaining: {formatCurrency(liveStats.totalAmount - liveStats.verifiedAmount, true)}</span>
@@ -709,26 +732,26 @@ const AnalyticsPage = () => {
                       type="monotone" 
                       dataKey="verified" 
                       name="Verified" 
-                      stroke="hsl(142, 76%, 36%)"
-                      strokeWidth={2}
-                      dot={{ r: 3 }}
-                      activeDot={{ r: 5 }}
+                      stroke={STATUS_COLORS.verified}
+                      strokeWidth={3}
+                      dot={{ r: 4, fill: STATUS_COLORS.verified }}
+                      activeDot={{ r: 6, stroke: STATUS_COLORS.verified, strokeWidth: 2 }}
                     />
                     <Line 
                       type="monotone" 
                       dataKey="pending" 
                       name="Pending" 
-                      stroke="hsl(38, 92%, 50%)"
-                      strokeWidth={2}
-                      dot={{ r: 3 }}
+                      stroke={STATUS_COLORS.pending}
+                      strokeWidth={3}
+                      dot={{ r: 4, fill: STATUS_COLORS.pending }}
                     />
                     <Line 
                       type="monotone" 
                       dataKey="paid" 
                       name="Paid" 
-                      stroke="hsl(173, 58%, 39%)"
-                      strokeWidth={2}
-                      dot={{ r: 3 }}
+                      stroke={STATUS_COLORS.paid}
+                      strokeWidth={3}
+                      dot={{ r: 4, fill: STATUS_COLORS.paid }}
                     />
                   </LineChart>
                 </ResponsiveContainer>
@@ -740,6 +763,12 @@ const AnalyticsPage = () => {
               <div className="h-56">
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart data={monthlyTrends}>
+                    <defs>
+                      <linearGradient id="colorAmount" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="hsl(262, 83%, 58%)" stopOpacity={0.3}/>
+                        <stop offset="95%" stopColor="hsl(262, 83%, 58%)" stopOpacity={0}/>
+                      </linearGradient>
+                    </defs>
                     <CartesianGrid strokeDasharray="3 3" stroke={gridColor} />
                     <XAxis 
                       dataKey="month" 
@@ -758,10 +787,9 @@ const AnalyticsPage = () => {
                       type="monotone" 
                       dataKey="totalAmount" 
                       name="Total Amount" 
-                      stroke="hsl(43, 96%, 56%)"
-                      strokeWidth={2}
-                      fill="hsl(43, 96%, 56%)"
-                      fillOpacity={0.2}
+                      stroke="hsl(262, 83%, 58%)"
+                      strokeWidth={3}
+                      fill="url(#colorAmount)"
                     />
                   </AreaChart>
                 </ResponsiveContainer>
