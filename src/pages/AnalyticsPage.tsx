@@ -1,11 +1,13 @@
+import { useState, useMemo } from 'react';
 import TopBar from '@/components/layout/TopBar';
 import { 
   pendingBillsData, 
   monthlyTrends, 
   categoryBreakdown, 
   countyBreakdown,
-  totalStats 
+  formatCurrency 
 } from '@/data/mockData';
+import { useData } from '@/contexts/DataContext';
 import { 
   BarChart, 
   Bar, 
@@ -21,11 +23,12 @@ import {
   Cell,
   AreaChart,
   Area,
-  Legend,
-  Treemap
+  Legend
 } from 'recharts';
-import { useState } from 'react';
+import { useState as useTabState } from 'react';
 import { cn } from '@/lib/utils';
+import { Download, FileText, TrendingUp, DollarSign, CheckCircle, Clock } from 'lucide-react';
+import { exportBillsToCSV, generateBillsSummaryReport } from '@/lib/exportUtils';
 
 const COLORS = [
   'hsl(222, 47%, 20%)',
@@ -49,18 +52,62 @@ const axisColor = 'hsl(215, 16%, 47%)';
 
 const AnalyticsPage = () => {
   const [activeTab, setActiveTab] = useState<'overview' | 'distribution' | 'trends' | 'geography'>('overview');
+  const { bills, getStats } = useData();
+
+  const stats = getStats();
+
+  // Live stats from actual data
+  const liveStats = useMemo(() => ({
+    totalBills: stats.totalBills,
+    totalAmount: stats.totalAmount,
+    verifiedBills: stats.verifiedBills,
+    verifiedAmount: stats.verifiedAmount,
+    paidBills: stats.paidBills,
+    paidAmount: stats.paidAmount,
+    pendingBills: stats.pendingBills,
+    pendingAmount: stats.pendingAmount,
+    processingBills: stats.processingBills,
+    processingAmount: stats.processingAmount,
+  }), [stats]);
+
+  // Status distribution from live data
+  const statusDistribution = useMemo(() => [
+    { name: 'Verified', value: stats.verifiedBills, amount: stats.verifiedAmount, color: 'hsl(142, 76%, 36%)' },
+    { name: 'Processing', value: stats.processingBills, amount: stats.processingAmount, color: 'hsl(43, 96%, 56%)' },
+    { name: 'Pending', value: stats.pendingBills, amount: stats.pendingAmount, color: 'hsl(38, 92%, 50%)' },
+    { name: 'Paid', value: stats.paidBills, amount: stats.paidAmount, color: 'hsl(173, 58%, 39%)' },
+  ], [stats]);
+
+  // Category breakdown from live data
+  const liveCategoryData = useMemo(() => {
+    const categories: Record<string, { count: number; amount: number }> = {};
+    bills.forEach(bill => {
+      if (!categories[bill.category]) {
+        categories[bill.category] = { count: 0, amount: 0 };
+      }
+      categories[bill.category].count++;
+      categories[bill.category].amount += bill.amount;
+    });
+    return Object.entries(categories).map(([name, data], index) => ({
+      name,
+      bills: data.count,
+      amount: data.amount / 1000000000,
+      fill: COLORS[index % COLORS.length],
+    }));
+  }, [bills]);
 
   const rangeData = pendingBillsData.map((item, index) => ({
     ...item,
     fill: COLORS[index % COLORS.length],
   }));
 
-  const treemapData = categoryBreakdown.map((item, index) => ({
-    name: item.category,
-    size: item.amount,
-    bills: item.bills,
-    fill: COLORS[index % COLORS.length],
-  }));
+  const handleExportCSV = () => {
+    exportBillsToCSV(bills);
+  };
+
+  const handleExportReport = () => {
+    generateBillsSummaryReport(bills);
+  };
 
   return (
     <div className="min-h-screen">
@@ -71,105 +118,152 @@ const AnalyticsPage = () => {
       
       <div className="p-6">
         {/* Tab Navigation */}
-        <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
-          {[
-            { id: 'overview', label: 'Overview' },
-            { id: 'distribution', label: 'Distribution' },
-            { id: 'trends', label: 'Trends' },
-            { id: 'geography', label: 'Geography' },
-          ].map((tab) => (
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex gap-2 overflow-x-auto pb-2">
+            {[
+              { id: 'overview', label: 'Overview' },
+              { id: 'distribution', label: 'Distribution' },
+              { id: 'trends', label: 'Trends' },
+              { id: 'geography', label: 'Geography' },
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id as any)}
+                className={cn(
+                  "px-4 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap",
+                  activeTab === tab.id 
+                    ? 'bg-primary text-primary-foreground' 
+                    : 'bg-muted text-muted-foreground hover:text-foreground'
+                )}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Export Buttons */}
+          <div className="flex gap-2">
             <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id as any)}
-              className={cn(
-                "px-4 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap",
-                activeTab === tab.id 
-                  ? 'bg-primary text-primary-foreground' 
-                  : 'bg-muted text-muted-foreground hover:text-foreground'
-              )}
+              onClick={handleExportCSV}
+              className="flex items-center gap-1.5 px-3 py-2 bg-secondary hover:bg-secondary/80 rounded-md text-sm font-medium transition-colors"
             >
-              {tab.label}
+              <Download className="w-4 h-4" />
+              Export CSV
             </button>
-          ))}
+            <button
+              onClick={handleExportReport}
+              className="flex items-center gap-1.5 px-3 py-2 bg-accent text-accent-foreground rounded-md text-sm font-medium hover:bg-accent/90 transition-colors"
+            >
+              <FileText className="w-4 h-4" />
+              Print Report
+            </button>
+          </div>
         </div>
 
         {activeTab === 'overview' && (
           <div className="space-y-6">
-            {/* Key Metrics */}
+            {/* Key Metrics - Live Data */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="glass-card p-6 text-center">
-                <p className="text-4xl font-display font-bold text-foreground">{totalStats.totalBills.toLocaleString()}</p>
-                <p className="text-muted-foreground mt-1">Total Bills</p>
+              <div className="glass-card p-6">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-primary/10">
+                    <FileText className="w-5 h-5 text-primary" />
+                  </div>
+                  <div>
+                    <p className="text-3xl font-display font-bold text-foreground">{liveStats.totalBills.toLocaleString()}</p>
+                    <p className="text-muted-foreground text-sm">Total Bills</p>
+                  </div>
+                </div>
               </div>
-              <div className="glass-card p-6 text-center">
-                <p className="text-4xl font-display font-bold text-accent">KES {totalStats.totalAmountBillion}B</p>
-                <p className="text-muted-foreground mt-1">Total Value</p>
+              <div className="glass-card p-6">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-accent/10">
+                    <DollarSign className="w-5 h-5 text-accent" />
+                  </div>
+                  <div>
+                    <p className="text-3xl font-display font-bold text-accent">{formatCurrency(liveStats.totalAmount, true)}</p>
+                    <p className="text-muted-foreground text-sm">Total Value</p>
+                  </div>
+                </div>
               </div>
-              <div className="glass-card p-6 text-center">
-                <p className="text-4xl font-display font-bold text-success">{totalStats.eligibleBills.toLocaleString()}</p>
-                <p className="text-muted-foreground mt-1">Eligible (≤2M)</p>
+              <div className="glass-card p-6">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-success/10">
+                    <CheckCircle className="w-5 h-5 text-success" />
+                  </div>
+                  <div>
+                    <p className="text-3xl font-display font-bold text-success">{liveStats.verifiedBills.toLocaleString()}</p>
+                    <p className="text-muted-foreground text-sm">Verified Bills</p>
+                  </div>
+                </div>
               </div>
-              <div className="glass-card p-6 text-center">
-                <p className="text-4xl font-display font-bold text-secondary">KES {totalStats.eligibleAmountBillion}B</p>
-                <p className="text-muted-foreground mt-1">Eligible Value</p>
+              <div className="glass-card p-6">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-warning/10">
+                    <Clock className="w-5 h-5 text-warning" />
+                  </div>
+                  <div>
+                    <p className="text-3xl font-display font-bold text-warning">{liveStats.pendingBills.toLocaleString()}</p>
+                    <p className="text-muted-foreground text-sm">Pending Bills</p>
+                  </div>
+                </div>
               </div>
             </div>
 
-            {/* Main Charts */}
+            {/* Status Distribution - Live */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <div className="glass-card p-6">
-                <h3 className="font-display text-lg font-bold mb-4">Bills by Amount Range</h3>
+                <h3 className="font-display text-lg font-bold mb-4">Status Distribution (Live)</h3>
                 <div className="h-80">
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={rangeData}>
-                      <CartesianGrid strokeDasharray="3 3" stroke={gridColor} />
-                      <XAxis 
-                        dataKey="range" 
-                        stroke={axisColor}
-                        tick={{ fill: axisColor, fontSize: 10 }}
-                        angle={-45}
-                        textAnchor="end"
-                        height={80}
-                      />
-                      <YAxis 
-                        stroke={axisColor}
-                        tick={{ fill: axisColor, fontSize: 12 }}
-                      />
-                      <Tooltip contentStyle={tooltipStyle} />
-                      <Bar dataKey="numberOfBills" name="Number of Bills" radius={[4, 4, 0, 0]}>
-                        {rangeData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={entry.fill} />
+                    <PieChart>
+                      <Pie
+                        data={statusDistribution}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={60}
+                        outerRadius={100}
+                        dataKey="value"
+                        label={({ name, value }) => `${name}: ${value}`}
+                      >
+                        {statusDistribution.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} />
                         ))}
-                      </Bar>
-                    </BarChart>
+                      </Pie>
+                      <Tooltip contentStyle={tooltipStyle} />
+                    </PieChart>
                   </ResponsiveContainer>
+                </div>
+                <div className="flex justify-center gap-4 mt-4">
+                  {statusDistribution.map((item) => (
+                    <div key={item.name} className="text-center">
+                      <div className="flex items-center gap-1.5 justify-center">
+                        <div className="w-3 h-3 rounded-full" style={{ backgroundColor: item.color }} />
+                        <span className="text-xs text-muted-foreground">{item.name}</span>
+                      </div>
+                      <p className="text-sm font-semibold">{formatCurrency(item.amount, true)}</p>
+                    </div>
+                  ))}
                 </div>
               </div>
 
               <div className="glass-card p-6">
-                <h3 className="font-display text-lg font-bold mb-4">Value by Amount Range (KES Billion)</h3>
+                <h3 className="font-display text-lg font-bold mb-4">Category Breakdown (Live)</h3>
                 <div className="h-80">
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={rangeData}>
-                      <CartesianGrid strokeDasharray="3 3" stroke={gridColor} />
-                      <XAxis 
-                        dataKey="range" 
-                        stroke={axisColor}
-                        tick={{ fill: axisColor, fontSize: 10 }}
-                        angle={-45}
-                        textAnchor="end"
-                        height={80}
-                      />
+                    <BarChart data={liveCategoryData} layout="vertical" margin={{ left: 80 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke={gridColor} horizontal vertical={false} />
+                      <XAxis type="number" stroke={axisColor} tick={{ fill: axisColor, fontSize: 11 }} />
                       <YAxis 
-                        stroke={axisColor}
-                        tick={{ fill: axisColor, fontSize: 12 }}
+                        type="category" 
+                        dataKey="name" 
+                        stroke={axisColor} 
+                        tick={{ fill: axisColor, fontSize: 11 }}
+                        width={80}
                       />
-                      <Tooltip
-                        contentStyle={tooltipStyle}
-                        formatter={(value: number) => [`KES ${value}B`]}
-                      />
-                      <Bar dataKey="amountBillion" name="Amount (Billion)" radius={[4, 4, 0, 0]}>
-                        {rangeData.map((entry, index) => (
+                      <Tooltip contentStyle={tooltipStyle} />
+                      <Bar dataKey="bills" name="Bills" radius={[0, 4, 4, 0]}>
+                        {liveCategoryData.map((entry, index) => (
                           <Cell key={`cell-${index}`} fill={entry.fill} />
                         ))}
                       </Bar>
@@ -179,12 +273,12 @@ const AnalyticsPage = () => {
               </div>
             </div>
 
-            {/* Cumulative Chart */}
+            {/* Bills by Amount Range */}
             <div className="glass-card p-6">
-              <h3 className="font-display text-lg font-bold mb-4">Cumulative Distribution</h3>
+              <h3 className="font-display text-lg font-bold mb-4">Bills by Amount Range</h3>
               <div className="h-80">
                 <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={rangeData}>
+                  <BarChart data={rangeData}>
                     <CartesianGrid strokeDasharray="3 3" stroke={gridColor} />
                     <XAxis 
                       dataKey="range" 
@@ -197,28 +291,14 @@ const AnalyticsPage = () => {
                     <YAxis 
                       stroke={axisColor}
                       tick={{ fill: axisColor, fontSize: 12 }}
-                      domain={[0, 100]}
-                      tickFormatter={(v) => `${v}%`}
                     />
                     <Tooltip contentStyle={tooltipStyle} />
-                    <Legend />
-                    <Area 
-                      type="monotone" 
-                      dataKey="percentByNumber" 
-                      name="% by Number" 
-                      stroke="hsl(222, 47%, 20%)"
-                      fill="hsl(222, 47%, 20%)"
-                      fillOpacity={0.2}
-                    />
-                    <Line 
-                      type="monotone" 
-                      dataKey="percentByValue" 
-                      name="% by Value" 
-                      stroke="hsl(43, 96%, 56%)"
-                      strokeWidth={2}
-                      dot
-                    />
-                  </AreaChart>
+                    <Bar dataKey="numberOfBills" name="Number of Bills" radius={[4, 4, 0, 0]}>
+                      {rangeData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.fill} />
+                      ))}
+                    </Bar>
+                  </BarChart>
                 </ResponsiveContainer>
               </div>
             </div>
@@ -289,8 +369,15 @@ const AnalyticsPage = () => {
 
             {/* Data Table */}
             <div className="glass-card overflow-hidden">
-              <div className="p-4 border-b border-border">
+              <div className="p-4 border-b border-border flex items-center justify-between">
                 <h3 className="font-semibold">Complete Range Analysis</h3>
+                <button
+                  onClick={handleExportCSV}
+                  className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs bg-secondary hover:bg-secondary/80 rounded-md transition-colors"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  Export
+                </button>
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
@@ -316,7 +403,7 @@ const AnalyticsPage = () => {
                       >
                         <td className="px-4 py-3 font-medium">
                           {row.range}
-                          {index < 3 && <span className="ml-2 text-xs text-success">★</span>}
+                          {index < 3 && <span className="ml-2 text-xs text-success">★ Phase 1</span>}
                         </td>
                         <td className="px-4 py-3 text-right font-mono">{row.numberOfBills.toLocaleString()}</td>
                         <td className="px-4 py-3 text-right font-mono text-accent">{row.amountBillion.toFixed(2)}</td>
@@ -439,7 +526,11 @@ const AnalyticsPage = () => {
                         width={80}
                       />
                       <Tooltip contentStyle={tooltipStyle} />
-                      <Bar dataKey="bills" name="Bills" fill="hsl(222, 47%, 20%)" radius={[0, 4, 4, 0]} />
+                      <Bar dataKey="bills" name="Number of Bills" radius={[0, 4, 4, 0]}>
+                        {countyBreakdown.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        ))}
+                      </Bar>
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
@@ -449,36 +540,31 @@ const AnalyticsPage = () => {
                 <h3 className="font-display text-lg font-bold mb-4">Value by County (KES Billion)</h3>
                 <div className="h-80">
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={countyBreakdown} layout="vertical" margin={{ left: 80 }}>
-                      <CartesianGrid strokeDasharray="3 3" stroke={gridColor} />
-                      <XAxis 
-                        type="number"
-                        stroke={axisColor}
-                        tick={{ fill: axisColor }}
-                        tickFormatter={(v) => `${v}B`}
-                      />
-                      <YAxis 
-                        type="category"
-                        dataKey="county"
-                        stroke={axisColor}
-                        tick={{ fill: axisColor, fontSize: 12 }}
-                        width={80}
-                      />
-                      <Tooltip
-                        contentStyle={tooltipStyle}
-                        formatter={(value: number) => [`KES ${value}B`]}
-                      />
-                      <Bar dataKey="amount" name="Amount" fill="hsl(43, 96%, 56%)" radius={[0, 4, 4, 0]} />
-                    </BarChart>
+                    <PieChart>
+                      <Pie
+                        data={countyBreakdown}
+                        cx="50%"
+                        cy="50%"
+                        outerRadius={100}
+                        dataKey="amount"
+                        nameKey="county"
+                        label={({ county, amount }) => `${county}: ${amount}B`}
+                      >
+                        {countyBreakdown.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        ))}
+                      </Pie>
+                      <Tooltip contentStyle={tooltipStyle} />
+                    </PieChart>
                   </ResponsiveContainer>
                 </div>
               </div>
             </div>
 
-            {/* County Summary Table */}
+            {/* County Table */}
             <div className="glass-card overflow-hidden">
               <div className="p-4 border-b border-border">
-                <h3 className="font-semibold">County Distribution Summary</h3>
+                <h3 className="font-semibold">County Distribution</h3>
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
@@ -486,18 +572,18 @@ const AnalyticsPage = () => {
                     <tr className="border-b border-border">
                       <th className="px-4 py-3 text-left bg-muted/30">County</th>
                       <th className="px-4 py-3 text-right bg-muted/30">Bills</th>
-                      <th className="px-4 py-3 text-right bg-muted/30">Amount (KES B)</th>
+                      <th className="px-4 py-3 text-right bg-muted/30">Amount (B)</th>
                       <th className="px-4 py-3 text-right bg-muted/30">% of Total</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {countyBreakdown.map((county) => (
-                      <tr key={county.county} className="border-b border-border/50">
-                        <td className="px-4 py-3 font-medium">{county.county}</td>
-                        <td className="px-4 py-3 text-right font-mono">{county.bills.toLocaleString()}</td>
-                        <td className="px-4 py-3 text-right font-mono text-accent">{county.amount.toFixed(1)}</td>
+                    {countyBreakdown.map((row) => (
+                      <tr key={row.county} className="border-b border-border/50">
+                        <td className="px-4 py-3 font-medium">{row.county}</td>
+                        <td className="px-4 py-3 text-right font-mono">{row.bills.toLocaleString()}</td>
+                        <td className="px-4 py-3 text-right font-mono text-accent">KES {row.amount}B</td>
                         <td className="px-4 py-3 text-right font-mono">
-                          {((county.amount / totalStats.totalAmountBillion) * 100).toFixed(1)}%
+                          {((row.bills / 28190) * 100).toFixed(1)}%
                         </td>
                       </tr>
                     ))}

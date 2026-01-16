@@ -5,9 +5,11 @@ import DataTable from '@/components/common/DataTable';
 import { mdaData, formatCurrency, getStatusColor, Bill } from '@/data/mockData';
 import { useFilters } from '@/contexts/FilterContext';
 import { useData } from '@/contexts/DataContext';
-import { CheckCircle, Clock, Loader2, XCircle, DollarSign, Eye, Download, X, FileText, Check, Ban, CreditCard, ArrowRight, RefreshCw } from 'lucide-react';
+import { CheckCircle, Clock, Loader2, XCircle, DollarSign, Eye, Download, X, FileText, Check, Ban, CreditCard, ArrowRight, RefreshCw, Upload } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+import { exportBillsToCSV, generateBillsSummaryReport } from '@/lib/exportUtils';
+import { DocumentModal } from '@/components/common/DocumentUpload';
 
 const statusIcons = {
   verified: CheckCircle,
