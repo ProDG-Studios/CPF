@@ -1,5 +1,6 @@
 import TopBar from '@/components/layout/TopBar';
-import { timelineEvents, transactionSteps, getStatusColor } from '@/data/mockData';
+import { getStatusColor } from '@/data/mockData';
+import { useData } from '@/contexts/DataContext';
 import { 
   Calendar, 
   DollarSign, 
@@ -7,10 +8,12 @@ import {
   FileText,
   CheckCircle,
   Clock,
-  ArrowRight,
-  Circle
+  Plus,
+  ArrowRight
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useState } from 'react';
+import { toast } from 'sonner';
 
 const typeIcons = {
   milestone: Calendar,
@@ -27,8 +30,25 @@ const typeColors = {
 };
 
 const TimelinePage = () => {
+  const { timelineEvents, transactionSteps, activityLog } = useData();
+  const [showAddEvent, setShowAddEvent] = useState(false);
+
   const completedEvents = timelineEvents.filter(e => e.status === 'completed');
   const upcomingEvents = timelineEvents.filter(e => e.status !== 'completed');
+  const completedSteps = transactionSteps.filter(s => s.status === 'completed').length;
+
+  // Combine timeline events with recent activity
+  const recentActivities = activityLog.slice(0, 5).map(activity => ({
+    id: activity.id,
+    date: activity.timestamp.toISOString().split('T')[0],
+    title: activity.title,
+    description: activity.description,
+    type: activity.type.includes('payment') ? 'payment' as const : 
+          activity.type.includes('verified') ? 'verification' as const : 
+          'document' as const,
+    amount: activity.amount,
+    status: 'completed' as const,
+  }));
 
   return (
     <div className="min-h-screen">
@@ -49,17 +69,21 @@ const TimelinePage = () => {
                 Phase 1: Fast-track bills ≤ KES 2M
               </p>
             </div>
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-6">
               <div className="text-center">
                 <p className="text-2xl font-bold text-success">{completedEvents.length}</p>
-                <p className="text-xs text-muted-foreground">Completed</p>
+                <p className="text-xs text-muted-foreground">Events Complete</p>
               </div>
               <div className="text-center">
-                <p className="text-2xl font-bold text-primary">1</p>
-                <p className="text-xs text-muted-foreground">In Progress</p>
+                <p className="text-2xl font-bold text-primary">{completedSteps}</p>
+                <p className="text-xs text-muted-foreground">Steps Done</p>
               </div>
               <div className="text-center">
-                <p className="text-2xl font-bold text-muted-foreground">{upcomingEvents.length - 1}</p>
+                <p className="text-2xl font-bold text-accent">{activityLog.length}</p>
+                <p className="text-xs text-muted-foreground">Actions Logged</p>
+              </div>
+              <div className="text-center">
+                <p className="text-2xl font-bold text-muted-foreground">{upcomingEvents.length}</p>
                 <p className="text-xs text-muted-foreground">Upcoming</p>
               </div>
             </div>
@@ -69,7 +93,7 @@ const TimelinePage = () => {
           <div className="relative">
             <div className="h-2 bg-muted rounded-full">
               <div 
-                className="h-full bg-gradient-to-r from-success via-primary to-accent rounded-full transition-all"
+                className="h-full bg-success rounded-full transition-all"
                 style={{ width: `${(completedEvents.length / timelineEvents.length) * 100}%` }}
               />
             </div>
@@ -94,14 +118,58 @@ const TimelinePage = () => {
           {/* Main Timeline */}
           <div className="lg:col-span-2">
             <div className="glass-card p-6">
-              <h3 className="font-display text-lg font-bold mb-6">Events Timeline</h3>
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="font-display text-lg font-bold">Events Timeline</h3>
+              </div>
               
               <div className="relative">
                 {/* Vertical line */}
                 <div className="absolute left-6 top-0 bottom-0 w-0.5 bg-border" />
 
                 <div className="space-y-6">
-                  {timelineEvents.map((event, index) => {
+                  {/* Recent Activity Events First */}
+                  {recentActivities.length > 0 && (
+                    <div className="mb-4">
+                      <p className="text-xs font-medium text-muted-foreground mb-3 pl-14">RECENT ACTIVITY</p>
+                      {recentActivities.map((activity) => {
+                        const Icon = typeIcons[activity.type] || FileText;
+                        return (
+                          <div 
+                            key={activity.id}
+                            className="relative flex gap-4 pl-2 mb-4"
+                          >
+                            <div className="relative z-10 w-10 h-10 rounded-full flex items-center justify-center shrink-0 bg-success text-success-foreground">
+                              <CheckCircle className="w-5 h-5" />
+                            </div>
+                            <div className="flex-1 p-4 rounded-lg bg-success/5 border border-success/20">
+                              <div className="flex items-start justify-between gap-4 mb-2">
+                                <div>
+                                  <div className="flex items-center gap-2 mb-1">
+                                    <h4 className="font-semibold text-foreground">{activity.title}</h4>
+                                    <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-success/20 text-success">
+                                      Just now
+                                    </span>
+                                  </div>
+                                  <p className="text-sm text-muted-foreground">{activity.description}</p>
+                                </div>
+                                {activity.amount && (
+                                  <div className="text-right shrink-0">
+                                    <p className="font-bold text-accent">
+                                      KES {(activity.amount / 1000000).toFixed(1)}M
+                                    </p>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+
+                  <p className="text-xs font-medium text-muted-foreground mb-3 pl-14">SCHEDULED EVENTS</p>
+
+                  {timelineEvents.map((event) => {
                     const Icon = typeIcons[event.type];
                     const isActive = event.status === 'in-progress';
                     
@@ -214,6 +282,13 @@ const TimelinePage = () => {
                   </div>
                 ))}
               </div>
+
+              <button
+                onClick={() => window.location.href = '/workflow'}
+                className="w-full mt-4 px-4 py-2 bg-secondary text-foreground rounded-md text-sm font-medium hover:bg-secondary/80 transition-colors flex items-center justify-center gap-2"
+              >
+                Manage Workflow <ArrowRight className="w-4 h-4" />
+              </button>
             </div>
 
             {/* Legend */}
@@ -259,6 +334,21 @@ const TimelinePage = () => {
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-muted-foreground">Phase 1 Complete</span>
                   <span className="text-sm font-medium">Mar 31, 2024</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Activity Count */}
+            <div className="glass-card p-6">
+              <h3 className="font-display text-lg font-bold mb-4">Session Stats</h3>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground">Actions This Session</span>
+                  <span className="text-lg font-bold text-accent">{activityLog.length}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground">Steps Completed</span>
+                  <span className="text-lg font-bold text-success">{completedSteps}/11</span>
                 </div>
               </div>
             </div>
