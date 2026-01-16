@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import TopBar from '@/components/layout/TopBar';
-import { paymentSchedules, formatCurrency, PaymentSchedule } from '@/data/mockData';
+import { formatCurrency, PaymentSchedule } from '@/data/mockData';
+import { useData } from '@/contexts/DataContext';
 import { 
   CheckCircle, 
   Clock, 
@@ -8,12 +9,15 @@ import {
   Building,
   TrendingUp,
   ChevronRight,
-  FileText
+  FileText,
+  CreditCard
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Progress } from '@/components/ui/progress';
+import { toast } from 'sonner';
 
 const PaymentSchedulePage = () => {
+  const { paymentSchedules, makePayment } = useData();
   const [selectedSchedule, setSelectedSchedule] = useState<PaymentSchedule | null>(paymentSchedules[0]);
 
   const totalCommitted = paymentSchedules.reduce((sum, s) => sum + s.totalCommitted, 0);
@@ -39,6 +43,39 @@ const PaymentSchedulePage = () => {
         return 'bg-warning/10 border-warning/30 text-warning';
       default:
         return 'bg-muted border-border text-muted-foreground';
+    }
+  };
+
+  const handleMakePayment = (scheduleId: string, quarterIndex: number) => {
+    const schedule = paymentSchedules.find(s => s.id === scheduleId);
+    if (!schedule) return;
+
+    const payment = schedule.quarterlyPayments[quarterIndex];
+    if (payment.status === 'paid') {
+      toast.info('This payment has already been made');
+      return;
+    }
+    if (payment.status === 'upcoming') {
+      toast.warning('This payment is not yet due');
+      return;
+    }
+
+    makePayment(scheduleId, quarterIndex);
+    toast.success(`${payment.quarter} payment of ${formatCurrency(payment.amount, true)} recorded`);
+    
+    // Update selected schedule view
+    if (selectedSchedule?.id === scheduleId) {
+      const updatedPayments = [...selectedSchedule.quarterlyPayments];
+      updatedPayments[quarterIndex] = { 
+        ...updatedPayments[quarterIndex], 
+        status: 'paid' as const, 
+        paidDate: new Date().toISOString().split('T')[0] 
+      };
+      setSelectedSchedule({
+        ...selectedSchedule,
+        quarterlyPayments: updatedPayments,
+        totalPaid: selectedSchedule.totalPaid + payment.amount,
+      });
     }
   };
 
@@ -124,17 +161,23 @@ const PaymentSchedulePage = () => {
               <div className="divide-y divide-border">
                 {paymentSchedules.map((schedule) => {
                   const progress = (schedule.totalPaid / schedule.totalCommitted) * 100;
+                  const hasDuePayments = schedule.quarterlyPayments.some(p => p.status === 'due');
                   return (
                     <div
                       key={schedule.id}
                       onClick={() => setSelectedSchedule(schedule)}
                       className={cn(
-                        "p-4 cursor-pointer transition-all hover:bg-muted/30",
+                        "p-4 cursor-pointer transition-all hover:bg-muted/30 relative",
                         selectedSchedule?.id === schedule.id && "bg-primary/10 border-l-4 border-primary"
                       )}
                     >
+                      {hasDuePayments && (
+                        <div className="absolute top-2 right-2">
+                          <span className="px-2 py-0.5 bg-warning/20 text-warning text-xs rounded-full font-medium">Due</span>
+                        </div>
+                      )}
                       <div className="flex items-center justify-between mb-2">
-                        <p className="font-medium text-foreground truncate">{schedule.mdaName}</p>
+                        <p className="font-medium text-foreground truncate pr-8">{schedule.mdaName}</p>
                         <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0" />
                       </div>
                       <div className="space-y-2">
@@ -228,6 +271,16 @@ const PaymentSchedulePage = () => {
                             )}
                           </span>
                         </div>
+
+                        {payment.status === 'due' && (
+                          <button
+                            onClick={() => handleMakePayment(selectedSchedule.id, index)}
+                            className="px-3 py-1.5 bg-success text-success-foreground rounded-md text-sm font-medium hover:bg-success/90 transition-colors flex items-center gap-1"
+                          >
+                            <CreditCard className="w-4 h-4" />
+                            Record Payment
+                          </button>
+                        )}
                       </div>
                     ))}
                   </div>

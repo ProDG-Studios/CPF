@@ -2,8 +2,9 @@ import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import TopBar from '@/components/layout/TopBar';
 import DataTable from '@/components/common/DataTable';
-import { supplierData, Supplier, formatCurrency, getStatusColor } from '@/data/mockData';
+import { Supplier, formatCurrency, getStatusColor } from '@/data/mockData';
 import { useFilters } from '@/contexts/FilterContext';
+import { useData } from '@/contexts/DataContext';
 import { 
   Users, 
   CheckCircle, 
@@ -11,20 +12,25 @@ import {
   Search,
   ArrowRight,
   Mail,
-  MapPin
+  MapPin,
+  Check,
+  Ban,
+  Eye
 } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
 
 const SuppliersPage = () => {
   const navigate = useNavigate();
   const { toggleArrayFilter } = useFilters();
+  const { suppliers, verifySupplier, suspendSupplier, bills } = useData();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [selectedSupplier, setSelectedSupplier] = useState<Supplier | null>(null);
 
   const filteredSuppliers = useMemo(() => {
-    return supplierData.filter(supplier => {
+    return suppliers.filter(supplier => {
       const matchesSearch = 
         supplier.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         supplier.registrationNo.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -32,25 +38,53 @@ const SuppliersPage = () => {
       const matchesStatus = statusFilter === 'all' || supplier.status === statusFilter;
       return matchesSearch && matchesStatus;
     });
-  }, [searchTerm, statusFilter]);
+  }, [suppliers, searchTerm, statusFilter]);
 
   const statusData = [
-    { name: 'Verified', value: supplierData.filter(s => s.status === 'verified').length, color: 'hsl(142, 76%, 36%)' },
-    { name: 'Active', value: supplierData.filter(s => s.status === 'active').length, color: 'hsl(217, 91%, 45%)' },
-    { name: 'Suspended', value: supplierData.filter(s => s.status === 'suspended').length, color: 'hsl(0, 72%, 51%)' },
+    { name: 'Verified', value: suppliers.filter(s => s.status === 'verified').length, color: 'hsl(142, 76%, 36%)' },
+    { name: 'Active', value: suppliers.filter(s => s.status === 'active').length, color: 'hsl(174, 72%, 45%)' },
+    { name: 'Suspended', value: suppliers.filter(s => s.status === 'suspended').length, color: 'hsl(0, 72%, 51%)' },
   ];
 
   const categoryBreakdown = useMemo(() => {
     const categories: Record<string, number> = {};
-    supplierData.forEach(s => {
+    suppliers.forEach(s => {
       categories[s.category] = (categories[s.category] || 0) + 1;
     });
     return Object.entries(categories).map(([name, count]) => ({ name, count }));
-  }, []);
+  }, [suppliers]);
 
   const handleViewBills = (supplierId: string) => {
     toggleArrayFilter('supplierIds', supplierId);
     navigate('/bills');
+  };
+
+  const handleVerifySupplier = (supplier: Supplier) => {
+    verifySupplier(supplier.id);
+    toast.success(`${supplier.name} has been verified`);
+    if (selectedSupplier?.id === supplier.id) {
+      setSelectedSupplier({ ...supplier, status: 'verified' });
+    }
+  };
+
+  const handleSuspendSupplier = (supplier: Supplier) => {
+    suspendSupplier(supplier.id);
+    toast.warning(`${supplier.name} has been suspended`);
+    if (selectedSupplier?.id === supplier.id) {
+      setSelectedSupplier({ ...supplier, status: 'suspended' });
+    }
+  };
+
+  // Calculate supplier bill stats
+  const getSupplierBillStats = (supplierId: string) => {
+    const supplierBills = bills.filter(b => b.supplierId === supplierId);
+    return {
+      total: supplierBills.length,
+      verified: supplierBills.filter(b => b.status === 'verified').length,
+      pending: supplierBills.filter(b => b.status === 'pending').length,
+      paid: supplierBills.filter(b => b.status === 'paid').length,
+      totalAmount: supplierBills.reduce((sum, b) => sum + b.amount, 0),
+    };
   };
 
   const columns = [
@@ -94,9 +128,17 @@ const SuppliersPage = () => {
       header: 'Bills',
       sortable: true,
       align: 'right' as const,
-      render: (supplier: Supplier) => (
-        <span className="font-medium">{supplier.totalBills}</span>
-      ),
+      render: (supplier: Supplier) => {
+        const stats = getSupplierBillStats(supplier.id);
+        return (
+          <div className="text-right">
+            <span className="font-medium">{stats.total || supplier.totalBills}</span>
+            {stats.pending > 0 && (
+              <span className="text-xs text-warning ml-1">({stats.pending} pending)</span>
+            )}
+          </div>
+        );
+      },
     },
     {
       key: 'totalAmount',
@@ -129,15 +171,42 @@ const SuppliersPage = () => {
       key: 'actions',
       header: '',
       render: (supplier: Supplier) => (
-        <button 
-          onClick={(e) => {
-            e.stopPropagation();
-            handleViewBills(supplier.id);
-          }}
-          className="flex items-center gap-1 text-sm text-primary hover:text-primary/80"
-        >
-          View Bills <ArrowRight className="w-4 h-4" />
-        </button>
+        <div className="flex items-center gap-1">
+          {supplier.status === 'active' && (
+            <button 
+              onClick={(e) => {
+                e.stopPropagation();
+                handleVerifySupplier(supplier);
+              }}
+              className="p-1.5 hover:bg-success/10 rounded-md transition-colors"
+              title="Verify Supplier"
+            >
+              <Check className="w-4 h-4 text-success" />
+            </button>
+          )}
+          {supplier.status !== 'suspended' && (
+            <button 
+              onClick={(e) => {
+                e.stopPropagation();
+                handleSuspendSupplier(supplier);
+              }}
+              className="p-1.5 hover:bg-destructive/10 rounded-md transition-colors"
+              title="Suspend Supplier"
+            >
+              <Ban className="w-4 h-4 text-destructive" />
+            </button>
+          )}
+          <button 
+            onClick={(e) => {
+              e.stopPropagation();
+              handleViewBills(supplier.id);
+            }}
+            className="flex items-center gap-1 text-sm text-primary hover:text-primary/80 p-1.5"
+            title="View Bills"
+          >
+            <Eye className="w-4 h-4" />
+          </button>
+        </div>
       ),
     },
   ];
@@ -182,7 +251,10 @@ const SuppliersPage = () => {
                   <button
                     key={item.name}
                     onClick={() => setStatusFilter(item.name.toLowerCase())}
-                    className="flex items-center justify-between w-full p-2 rounded-lg hover:bg-muted/50 transition-colors"
+                    className={cn(
+                      "flex items-center justify-between w-full p-2 rounded-lg transition-colors",
+                      statusFilter === item.name.toLowerCase() ? "bg-secondary" : "hover:bg-muted/50"
+                    )}
                   >
                     <div className="flex items-center gap-2">
                       <div className="w-3 h-3 rounded-full" style={{ backgroundColor: item.color }} />
@@ -216,7 +288,7 @@ const SuppliersPage = () => {
               <div className="space-y-4">
                 <div>
                   <p className="text-sm text-muted-foreground">Total Suppliers</p>
-                  <p className="text-2xl font-bold">{supplierData.length}</p>
+                  <p className="text-2xl font-bold">{suppliers.length}</p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Total Outstanding</p>
@@ -225,7 +297,7 @@ const SuppliersPage = () => {
                 <div>
                   <p className="text-sm text-muted-foreground">Verified Rate</p>
                   <p className="text-2xl font-bold text-success">
-                    {((statusData[0].value / supplierData.length) * 100).toFixed(0)}%
+                    {((statusData[0].value / suppliers.length) * 100).toFixed(0)}%
                   </p>
                 </div>
               </div>
@@ -275,7 +347,7 @@ const SuppliersPage = () => {
 
               <div className="p-4 border-t border-border bg-muted/20">
                 <p className="text-sm text-muted-foreground text-center">
-                  Showing {filteredSuppliers.length} of {supplierData.length} suppliers
+                  Showing {filteredSuppliers.length} of {suppliers.length} suppliers
                 </p>
               </div>
             </div>
@@ -294,14 +366,22 @@ const SuppliersPage = () => {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="p-6 border-b border-border">
-              <div className="flex items-center gap-4">
-                <div className="w-14 h-14 rounded-xl bg-secondary/20 flex items-center justify-center">
-                  <Users className="w-7 h-7 text-secondary-foreground" />
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <div className="w-14 h-14 rounded-xl bg-secondary/20 flex items-center justify-center">
+                    <Users className="w-7 h-7 text-secondary-foreground" />
+                  </div>
+                  <div>
+                    <h2 className="font-display text-xl font-bold">{selectedSupplier.name}</h2>
+                    <p className="text-sm text-muted-foreground">{selectedSupplier.registrationNo}</p>
+                  </div>
                 </div>
-                <div>
-                  <h2 className="font-display text-xl font-bold">{selectedSupplier.name}</h2>
-                  <p className="text-sm text-muted-foreground">{selectedSupplier.registrationNo}</p>
-                </div>
+                <span className={cn(
+                  "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium",
+                  getStatusColor(selectedSupplier.status)
+                )}>
+                  {selectedSupplier.status.charAt(0).toUpperCase() + selectedSupplier.status.slice(1)}
+                </span>
               </div>
             </div>
             
@@ -347,12 +427,33 @@ const SuppliersPage = () => {
                 </a>
               </div>
 
-              <button
-                onClick={() => handleViewBills(selectedSupplier.id)}
-                className="w-full px-4 py-2 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 transition-colors flex items-center justify-center gap-2"
-              >
-                View All Bills <ArrowRight className="w-4 h-4" />
-              </button>
+              {/* Action Buttons */}
+              <div className="flex gap-2">
+                {selectedSupplier.status === 'active' && (
+                  <button
+                    onClick={() => handleVerifySupplier(selectedSupplier)}
+                    className="flex-1 px-4 py-2 bg-success text-success-foreground rounded-lg font-medium hover:bg-success/90 transition-colors flex items-center justify-center gap-2"
+                  >
+                    <Check className="w-4 h-4" />
+                    Verify Supplier
+                  </button>
+                )}
+                {selectedSupplier.status !== 'suspended' && (
+                  <button
+                    onClick={() => handleSuspendSupplier(selectedSupplier)}
+                    className="px-4 py-2 bg-destructive/10 text-destructive rounded-lg font-medium hover:bg-destructive/20 transition-colors flex items-center justify-center gap-2"
+                  >
+                    <Ban className="w-4 h-4" />
+                    Suspend
+                  </button>
+                )}
+                <button
+                  onClick={() => handleViewBills(selectedSupplier.id)}
+                  className="flex-1 px-4 py-2 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 transition-colors flex items-center justify-center gap-2"
+                >
+                  View Bills <ArrowRight className="w-4 h-4" />
+                </button>
+              </div>
             </div>
           </div>
         </div>
