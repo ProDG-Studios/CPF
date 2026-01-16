@@ -5,10 +5,10 @@ import DataTable from '@/components/common/DataTable';
 import { MDA, formatCurrency } from '@/data/mockData';
 import { useFilters } from '@/contexts/FilterContext';
 import { useData } from '@/contexts/DataContext';
-import { Building2, Search, ArrowRight, Download, Eye, FileText, CheckCircle } from 'lucide-react';
+import { Building2, Search, ArrowRight, Download, Eye, FileText, CheckCircle, Printer, TrendingUp } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { cn } from '@/lib/utils';
-import { exportMDAsToCSV } from '@/lib/exportUtils';
+import { generateCSV, generatePrintableReport } from '@/lib/exportUtils';
 import { DocumentModal } from '@/components/common/DocumentUpload';
 import { Progress } from '@/components/ui/progress';
 
@@ -22,15 +22,6 @@ const MDAsPage = () => {
   const [showDocModal, setShowDocModal] = useState(false);
   const [docMDAId, setDocMDAId] = useState<string>('');
 
-  const filteredMDAs = useMemo(() => {
-    return mdas.filter(mda => {
-      const matchesSearch = mda.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        mda.shortName.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesCategory = categoryFilter === 'all' || mda.category === categoryFilter;
-      return matchesSearch && matchesCategory;
-    });
-  }, [mdas, searchTerm, categoryFilter]);
-
   // Calculate live MDA stats from bills
   const getMDAStats = (mdaId: string) => {
     const mdaBills = bills.filter(b => b.mdaId === mdaId);
@@ -40,30 +31,53 @@ const MDAsPage = () => {
       verifiedBills: mdaBills.filter(b => b.status === 'verified').length,
       verifiedAmount: mdaBills.filter(b => b.status === 'verified').reduce((sum, b) => sum + b.amount, 0),
       pendingBills: mdaBills.filter(b => b.status === 'pending').length,
+      pendingAmount: mdaBills.filter(b => b.status === 'pending').reduce((sum, b) => sum + b.amount, 0),
       paidBills: mdaBills.filter(b => b.status === 'paid').length,
       paidAmount: mdaBills.filter(b => b.status === 'paid').reduce((sum, b) => sum + b.amount, 0),
+      processingBills: mdaBills.filter(b => b.status === 'processing').length,
+      processingAmount: mdaBills.filter(b => b.status === 'processing').reduce((sum, b) => sum + b.amount, 0),
     };
   };
+
+  // Enrich MDAs with live stats
+  const enrichedMDAs = useMemo(() => {
+    return mdas.map(mda => ({
+      ...mda,
+      ...getMDAStats(mda.id),
+    }));
+  }, [mdas, bills]);
+
+  const filteredMDAs = useMemo(() => {
+    return enrichedMDAs.filter(mda => {
+      const matchesSearch = mda.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        mda.shortName.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesCategory = categoryFilter === 'all' || mda.category === categoryFilter;
+      return matchesSearch && matchesCategory;
+    });
+  }, [enrichedMDAs, searchTerm, categoryFilter]);
 
   // Get payment schedule for MDA
   const getMDAPaymentSchedule = (mdaId: string) => {
     return paymentSchedules.find(ps => ps.mdaId === mdaId);
   };
 
-  const chartData = [...mdas]
-    .sort((a, b) => b.totalAmount - a.totalAmount)
-    .slice(0, 8)
-    .map(mda => ({
-      name: mda.shortName,
-      verified: mda.verifiedAmount / 1000000000,
-      pending: mda.pendingAmount / 1000000000,
-    }));
+  // Chart data using live stats
+  const chartData = useMemo(() => {
+    return [...enrichedMDAs]
+      .sort((a, b) => b.totalAmount - a.totalAmount)
+      .slice(0, 8)
+      .map(mda => ({
+        name: mda.shortName,
+        verified: (mda.verifiedAmount + mda.paidAmount) / 1000000000,
+        pending: mda.pendingAmount / 1000000000,
+      }));
+  }, [enrichedMDAs]);
 
-  const categoryData = [
+  const categoryData = useMemo(() => [
     { name: 'Ministries', value: mdas.filter(m => m.category === 'ministry').length, color: 'hsl(220, 25%, 12%)' },
     { name: 'Agencies', value: mdas.filter(m => m.category === 'agency').length, color: 'hsl(174, 72%, 45%)' },
     { name: 'Counties', value: mdas.filter(m => m.category === 'county').length, color: 'hsl(142, 76%, 36%)' },
-  ];
+  ], [mdas]);
 
   const handleViewBills = (mdaId: string) => {
     toggleArrayFilter('mdaIds', mdaId);
@@ -74,8 +88,80 @@ const MDAsPage = () => {
     navigate('/payment-schedule');
   };
 
-  const handleExport = () => {
-    exportMDAsToCSV(filteredMDAs);
+  const handleExportCSV = () => {
+    generateCSV(
+      filteredMDAs.map(m => ({
+        'Short Name': m.shortName,
+        'Full Name': m.name,
+        'Category': m.category,
+        'Total Bills': m.totalBills,
+        'Total Amount': m.totalAmount,
+        'Verified Amount': m.verifiedAmount,
+        'Paid Amount': m.paidAmount,
+        'Pending Amount': m.pendingAmount,
+        'Verified %': ((m.verifiedAmount / m.totalAmount) * 100).toFixed(1) + '%',
+      })),
+      'mdas_export'
+    );
+  };
+
+  const handlePrintReport = () => {
+    const totalAmount = filteredMDAs.reduce((sum, m) => sum + m.totalAmount, 0);
+    const totalVerified = filteredMDAs.reduce((sum, m) => sum + m.verifiedAmount, 0);
+    const totalPaid = filteredMDAs.reduce((sum, m) => sum + m.paidAmount, 0);
+    
+    const content = `
+      <div style="margin-bottom: 24px;">
+        <h2 style="margin-bottom: 16px; color: #333;">Summary Statistics</h2>
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;">
+          <div style="padding: 16px; background: #f9fafb; border-radius: 8px;">
+            <p style="font-size: 24px; font-weight: bold; margin: 0;">${filteredMDAs.length}</p>
+            <p style="color: #666; margin: 4px 0 0;">Total MDAs</p>
+          </div>
+          <div style="padding: 16px; background: #f9fafb; border-radius: 8px;">
+            <p style="font-size: 24px; font-weight: bold; margin: 0;">${formatCurrency(totalAmount, true)}</p>
+            <p style="color: #666; margin: 4px 0 0;">Total Value</p>
+          </div>
+          <div style="padding: 16px; background: #f9fafb; border-radius: 8px;">
+            <p style="font-size: 24px; font-weight: bold; color: #22c55e; margin: 0;">${formatCurrency(totalVerified, true)}</p>
+            <p style="color: #666; margin: 4px 0 0;">Verified</p>
+          </div>
+          <div style="padding: 16px; background: #f9fafb; border-radius: 8px;">
+            <p style="font-size: 24px; font-weight: bold; color: #3b82f6; margin: 0;">${formatCurrency(totalPaid, true)}</p>
+            <p style="color: #666; margin: 4px 0 0;">Paid</p>
+          </div>
+        </div>
+      </div>
+      <table style="width: 100%; border-collapse: collapse;">
+        <thead>
+          <tr style="background: #f9fafb;">
+            <th style="padding: 12px; text-align: left; border-bottom: 2px solid #e5e7eb;">MDA</th>
+            <th style="padding: 12px; text-align: left; border-bottom: 2px solid #e5e7eb;">Category</th>
+            <th style="padding: 12px; text-align: right; border-bottom: 2px solid #e5e7eb;">Bills</th>
+            <th style="padding: 12px; text-align: right; border-bottom: 2px solid #e5e7eb;">Total Value</th>
+            <th style="padding: 12px; text-align: right; border-bottom: 2px solid #e5e7eb;">Verified</th>
+            <th style="padding: 12px; text-align: right; border-bottom: 2px solid #e5e7eb;">Progress</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${filteredMDAs.slice(0, 25).map(m => `
+            <tr>
+              <td style="padding: 12px; border-bottom: 1px solid #e5e7eb;">
+                <strong>${m.shortName}</strong><br/>
+                <span style="font-size: 12px; color: #666;">${m.name}</span>
+              </td>
+              <td style="padding: 12px; border-bottom: 1px solid #e5e7eb; text-transform: capitalize;">${m.category}</td>
+              <td style="padding: 12px; border-bottom: 1px solid #e5e7eb; text-align: right;">${m.totalBills.toLocaleString()}</td>
+              <td style="padding: 12px; border-bottom: 1px solid #e5e7eb; text-align: right;">${formatCurrency(m.totalAmount, true)}</td>
+              <td style="padding: 12px; border-bottom: 1px solid #e5e7eb; text-align: right; color: #22c55e;">${formatCurrency(m.verifiedAmount, true)}</td>
+              <td style="padding: 12px; border-bottom: 1px solid #e5e7eb; text-align: right;">${((m.verifiedAmount / m.totalAmount) * 100).toFixed(1)}%</td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+      ${filteredMDAs.length > 25 ? `<p style="margin-top: 16px; color: #666;">Showing 25 of ${filteredMDAs.length} MDAs</p>` : ''}
+    `;
+    generatePrintableReport('MDAs Summary Report', content);
   };
 
   const handleUploadDocs = (mdaId: string) => {
@@ -83,12 +169,15 @@ const MDAsPage = () => {
     setShowDocModal(true);
   };
 
+  // Get selected MDA with live stats
+  const selectedMDAStats = selectedMDA ? getMDAStats(selectedMDA.id) : null;
+
   const columns = [
     {
       key: 'name',
       header: 'MDA Name',
       sortable: true,
-      render: (mda: MDA) => (
+      render: (mda: MDA & ReturnType<typeof getMDAStats>) => (
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-md bg-secondary flex items-center justify-center">
             <Building2 className="w-4 h-4 text-muted-foreground" />
@@ -104,7 +193,7 @@ const MDAsPage = () => {
       key: 'category',
       header: 'Type',
       sortable: true,
-      render: (mda: MDA) => (
+      render: (mda: MDA & ReturnType<typeof getMDAStats>) => (
         <span className="px-2 py-0.5 rounded text-xs font-medium capitalize bg-secondary text-muted-foreground">
           {mda.category}
         </span>
@@ -115,32 +204,29 @@ const MDAsPage = () => {
       header: 'Bills',
       sortable: true,
       align: 'right' as const,
-      render: (mda: MDA) => {
-        const stats = getMDAStats(mda.id);
-        return (
-          <div className="text-right">
-            <span className="font-medium">{mda.totalBills.toLocaleString()}</span>
-            {stats.pendingBills > 0 && (
-              <p className="text-xs text-warning">{stats.pendingBills} pending</p>
-            )}
-          </div>
-        );
-      },
+      render: (mda: MDA & ReturnType<typeof getMDAStats>) => (
+        <div className="text-right">
+          <span className="font-medium">{mda.totalBills.toLocaleString()}</span>
+          {mda.pendingBills > 0 && (
+            <p className="text-xs text-warning">{mda.pendingBills} pending</p>
+          )}
+        </div>
+      ),
     },
     {
       key: 'totalAmount',
       header: 'Total Value',
       sortable: true,
       align: 'right' as const,
-      render: (mda: MDA) => <span className="font-medium">{formatCurrency(mda.totalAmount, true)}</span>,
+      render: (mda: MDA & ReturnType<typeof getMDAStats>) => <span className="font-medium">{formatCurrency(mda.totalAmount, true)}</span>,
     },
     {
       key: 'verifiedAmount',
       header: 'Verified',
       sortable: true,
       align: 'right' as const,
-      render: (mda: MDA) => {
-        const pct = (mda.verifiedAmount / mda.totalAmount) * 100;
+      render: (mda: MDA & ReturnType<typeof getMDAStats>) => {
+        const pct = mda.totalAmount > 0 ? (mda.verifiedAmount / mda.totalAmount) * 100 : 0;
         return (
           <div className="text-right">
             <span className="font-medium text-success">{formatCurrency(mda.verifiedAmount, true)}</span>
@@ -152,8 +238,8 @@ const MDAsPage = () => {
     {
       key: 'progress',
       header: 'Progress',
-      render: (mda: MDA) => {
-        const pct = (mda.verifiedAmount / mda.totalAmount) * 100;
+      render: (mda: MDA & ReturnType<typeof getMDAStats>) => {
+        const pct = mda.totalAmount > 0 ? (mda.verifiedAmount / mda.totalAmount) * 100 : 0;
         return (
           <div className="w-20">
             <Progress value={pct} className="h-1.5" />
@@ -164,7 +250,7 @@ const MDAsPage = () => {
     {
       key: 'actions',
       header: '',
-      render: (mda: MDA) => (
+      render: (mda: MDA & ReturnType<typeof getMDAStats>) => (
         <div className="flex items-center gap-1">
           <button 
             onClick={(e) => { e.stopPropagation(); setSelectedMDA(mda); }}
@@ -187,6 +273,8 @@ const MDAsPage = () => {
   const totalAmount = filteredMDAs.reduce((sum, mda) => sum + mda.totalAmount, 0);
   const totalBills = filteredMDAs.reduce((sum, mda) => sum + mda.totalBills, 0);
   const totalVerified = filteredMDAs.reduce((sum, mda) => sum + mda.verifiedAmount, 0);
+  const totalPaid = filteredMDAs.reduce((sum, mda) => sum + mda.paidAmount, 0);
+  const verificationRate = totalAmount > 0 ? ((totalVerified / totalAmount) * 100).toFixed(1) : '0';
 
   return (
     <div className="min-h-screen">
@@ -194,15 +282,19 @@ const MDAsPage = () => {
       
       <div className="p-6 space-y-6">
         {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
           {[
-            { label: 'Total MDAs', value: mdas.length },
+            { label: 'Total MDAs', value: mdas.length, icon: Building2 },
             { label: 'Total Bills', value: totalBills.toLocaleString() },
             { label: 'Total Value', value: formatCurrency(totalAmount, true) },
-            { label: 'Verified', value: formatCurrency(totalVerified, true) },
+            { label: 'Verified', value: formatCurrency(totalVerified, true), color: 'text-success' },
+            { label: 'Verification Rate', value: `${verificationRate}%`, icon: TrendingUp },
           ].map((stat) => (
             <div key={stat.label} className="glass-card p-4">
-              <p className="text-xl font-semibold text-foreground">{stat.value}</p>
+              <div className="flex items-center justify-between">
+                <p className={cn("text-xl font-semibold", stat.color || "text-foreground")}>{stat.value}</p>
+                {stat.icon && <stat.icon className="w-4 h-4 text-muted-foreground" />}
+              </div>
               <p className="text-xs text-muted-foreground">{stat.label}</p>
             </div>
           ))}
@@ -211,7 +303,7 @@ const MDAsPage = () => {
         {/* Charts */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 glass-card p-5">
-            <h3 className="font-semibold text-foreground mb-4">Top MDAs by Value</h3>
+            <h3 className="font-semibold text-foreground mb-4">Top MDAs by Value (Live)</h3>
             <div className="h-56">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={chartData} layout="vertical" margin={{ left: 50 }}>
@@ -242,7 +334,7 @@ const MDAsPage = () => {
               {categoryData.map((item) => (
                 <div key={item.name} className="flex items-center gap-1.5">
                   <div className="w-2 h-2 rounded-full" style={{ backgroundColor: item.color }} />
-                  <span className="text-xs text-muted-foreground">{item.name}</span>
+                  <span className="text-xs text-muted-foreground">{item.name} ({item.value})</span>
                 </div>
               ))}
             </div>
@@ -257,7 +349,7 @@ const MDAsPage = () => {
                 <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <input
                   type="text"
-                  placeholder="Search..."
+                  placeholder="Search MDAs..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-8 pr-3 py-1.5 bg-secondary border border-border rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-foreground/20 w-48"
@@ -280,7 +372,14 @@ const MDAsPage = () => {
             </div>
             <div className="flex items-center gap-2">
               <button
-                onClick={handleExport}
+                onClick={handlePrintReport}
+                className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs bg-secondary hover:bg-secondary/80 rounded-md transition-colors"
+                title="Print Report"
+              >
+                <Printer className="w-3.5 h-3.5" />
+              </button>
+              <button
+                onClick={handleExportCSV}
                 className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs bg-secondary hover:bg-secondary/80 rounded-md transition-colors"
               >
                 <Download className="w-3.5 h-3.5" />
@@ -299,7 +398,7 @@ const MDAsPage = () => {
       </div>
 
       {/* MDA Detail Modal */}
-      {selectedMDA && (
+      {selectedMDA && selectedMDAStats && (
         <div 
           className="fixed inset-0 bg-foreground/20 backdrop-blur-sm z-50 flex items-center justify-center p-4"
           onClick={() => setSelectedMDA(null)}
@@ -321,35 +420,51 @@ const MDAsPage = () => {
             </div>
 
             <div className="p-4 space-y-4">
-              {/* Stats Grid */}
+              {/* Stats Grid - Live Data */}
               <div className="grid grid-cols-2 gap-3">
                 <div className="p-3 bg-secondary/30 rounded-lg">
                   <p className="text-xs text-muted-foreground">Total Bills</p>
-                  <p className="text-xl font-bold">{selectedMDA.totalBills.toLocaleString()}</p>
+                  <p className="text-xl font-bold">{selectedMDAStats.totalBills.toLocaleString()}</p>
                 </div>
                 <div className="p-3 bg-secondary/30 rounded-lg">
                   <p className="text-xs text-muted-foreground">Total Value</p>
-                  <p className="text-xl font-bold text-accent">{formatCurrency(selectedMDA.totalAmount, true)}</p>
+                  <p className="text-xl font-bold text-accent">{formatCurrency(selectedMDAStats.totalAmount, true)}</p>
                 </div>
                 <div className="p-3 bg-success/10 rounded-lg">
                   <p className="text-xs text-muted-foreground">Verified</p>
-                  <p className="text-lg font-bold text-success">{formatCurrency(selectedMDA.verifiedAmount, true)}</p>
-                  <p className="text-xs text-success">{selectedMDA.verifiedBills} bills</p>
+                  <p className="text-lg font-bold text-success">{formatCurrency(selectedMDAStats.verifiedAmount, true)}</p>
+                  <p className="text-xs text-success">{selectedMDAStats.verifiedBills} bills</p>
                 </div>
                 <div className="p-3 bg-warning/10 rounded-lg">
                   <p className="text-xs text-muted-foreground">Pending</p>
-                  <p className="text-lg font-bold text-warning">{formatCurrency(selectedMDA.pendingAmount, true)}</p>
-                  <p className="text-xs text-warning">{selectedMDA.pendingBills} bills</p>
+                  <p className="text-lg font-bold text-warning">{formatCurrency(selectedMDAStats.pendingAmount, true)}</p>
+                  <p className="text-xs text-warning">{selectedMDAStats.pendingBills} bills</p>
                 </div>
+                {selectedMDAStats.paidBills > 0 && (
+                  <div className="p-3 bg-accent/10 rounded-lg col-span-2">
+                    <p className="text-xs text-muted-foreground">Paid</p>
+                    <p className="text-lg font-bold text-accent">{formatCurrency(selectedMDAStats.paidAmount, true)}</p>
+                    <p className="text-xs text-accent">{selectedMDAStats.paidBills} bills settled</p>
+                  </div>
+                )}
               </div>
 
               {/* Progress */}
               <div>
                 <div className="flex justify-between text-sm mb-2">
                   <span className="text-muted-foreground">Verification Progress</span>
-                  <span className="font-medium">{((selectedMDA.verifiedAmount / selectedMDA.totalAmount) * 100).toFixed(1)}%</span>
+                  <span className="font-medium">
+                    {selectedMDAStats.totalAmount > 0 
+                      ? ((selectedMDAStats.verifiedAmount / selectedMDAStats.totalAmount) * 100).toFixed(1) 
+                      : 0}%
+                  </span>
                 </div>
-                <Progress value={(selectedMDA.verifiedAmount / selectedMDA.totalAmount) * 100} className="h-2" />
+                <Progress 
+                  value={selectedMDAStats.totalAmount > 0 
+                    ? (selectedMDAStats.verifiedAmount / selectedMDAStats.totalAmount) * 100 
+                    : 0} 
+                  className="h-2" 
+                />
               </div>
 
               {/* Payment Schedule Link */}
