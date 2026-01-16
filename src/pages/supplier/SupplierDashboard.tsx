@@ -6,10 +6,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
-import { FileText, Upload, Clock, CheckCircle, TrendingUp, Wallet, Bell } from 'lucide-react';
+import { FileText, Upload, Clock, CheckCircle, TrendingUp, Wallet, Bell, ArrowUpRight, ArrowRight } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import IdentityCard from '@/components/identity/IdentityCard';
 import ProfileCompletionCard from '@/components/identity/ProfileCompletionCard';
+import { cn } from '@/lib/utils';
 
 interface Bill {
   id: string;
@@ -39,45 +40,29 @@ const SupplierDashboard = () => {
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
-      
-      // Fetch bills
       const { data: billsData } = await supabase
         .from('bills')
         .select('*')
         .order('created_at', { ascending: false })
         .limit(5);
-      
       if (billsData) setBills(billsData as Bill[]);
 
-      // Fetch notifications
       const { data: notifData } = await supabase
         .from('notifications')
         .select('*')
         .order('created_at', { ascending: false })
         .limit(5);
-      
       if (notifData) setNotifications(notifData as Notification[]);
-      
       setLoading(false);
     };
-
     fetchData();
 
-    // Subscribe to realtime notifications
     const channel = supabase
       .channel('supplier-notifications')
-      .on(
-        'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'notifications' },
-        (payload) => {
-          setNotifications(prev => [payload.new as Notification, ...prev].slice(0, 5));
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notifications' },
+        (payload) => { setNotifications(prev => [payload.new as Notification, ...prev].slice(0, 5)); }
+      ).subscribe();
+    return () => { supabase.removeChannel(channel); };
   }, []);
 
   const stats = {
@@ -87,168 +72,137 @@ const SupplierDashboard = () => {
     totalValue: bills.reduce((sum, b) => sum + Number(b.amount), 0),
   };
 
-  const getStatusBadge = (status: string) => {
-    const styles: Record<string, string> = {
-      submitted: 'bg-blue-100 text-blue-700',
-      under_review: 'bg-yellow-100 text-yellow-700',
-      offer_made: 'bg-purple-100 text-purple-700',
-      offer_accepted: 'bg-green-100 text-green-700',
-      mda_reviewing: 'bg-orange-100 text-orange-700',
-      mda_approved: 'bg-green-100 text-green-700',
-      certified: 'bg-emerald-100 text-emerald-700',
-      rejected: 'bg-red-100 text-red-700',
+  const getStatusConfig = (status: string) => {
+    const configs: Record<string, { bg: string; text: string; label: string }> = {
+      submitted: { bg: 'bg-blue-500/10', text: 'text-blue-600', label: 'Submitted' },
+      under_review: { bg: 'bg-yellow-500/10', text: 'text-yellow-600', label: 'Under Review' },
+      offer_made: { bg: 'bg-purple-500/10', text: 'text-purple-600', label: 'Offer Made' },
+      offer_accepted: { bg: 'bg-indigo-500/10', text: 'text-indigo-600', label: 'Accepted' },
+      mda_approved: { bg: 'bg-green-500/10', text: 'text-green-600', label: 'Approved' },
+      certified: { bg: 'bg-emerald-500/10', text: 'text-emerald-600', label: 'Certified' },
+      rejected: { bg: 'bg-red-500/10', text: 'text-red-600', label: 'Rejected' },
     };
-    return styles[status] || 'bg-gray-100 text-gray-700';
+    return configs[status] || { bg: 'bg-gray-500/10', text: 'text-gray-600', label: status };
   };
 
   return (
     <PortalLayout>
-      <div className="p-6 space-y-6">
-        {/* Identity Card */}
-        <div className="flex flex-col lg:flex-row gap-4">
-          <IdentityCard variant="full" className="flex-1" />
-          <div className="flex flex-col gap-4 lg:w-80">
-            <ProfileCompletionCard />
-            <Button onClick={() => navigate('/supplier/submit-bill')} size="lg" className="w-full">
-              <Upload className="w-4 h-4 mr-2" />
-              Submit New Bill
-            </Button>
+      <div className="p-6 lg:p-8 space-y-8">
+        {/* Header */}
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
+            <p className="text-muted-foreground mt-1">Manage your invoices and track payments</p>
           </div>
+          <Button onClick={() => navigate('/supplier/submit-bill')} size="lg" className="bg-accent hover:bg-accent/90 text-accent-foreground gap-2 shadow-lg">
+            <Upload className="w-5 h-5" />
+            Submit New Bill
+          </Button>
+        </div>
+
+        {/* Identity & Profile */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2">
+            <IdentityCard variant="full" />
+          </div>
+          <ProfileCompletionCard />
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center gap-4">
-                <div className="p-3 rounded-lg bg-blue-100">
-                  <FileText className="w-5 h-5 text-blue-600" />
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 stagger-animation">
+          {[
+            { label: 'Total Bills', value: stats.totalBills, icon: FileText, color: 'bg-blue-500', lightBg: 'bg-blue-500/10' },
+            { label: 'Pending Review', value: stats.pendingBills, icon: Clock, color: 'bg-yellow-500', lightBg: 'bg-yellow-500/10' },
+            { label: 'Offers Received', value: stats.offersReceived, icon: TrendingUp, color: 'bg-purple-500', lightBg: 'bg-purple-500/10' },
+            { label: 'Total Value', value: `₦${(stats.totalValue / 1000000).toFixed(1)}M`, icon: Wallet, color: 'bg-accent', lightBg: 'bg-accent/10' },
+          ].map((stat, index) => (
+            <Card key={index} className="stat-card group cursor-pointer hover:shadow-lg transition-all duration-300">
+              <CardContent className="p-5">
+                <div className="flex items-start justify-between">
+                  <div className={cn("p-3 rounded-xl", stat.lightBg)}>
+                    <stat.icon className={cn("w-6 h-6", stat.color === 'bg-accent' ? 'text-accent' : stat.color.replace('bg-', 'text-'))} />
+                  </div>
+                  <ArrowUpRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
                 </div>
-                <div>
-                  <p className="text-2xl font-bold">{stats.totalBills}</p>
-                  <p className="text-sm text-muted-foreground">Total Bills</p>
+                <div className="mt-4">
+                  <p className="text-3xl font-bold text-foreground">{stat.value}</p>
+                  <p className="text-sm text-muted-foreground mt-1">{stat.label}</p>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center gap-4">
-                <div className="p-3 rounded-lg bg-yellow-100">
-                  <Clock className="w-5 h-5 text-yellow-600" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold">{stats.pendingBills}</p>
-                  <p className="text-sm text-muted-foreground">Pending Review</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center gap-4">
-                <div className="p-3 rounded-lg bg-purple-100">
-                  <TrendingUp className="w-5 h-5 text-purple-600" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold">{stats.offersReceived}</p>
-                  <p className="text-sm text-muted-foreground">Offers Received</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center gap-4">
-                <div className="p-3 rounded-lg bg-green-100">
-                  <Wallet className="w-5 h-5 text-green-600" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold">₦{(stats.totalValue / 1000000).toFixed(1)}M</p>
-                  <p className="text-sm text-muted-foreground">Total Value</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          ))}
         </div>
 
+        {/* Recent Bills & Notifications */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Recent Bills */}
           <Card className="lg:col-span-2">
-            <CardHeader className="flex flex-row items-center justify-between">
+            <CardHeader className="flex flex-row items-center justify-between pb-4">
               <div>
-                <CardTitle>Recent Bills</CardTitle>
+                <CardTitle className="text-xl">Recent Bills</CardTitle>
                 <CardDescription>Your latest invoice submissions</CardDescription>
               </div>
-              <Button variant="ghost" size="sm" onClick={() => navigate('/supplier/my-bills')}>
-                View All
+              <Button variant="ghost" size="sm" onClick={() => navigate('/supplier/my-bills')} className="gap-1">
+                View All <ArrowRight className="w-4 h-4" />
               </Button>
             </CardHeader>
             <CardContent>
               {bills.length === 0 ? (
-                <div className="text-center py-8">
+                <div className="text-center py-12 bg-secondary/30 rounded-xl">
                   <FileText className="w-12 h-12 mx-auto text-muted-foreground/50 mb-3" />
-                  <p className="text-muted-foreground">No bills submitted yet</p>
-                  <Button className="mt-4" onClick={() => navigate('/supplier/submit-bill')}>
-                    Submit Your First Bill
-                  </Button>
+                  <p className="text-muted-foreground mb-4">No bills submitted yet</p>
+                  <Button onClick={() => navigate('/supplier/submit-bill')}>Submit Your First Bill</Button>
                 </div>
               ) : (
                 <div className="space-y-3">
-                  {bills.map((bill) => (
-                    <div 
-                      key={bill.id}
-                      className="flex items-center justify-between p-3 rounded-lg bg-secondary/30 hover:bg-secondary/50 transition-colors cursor-pointer"
-                      onClick={() => navigate(`/supplier/my-bills?id=${bill.id}`)}
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="p-2 rounded-md bg-background">
-                          <FileText className="w-4 h-4 text-muted-foreground" />
+                  {bills.map((bill) => {
+                    const statusConfig = getStatusConfig(bill.status);
+                    return (
+                      <div 
+                        key={bill.id}
+                        className="flex items-center justify-between p-4 rounded-xl bg-secondary/30 hover:bg-secondary/50 transition-colors cursor-pointer group"
+                        onClick={() => navigate(`/supplier/my-bills?id=${bill.id}`)}
+                      >
+                        <div className="flex items-center gap-4">
+                          <div className="w-12 h-12 rounded-xl bg-background flex items-center justify-center shadow-sm">
+                            <FileText className="w-5 h-5 text-muted-foreground" />
+                          </div>
+                          <div>
+                            <p className="font-semibold text-foreground">{bill.invoice_number}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {formatDistanceToNow(new Date(bill.created_at), { addSuffix: true })}
+                            </p>
+                          </div>
                         </div>
-                        <div>
-                          <p className="font-medium">{bill.invoice_number}</p>
-                          <p className="text-xs text-muted-foreground">
-                            {formatDistanceToNow(new Date(bill.created_at), { addSuffix: true })}
-                          </p>
+                        <div className="flex items-center gap-4">
+                          <span className="font-bold text-foreground">₦{Number(bill.amount).toLocaleString()}</span>
+                          <Badge className={cn("font-semibold", statusConfig.bg, statusConfig.text)}>{statusConfig.label}</Badge>
+                          <ArrowRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
                         </div>
                       </div>
-                      <div className="flex items-center gap-3">
-                        <span className="font-medium">₦{Number(bill.amount).toLocaleString()}</span>
-                        <Badge className={getStatusBadge(bill.status)}>
-                          {bill.status.replace(/_/g, ' ')}
-                        </Badge>
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </CardContent>
           </Card>
 
-          {/* Notifications */}
           <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Bell className="w-4 h-4" />
+            <CardHeader className="pb-4">
+              <CardTitle className="text-xl flex items-center gap-2">
+                <Bell className="w-5 h-5" />
                 Notifications
               </CardTitle>
             </CardHeader>
             <CardContent>
               {notifications.length === 0 ? (
-                <p className="text-sm text-muted-foreground text-center py-4">No notifications</p>
+                <p className="text-sm text-muted-foreground text-center py-8">No notifications</p>
               ) : (
                 <div className="space-y-3">
                   {notifications.map((notif) => (
-                    <div 
-                      key={notif.id}
-                      className={`p-3 rounded-lg ${notif.read ? 'bg-secondary/30' : 'bg-accent/10'}`}
-                    >
-                      <p className="text-sm font-medium">{notif.title}</p>
-                      <p className="text-xs text-muted-foreground">{notif.message}</p>
-                      <p className="text-xs text-muted-foreground mt-1">
+                    <div key={notif.id} className={cn("p-4 rounded-xl transition-colors", notif.read ? 'bg-secondary/30' : 'bg-accent/5 border border-accent/20')}>
+                      <p className="text-sm font-medium text-foreground">{notif.title}</p>
+                      <p className="text-xs text-muted-foreground mt-1">{notif.message}</p>
+                      <p className="text-xs text-muted-foreground mt-2">
                         {formatDistanceToNow(new Date(notif.created_at), { addSuffix: true })}
                       </p>
                     </div>
