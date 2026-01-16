@@ -113,7 +113,11 @@ const FilterPanel = ({
     onChange: () => void;
     count?: number;
   }) => (
-    <label className="flex items-center gap-2 cursor-pointer group py-1">
+    <button 
+      type="button"
+      onClick={onChange}
+      className="flex items-center gap-2 cursor-pointer group py-1 w-full text-left hover:bg-muted/30 rounded-md px-1 -mx-1 transition-colors"
+    >
       <div className={cn(
         "w-4 h-4 rounded border-2 flex items-center justify-center transition-colors shrink-0",
         checked 
@@ -130,7 +134,7 @@ const FilterPanel = ({
       {count !== undefined && (
         <span className="text-xs text-muted-foreground shrink-0">{count}</span>
       )}
-    </label>
+    </button>
   );
 
   return (
