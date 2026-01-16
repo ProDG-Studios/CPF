@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
@@ -6,12 +5,13 @@ import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { 
-  FileText, Building2, Calendar, User, Wallet, CheckCircle, 
-  Clock, ExternalLink, Shield, FileCheck, ArrowRight, MapPin,
-  Phone, Mail, Hash, Briefcase
+  FileText, Calendar, CheckCircle, 
+  Clock, ExternalLink, Shield, FileCheck, ArrowRight,
+  Hash, Briefcase, Wallet, User, Building2, MapPin
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
+import PartyIdentityCard from '@/components/identity/PartyIdentityCard';
 
 export interface BillDetails {
   id: string;
@@ -206,38 +206,39 @@ const BillDetailModal = ({ bill, open, onOpenChange, actionButton }: BillDetailM
 
               <Separator />
               
-              {/* Supplier Information */}
-              <div>
-                <h3 className="text-sm font-semibold text-foreground flex items-center gap-2 mb-3">
-                  <User className="w-4 h-4" />
-                  Supplier (Assignor)
-                </h3>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-1 bg-secondary/30 rounded-lg p-4">
-                  <InfoRow label="Company Name" value={bill.supplier_company || '—'} icon={Building2} />
-                  <InfoRow label="Contact Person" value={bill.supplier_name || '—'} icon={User} />
-                  <InfoRow label="Registration No." value={bill.supplier_registration || '—'} icon={Hash} />
-                  <InfoRow label="Tax ID" value={bill.supplier_tax_id || '—'} icon={FileCheck} />
-                  <InfoRow label="Bank" value={bill.supplier_bank_name || '—'} icon={Building2} />
-                  <InfoRow label="Account No." value={bill.supplier_bank_account || '—'} icon={Hash} />
-                  {bill.supplier_address && (
-                    <div className="col-span-full">
-                      <InfoRow label="Address" value={bill.supplier_address} icon={MapPin} />
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              <Separator />
-              
-              {/* MDA Information */}
-              <div>
-                <h3 className="text-sm font-semibold text-foreground flex items-center gap-2 mb-3">
-                  <Building2 className="w-4 h-4" />
-                  MDA (Debtor)
-                </h3>
-                <div className="grid grid-cols-2 gap-x-6 gap-y-1 bg-secondary/30 rounded-lg p-4">
-                  <InfoRow label="MDA Name" value={bill.mda_name || '—'} icon={Building2} />
-                  <InfoRow label="MDA Code" value={bill.mda_code || '—'} icon={Hash} />
+              {/* Transaction Parties */}
+              <div className="space-y-4">
+                <h3 className="text-sm font-semibold text-foreground">Transaction Parties</h3>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Supplier (Assignor) */}
+                  <PartyIdentityCard
+                    party={{
+                      role: 'supplier',
+                      name: bill.supplier_name,
+                      company: bill.supplier_company,
+                      registration: bill.supplier_registration,
+                      taxId: bill.supplier_tax_id,
+                      address: bill.supplier_address,
+                      bankName: bill.supplier_bank_name,
+                      bankAccount: bill.supplier_bank_account,
+                      isVerified: !!bill.supplier_registration,
+                    }}
+                    variant="detailed"
+                    label="Supplier (Assignor)"
+                  />
+                  
+                  {/* MDA (Debtor) */}
+                  <PartyIdentityCard
+                    party={{
+                      role: 'mda',
+                      mdaName: bill.mda_name,
+                      mdaCode: bill.mda_code,
+                      isVerified: true,
+                    }}
+                    variant="detailed"
+                    label="MDA (Debtor)"
+                  />
                 </div>
               </div>
               

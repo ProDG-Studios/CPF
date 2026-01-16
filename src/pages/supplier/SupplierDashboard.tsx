@@ -6,8 +6,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
-import { FileText, Upload, Clock, CheckCircle, AlertCircle, TrendingUp, Wallet, Bell } from 'lucide-react';
+import { FileText, Upload, Clock, CheckCircle, TrendingUp, Wallet, Bell } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
+import IdentityCard from '@/components/identity/IdentityCard';
+import ProfileCompletionCard from '@/components/identity/ProfileCompletionCard';
 
 interface Bill {
   id: string;
@@ -102,37 +104,17 @@ const SupplierDashboard = () => {
   return (
     <PortalLayout>
       <div className="p-6 space-y-6">
-        {/* Welcome Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">
-              Welcome, {profile?.full_name || profile?.company_name || 'Supplier'}
-            </h1>
-            <p className="text-muted-foreground">Manage your invoices and track payment status</p>
+        {/* Identity Card */}
+        <div className="flex flex-col lg:flex-row gap-4">
+          <IdentityCard variant="full" className="flex-1" />
+          <div className="flex flex-col gap-4 lg:w-80">
+            <ProfileCompletionCard />
+            <Button onClick={() => navigate('/supplier/submit-bill')} size="lg" className="w-full">
+              <Upload className="w-4 h-4 mr-2" />
+              Submit New Bill
+            </Button>
           </div>
-          <Button onClick={() => navigate('/supplier/submit-bill')}>
-            <Upload className="w-4 h-4 mr-2" />
-            Submit New Bill
-          </Button>
         </div>
-
-        {/* Profile Completion Warning */}
-        {!profile?.profile_completed && (
-          <Card className="border-warning bg-warning/5">
-            <CardContent className="py-4 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <AlertCircle className="w-5 h-5 text-warning" />
-                <div>
-                  <p className="font-medium text-foreground">Complete Your Profile</p>
-                  <p className="text-sm text-muted-foreground">Add your company details to submit bills</p>
-                </div>
-              </div>
-              <Button variant="outline" onClick={() => navigate('/supplier/profile')}>
-                Complete Profile
-              </Button>
-            </CardContent>
-          </Card>
-        )}
 
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">

@@ -4,10 +4,11 @@ import { useAuth } from '@/contexts/AuthContext';
 import PortalLayout from '@/components/layout/PortalLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
-import { FileText, Clock, CheckCircle, Shield, Building2, Wallet } from 'lucide-react';
+import { FileText, Clock, CheckCircle, Shield, Wallet } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
+import IdentityCard from '@/components/identity/IdentityCard';
+import ProfileCompletionCard from '@/components/identity/ProfileCompletionCard';
 
 interface Bill {
   id: string;
@@ -65,17 +66,16 @@ const TreasuryDashboard = () => {
   return (
     <PortalLayout>
       <div className="p-6 space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">
-              National Treasury Dashboard
-            </h1>
-            <p className="text-muted-foreground">Certify approved bills and issue payment certificates</p>
+        {/* Identity Section */}
+        <div className="flex flex-col lg:flex-row gap-4">
+          <IdentityCard variant="full" className="flex-1" />
+          <div className="flex flex-col gap-4 lg:w-80">
+            <ProfileCompletionCard />
+            <Button onClick={() => navigate('/treasury/pending')} size="lg" className="w-full">
+              <FileText className="w-4 h-4 mr-2" />
+              View Pending
+            </Button>
           </div>
-          <Button onClick={() => navigate('/treasury/pending')}>
-            <FileText className="w-4 h-4 mr-2" />
-            View Pending
-          </Button>
         </div>
 
         {/* Stats */}

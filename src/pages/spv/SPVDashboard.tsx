@@ -6,8 +6,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
-import { FileText, TrendingUp, Wallet, Clock, CheckCircle, DollarSign, Bell } from 'lucide-react';
+import { FileText, Clock, CheckCircle, DollarSign } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
+import IdentityCard from '@/components/identity/IdentityCard';
+import ProfileCompletionCard from '@/components/identity/ProfileCompletionCard';
 
 interface Bill {
   id: string;
@@ -64,17 +66,16 @@ const SPVDashboard = () => {
   return (
     <PortalLayout>
       <div className="p-6 space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">
-              Welcome, {profile?.full_name || profile?.spv_name || 'SPV'}
-            </h1>
-            <p className="text-muted-foreground">Browse bills and make investment offers</p>
+        {/* Identity Section */}
+        <div className="flex flex-col lg:flex-row gap-4">
+          <IdentityCard variant="full" className="flex-1" />
+          <div className="flex flex-col gap-4 lg:w-80">
+            <ProfileCompletionCard />
+            <Button onClick={() => navigate('/spv/bills')} size="lg" className="w-full">
+              <FileText className="w-4 h-4 mr-2" />
+              Browse Bills
+            </Button>
           </div>
-          <Button onClick={() => navigate('/spv/bills')}>
-            <FileText className="w-4 h-4 mr-2" />
-            Browse Bills
-          </Button>
         </div>
 
         {/* Stats */}
