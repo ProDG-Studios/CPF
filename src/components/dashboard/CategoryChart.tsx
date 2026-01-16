@@ -1,15 +1,79 @@
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { categoryBreakdown } from '@/data/mockData';
 import { useNavigate } from 'react-router-dom';
 import { useFilters } from '@/contexts/FilterContext';
+import { useData } from '@/contexts/DataContext';
+import { useMemo } from 'react';
+import { Download, Printer } from 'lucide-react';
+import { generateCSV, generatePrintableReport } from '@/lib/exportUtils';
 
 const CategoryChart = () => {
   const navigate = useNavigate();
   const { toggleArrayFilter } = useFilters();
+  const { bills } = useData();
+
+  // Calculate live category breakdown from bills
+  const categoryBreakdown = useMemo(() => {
+    const categoryMap = new Map<string, { bills: number; amount: number }>();
+    
+    bills.forEach(bill => {
+      const existing = categoryMap.get(bill.category) || { bills: 0, amount: 0 };
+      categoryMap.set(bill.category, {
+        bills: existing.bills + 1,
+        amount: existing.amount + bill.amount,
+      });
+    });
+
+    return Array.from(categoryMap.entries())
+      .map(([category, data]) => ({
+        category,
+        bills: data.bills,
+        amount: parseFloat((data.amount / 1000000000).toFixed(2)), // Convert to billions
+      }))
+      .sort((a, b) => b.amount - a.amount)
+      .slice(0, 7);
+  }, [bills]);
 
   const handleClick = (category: string) => {
     toggleArrayFilter('categories', category);
     navigate('/bills');
+  };
+
+  const handleExport = () => {
+    generateCSV(
+      categoryBreakdown.map(c => ({
+        Category: c.category,
+        'Number of Bills': c.bills,
+        'Amount (KES Billions)': c.amount,
+      })),
+      'category_breakdown'
+    );
+  };
+
+  const handlePrint = () => {
+    const totalAmount = categoryBreakdown.reduce((sum, c) => sum + c.amount, 0);
+    const content = `
+      <h3>Bills by Category</h3>
+      <div style="margin-bottom: 20px;">
+        <div class="stat"><div class="stat-value">${categoryBreakdown.length}</div><div class="stat-label">Categories</div></div>
+        <div class="stat"><div class="stat-value">KES ${totalAmount.toFixed(1)}B</div><div class="stat-label">Total Value</div></div>
+      </div>
+      <table>
+        <thead>
+          <tr><th>Category</th><th>Bills</th><th>Amount (B)</th><th>% of Total</th></tr>
+        </thead>
+        <tbody>
+          ${categoryBreakdown.map(c => `
+            <tr>
+              <td>${c.category}</td>
+              <td>${c.bills}</td>
+              <td>KES ${c.amount}B</td>
+              <td>${((c.amount / totalAmount) * 100).toFixed(1)}%</td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    `;
+    generatePrintableReport('Category Breakdown Report', content);
   };
 
   return (
@@ -17,7 +81,23 @@ const CategoryChart = () => {
       <div className="flex items-center justify-between mb-4">
         <div>
           <h3 className="font-semibold text-foreground">Bills by Category</h3>
-          <p className="text-xs text-muted-foreground">Click to filter</p>
+          <p className="text-xs text-muted-foreground">Click to filter (live data)</p>
+        </div>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleExport}
+            className="p-1.5 rounded-md hover:bg-secondary transition-colors text-muted-foreground hover:text-foreground"
+            title="Export to CSV"
+          >
+            <Download className="w-4 h-4" />
+          </button>
+          <button
+            onClick={handlePrint}
+            className="p-1.5 rounded-md hover:bg-secondary transition-colors text-muted-foreground hover:text-foreground"
+            title="Print Report"
+          >
+            <Printer className="w-4 h-4" />
+          </button>
         </div>
       </div>
 
