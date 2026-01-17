@@ -51,11 +51,20 @@ const MDABillsPage = () => {
     const fetchData = async () => {
       setLoading(true);
 
-      const { data: billsData } = await supabase
+      // Get all bills with status offer_accepted or mda_reviewing
+      const { data: billsData, error: billsError } = await supabase
         .from('bills')
         .select('*')
         .in('status', ['offer_accepted', 'mda_reviewing'])
         .order('offer_accepted_date', { ascending: true });
+      
+      if (billsError) {
+        console.error('Error fetching bills:', billsError);
+        setLoading(false);
+        return;
+      }
+
+      console.log('MDA Bills fetched:', billsData?.length, 'bills with status offer_accepted/mda_reviewing');
       
       if (billsData) {
         setBills(billsData as Bill[]);
