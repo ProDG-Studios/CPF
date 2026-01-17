@@ -397,19 +397,51 @@ const AuthPage = () => {
             </form>
           )}
           
-          {/* Demo Accounts */}
+          {/* Demo Accounts - Identifiable */}
           <div className="p-4 bg-neutral-800/30 rounded-xl border border-amber-500/20">
             <p className="text-sm font-medium text-white mb-3 flex items-center gap-2">
               <Shield className="w-4 h-4 text-amber-400" />
-              Demo Accounts
+              Demo Accounts (Password: demo1234)
             </p>
-            <div className="grid grid-cols-2 gap-2 text-xs text-neutral-400">
-              <div>Supplier: <span className="text-amber-200">supplier1@demo.com</span></div>
-              <div>SPV: <span className="text-amber-200">spv1@demo.com</span></div>
-              <div>MDA: <span className="text-amber-200">mda1@demo.com</span></div>
-              <div>Treasury: <span className="text-amber-200">treasury1@demo.com</span></div>
+            
+            <div className="space-y-3 text-xs">
+              {/* Suppliers */}
+              <div>
+                <p className="text-amber-400 font-semibold mb-1">Suppliers</p>
+                <div className="grid grid-cols-2 gap-1 text-neutral-400">
+                  <div><span className="text-amber-200">apex@demo.com</span> (Apex Construction)</div>
+                  <div><span className="text-amber-200">techsupply@demo.com</span> (TechSupply Co)</div>
+                </div>
+              </div>
+              
+              {/* SPVs */}
+              <div>
+                <p className="text-amber-400 font-semibold mb-1">SPVs</p>
+                <div className="grid grid-cols-2 gap-1 text-neutral-400">
+                  <div><span className="text-amber-200">alpha.capital@demo.com</span></div>
+                  <div><span className="text-amber-200">beta.investments@demo.com</span></div>
+                </div>
+              </div>
+              
+              {/* MDAs */}
+              <div>
+                <p className="text-amber-400 font-semibold mb-1">MDAs (use matching MDA for bills)</p>
+                <div className="grid grid-cols-2 gap-1 text-neutral-400">
+                  <div><span className="text-amber-200">fmw@demo.com</span> (Ministry of Works)</div>
+                  <div><span className="text-amber-200">fmh@demo.com</span> (Ministry of Health)</div>
+                  <div><span className="text-amber-200">fme@demo.com</span> (Ministry of Education)</div>
+                  <div><span className="text-amber-200">fmit@demo.com</span> (Ministry of IT)</div>
+                </div>
+              </div>
+              
+              {/* Treasury */}
+              <div>
+                <p className="text-amber-400 font-semibold mb-1">Treasury</p>
+                <div className="text-neutral-400">
+                  <span className="text-amber-200">federal.treasury@demo.com</span> (Federal Treasury)
+                </div>
+              </div>
             </div>
-            <p className="text-xs text-amber-400 font-medium mt-2">Password: demo1234</p>
           </div>
         </div>
       </div>

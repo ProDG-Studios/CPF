@@ -30,25 +30,29 @@ serve(async (req) => {
     const { data: mdas } = await supabase.from('mdas').select('id, name');
     const mdaList = mdas || [];
 
-    // Define demo users
+    // Define demo users with IDENTIFIABLE emails
     const users: UserConfig[] = [];
     const password = 'demo1234';
 
-    // 12 Suppliers
-    const supplierCompanies = [
-      'Apex Construction Ltd', 'BuildRight Nigeria', 'TechSupply Co', 'MedEquip Solutions',
-      'FoodServe Enterprises', 'CleanEnergy Systems', 'TransportPro Ltd', 'OfficeMax Supplies',
-      'SecureIT Services', 'GreenFarm Agro', 'WaterWorks Engineering', 'PowerGrid Solutions'
+    // Supplier accounts - named by company
+    const suppliers = [
+      { email: 'apex@demo.com', company: 'Apex Construction Ltd', name: 'Chidi Okonkwo' },
+      { email: 'buildright@demo.com', company: 'BuildRight Nigeria', name: 'Amaka Eze' },
+      { email: 'techsupply@demo.com', company: 'TechSupply Co', name: 'Emeka Nwosu' },
+      { email: 'medequip@demo.com', company: 'MedEquip Solutions', name: 'Ngozi Adeyemi' },
+      { email: 'foodserve@demo.com', company: 'FoodServe Enterprises', name: 'Tunde Bakare' },
+      { email: 'cleanenergy@demo.com', company: 'CleanEnergy Systems', name: 'Funke Adeleke' },
     ];
-    
-    for (let i = 0; i < 12; i++) {
+
+    for (let i = 0; i < suppliers.length; i++) {
+      const s = suppliers[i];
       users.push({
-        email: `supplier${i + 1}@demo.com`,
+        email: s.email,
         password,
         role: 'supplier',
         profile: {
-          full_name: `Supplier User ${i + 1}`,
-          company_name: supplierCompanies[i],
+          full_name: s.name,
+          company_name: s.company,
           registration_number: `RC${100000 + i}`,
           tax_id: `TIN${200000 + i}`,
           phone: `+234801${String(i).padStart(7, '0')}`,
@@ -60,21 +64,23 @@ serve(async (req) => {
       });
     }
 
-    // 12 SPVs
-    const spvNames = [
-      'Alpha Capital SPV', 'Beta Investments', 'Gamma Finance', 'Delta Funding',
-      'Epsilon Holdings', 'Zeta Capital', 'Eta Investments', 'Theta Finance',
-      'Iota Funding', 'Kappa Holdings', 'Lambda Capital', 'Mu Investments'
+    // SPV accounts - named by SPV name
+    const spvs = [
+      { email: 'alpha.capital@demo.com', spv: 'Alpha Capital SPV', name: 'Adekunle Johnson' },
+      { email: 'beta.investments@demo.com', spv: 'Beta Investments', name: 'Chioma Onyekachi' },
+      { email: 'gamma.finance@demo.com', spv: 'Gamma Finance', name: 'Ibrahim Yusuf' },
+      { email: 'delta.funding@demo.com', spv: 'Delta Funding', name: 'Oluwaseun Alade' },
     ];
 
-    for (let i = 0; i < 12; i++) {
+    for (let i = 0; i < spvs.length; i++) {
+      const s = spvs[i];
       users.push({
-        email: `spv${i + 1}@demo.com`,
+        email: s.email,
         password,
         role: 'spv',
         profile: {
-          full_name: `SPV Manager ${i + 1}`,
-          spv_name: spvNames[i],
+          full_name: s.name,
+          spv_name: s.spv,
           license_number: `SPV-LIC-${3000 + i}`,
           phone: `+234802${String(i).padStart(7, '0')}`,
           profile_completed: true,
@@ -82,41 +88,60 @@ serve(async (req) => {
       });
     }
 
-    // 12 MDA Users (distributed across MDAs)
-    for (let i = 0; i < 12; i++) {
-      const mda = mdaList[i % mdaList.length];
+    // MDA accounts - named by MDA code for easy identification
+    // These match specific MDAs in the database
+    const mdaAccounts = [
+      { email: 'fmw@demo.com', mdaCode: 'FMW', mdaName: 'Federal Ministry of Works', name: 'Adebayo Ogundimu', dept: 'Procurement' },
+      { email: 'fmh@demo.com', mdaCode: 'FMH', mdaName: 'Federal Ministry of Health', name: 'Fatima Mohammed', dept: 'Finance' },
+      { email: 'fme@demo.com', mdaCode: 'FME', mdaName: 'Federal Ministry of Education', name: 'Olumide Akinwale', dept: 'Administration' },
+      { email: 'fmit@demo.com', mdaCode: 'FMIT', mdaName: 'Federal Ministry of IT', name: 'Blessing Okafor', dept: 'Procurement' },
+      { email: 'fma@demo.com', mdaCode: 'FMA', mdaName: 'Federal Ministry of Agriculture', name: 'Yusuf Garba', dept: 'Finance' },
+      { email: 'fmd@demo.com', mdaCode: 'FMD', mdaName: 'Federal Ministry of Defence', name: 'Aisha Bello', dept: 'Procurement' },
+    ];
+
+    for (let i = 0; i < mdaAccounts.length; i++) {
+      const m = mdaAccounts[i];
+      // Find matching MDA from database
+      const mda = mdaList.find(x => x.name?.includes(m.mdaCode) || x.name === m.mdaName);
       users.push({
-        email: `mda${i + 1}@demo.com`,
+        email: m.email,
         password,
         role: 'mda',
         profile: {
-          full_name: `MDA Officer ${i + 1}`,
-          mda_name: mda?.name || `Ministry ${i + 1}`,
+          full_name: m.name,
+          mda_name: mda?.name || m.mdaName,
           mda_code: mda?.id || null,
-          department: ['Procurement', 'Finance', 'Administration'][i % 3],
+          department: m.dept,
           phone: `+234803${String(i).padStart(7, '0')}`,
           profile_completed: true,
         }
       });
     }
 
-    // 12 Treasury Users
-    for (let i = 0; i < 12; i++) {
+    // Treasury accounts - named by office
+    const treasuryAccounts = [
+      { email: 'federal.treasury@demo.com', office: 'Federal Treasury', name: 'Babajide Sanwo-Olu', empId: 'NT-4001' },
+      { email: 'state.treasury@demo.com', office: 'State Treasury', name: 'Hafsat Abubakar', empId: 'NT-4002' },
+      { email: 'cbn.liaison@demo.com', office: 'Central Bank Liaison', name: 'Godwin Emefiele Jr', empId: 'NT-4003' },
+    ];
+
+    for (let i = 0; i < treasuryAccounts.length; i++) {
+      const t = treasuryAccounts[i];
       users.push({
-        email: `treasury${i + 1}@demo.com`,
+        email: t.email,
         password,
         role: 'treasury',
         profile: {
-          full_name: `Treasury Officer ${i + 1}`,
-          treasury_office: ['Federal Treasury', 'State Treasury', 'Central Bank Liaison'][i % 3],
-          employee_id: `NT-${4000 + i}`,
+          full_name: t.name,
+          treasury_office: t.office,
+          employee_id: t.empId,
           phone: `+234804${String(i).padStart(7, '0')}`,
           profile_completed: true,
         }
       });
     }
 
-    // 2 Admins
+    // Admin accounts
     users.push({
       email: 'admin@demo.com',
       password,
@@ -127,7 +152,7 @@ serve(async (req) => {
       }
     });
     users.push({
-      email: 'admin2@demo.com',
+      email: 'platform.admin@demo.com',
       password,
       role: 'admin',
       profile: {
