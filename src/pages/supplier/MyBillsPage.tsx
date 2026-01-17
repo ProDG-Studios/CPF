@@ -75,6 +75,7 @@ const MyBillsPage = () => {
     if (!selectedBill || !user) return;
 
     try {
+      // Update status to offer_accepted (MDA will see it)
       const { error } = await supabase
         .from('bills')
         .update({
@@ -85,10 +86,10 @@ const MyBillsPage = () => {
 
       if (error) throw error;
 
-      // Get the MDA for this bill to notify MDA users
+      // Get the MDA for this bill
       const { data: mdaData } = await supabase
         .from('mdas')
-        .select('name')
+        .select('name, id')
         .eq('id', selectedBill.mda_id)
         .single();
 
@@ -103,7 +104,7 @@ const MyBillsPage = () => {
         const mdaNotifications = mdaUsers.map(mdaUser => ({
           user_id: mdaUser.user_id,
           title: 'Bill Pending Your Approval',
-          message: `Invoice ${selectedBill.invoice_number} worth ₦${Number(selectedBill.amount).toLocaleString()} requires MDA approval.`,
+          message: `Invoice ${selectedBill.invoice_number} worth ₦${Number(selectedBill.amount).toLocaleString()} has been accepted by supplier and requires MDA approval.`,
           type: 'info',
           bill_id: selectedBill.id,
         }));
@@ -121,7 +122,7 @@ const MyBillsPage = () => {
         await supabase.from('notifications').insert({
           user_id: billWithSpv.spv_id,
           title: 'Offer Accepted!',
-          message: `Your offer on invoice ${selectedBill.invoice_number} has been accepted. Awaiting MDA approval.`,
+          message: `Your offer on invoice ${selectedBill.invoice_number} has been accepted by the supplier. Awaiting MDA approval.`,
           type: 'success',
           bill_id: selectedBill.id,
         });
@@ -129,22 +130,25 @@ const MyBillsPage = () => {
 
       // Log activity
       await supabase.from('activity_logs').insert({
-        action: 'Offer Accepted',
+        action: 'Supplier Accepted Offer',
         user_id: user.id,
         bill_id: selectedBill.id,
         details: { 
           invoice_number: selectedBill.invoice_number,
-          offer_amount: selectedBill.offer_amount 
+          offer_amount: selectedBill.offer_amount,
+          mda_name: mdaData?.name
         }
       });
 
-      setBills(prev => prev.map(b => 
-        b.id === selectedBill.id 
-          ? { ...b, status: 'offer_accepted' }
-          : b
-      ));
+      // Refetch bills to update UI with database state
+      const { data: updatedBills } = await supabase
+        .from('bills')
+        .select('*')
+        .order('created_at', { ascending: false });
+      
+      if (updatedBills) setBills(updatedBills as Bill[]);
 
-      toast.success('Offer accepted! The bill will be sent to MDA for approval.');
+      toast.success('Offer accepted! The bill has been sent to MDA for approval.');
       setShowOfferModal(false);
       setSelectedBill(null);
     } catch (error) {

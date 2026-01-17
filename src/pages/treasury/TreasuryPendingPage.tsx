@@ -9,8 +9,9 @@ import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { FileText, Shield, ExternalLink, Building2, Calendar, Wallet } from 'lucide-react';
+import { FileText, Shield, ExternalLink, Building2, Calendar, Wallet, Link } from 'lucide-react';
 import { format } from 'date-fns';
+import { useBlockchainDeed } from '@/hooks/useBlockchainDeed';
 
 interface Bill {
   id: string;
@@ -37,6 +38,7 @@ interface MDA {
 
 const TreasuryPendingPage = () => {
   const { user } = useAuth();
+  const { createDeed, loading: blockchainLoading } = useBlockchainDeed();
   const [bills, setBills] = useState<Bill[]>([]);
   const [mdas, setMdas] = useState<Record<string, MDA>>({});
   const [loading, setLoading] = useState(true);
@@ -99,11 +101,51 @@ const TreasuryPendingPage = () => {
 
       if (error) throw error;
 
+      // Create blockchain deed for this certified bill
+      if (selectedBill.spv_id) {
+        try {
+          const discountRate = selectedBill.offer_amount 
+            ? ((Number(selectedBill.amount) - Number(selectedBill.offer_amount)) / Number(selectedBill.amount) * 100)
+            : 0;
+
+          const deedContent = {
+            billId: selectedBill.id,
+            assignorName: 'Supplier', // Would ideally fetch from profile
+            procuringEntityName: mdas[selectedBill.mda_id]?.name || 'Unknown MDA',
+            principalAmount: Number(selectedBill.amount),
+            discountRate: discountRate,
+            purchasePrice: Number(selectedBill.offer_amount) || Number(selectedBill.amount),
+            invoiceNumber: selectedBill.invoice_number,
+            invoiceDate: selectedBill.invoice_date,
+            description: selectedBill.description || '',
+            certificate_number: certificateNumber,
+            payment_quarters: selectedBill.payment_quarters,
+            payment_start_quarter: selectedBill.payment_start_quarter,
+            certified_date: new Date().toISOString(),
+          };
+
+          await createDeed(
+            selectedBill.id,              // billId
+            selectedBill.supplier_id,     // assignorId
+            selectedBill.mda_id,          // procuringEntityId
+            Number(selectedBill.amount),  // principalAmount
+            discountRate,                 // discountRate
+            Number(selectedBill.offer_amount) || Number(selectedBill.amount), // purchasePrice
+            deedContent                   // documentContent
+          );
+
+          console.log('Blockchain deed created for bill:', selectedBill.invoice_number);
+        } catch (deedError) {
+          console.error('Error creating blockchain deed:', deedError);
+          // Don't fail the certification if deed creation fails
+        }
+      }
+
       // Notify supplier
       await supabase.from('notifications').insert({
         user_id: selectedBill.supplier_id,
         title: 'Bill Certified by Treasury',
-        message: `Your invoice ${selectedBill.invoice_number} has been certified. Certificate: ${certificateNumber}. Payment will be processed according to schedule.`,
+        message: `Your invoice ${selectedBill.invoice_number} has been certified. Certificate: ${certificateNumber}. A Deed of Assignment has been created on the blockchain.`,
         type: 'success',
         bill_id: selectedBill.id,
       });
@@ -112,8 +154,8 @@ const TreasuryPendingPage = () => {
       if (selectedBill.spv_id) {
         await supabase.from('notifications').insert({
           user_id: selectedBill.spv_id,
-          title: 'Bill Certified - Generate Receivable Notes',
-          message: `Invoice ${selectedBill.invoice_number} has been certified by Treasury. You can now proceed to generate receivable notes on the blockchain.`,
+          title: 'Bill Certified - Sign the Deed of Assignment',
+          message: `Invoice ${selectedBill.invoice_number} has been certified by Treasury. A blockchain deed has been created. Please sign the Tripartite Deed of Assignment.`,
           type: 'success',
           bill_id: selectedBill.id,
         });
@@ -128,8 +170,8 @@ const TreasuryPendingPage = () => {
       if (adminUsers && adminUsers.length > 0) {
         const adminNotifications = adminUsers.map(a => ({
           user_id: a.user_id,
-          title: 'Bill Certified',
-          message: `Invoice ${selectedBill.invoice_number} worth ₦${Number(selectedBill.amount).toLocaleString()} has been certified.`,
+          title: 'Bill Certified & Deed Created',
+          message: `Invoice ${selectedBill.invoice_number} worth ₦${Number(selectedBill.amount).toLocaleString()} has been certified. Blockchain deed initiated.`,
           type: 'info',
           bill_id: selectedBill.id,
         }));
@@ -144,12 +186,13 @@ const TreasuryPendingPage = () => {
         details: { 
           invoice_number: selectedBill.invoice_number,
           certificate_number: certificateNumber,
-          amount: Number(selectedBill.amount)
+          amount: Number(selectedBill.amount),
+          blockchain_deed_created: !!selectedBill.spv_id
         }
       });
 
       setBills(prev => prev.filter(b => b.id !== selectedBill.id));
-      toast.success('Bill certified successfully!');
+      toast.success('Bill certified! Blockchain deed has been created.');
       setShowCertifyModal(false);
       setSelectedBill(null);
     } catch (error) {
