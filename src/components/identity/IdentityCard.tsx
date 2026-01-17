@@ -138,16 +138,16 @@ const IdentityCard = ({ variant = 'compact', className, showEditButton = true }:
   return (
     <Card className={cn("overflow-hidden", className)}>
       {/* Header with gradient */}
-      <div className={cn("h-20 bg-gradient-to-r relative", roleConfig.gradient)}>
+      <div className={cn("h-24 bg-gradient-to-r relative", roleConfig.gradient)}>
         <div className="absolute inset-0 opacity-20" style={{
           backgroundImage: `url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 0h20v20H0V0zm10 17a7 7 0 1 0 0-14 7 7 0 0 0 0 14z' fill='%23ffffff' fill-opacity='0.3' fill-rule='evenodd'/%3E%3C/svg%3E")`
         }} />
       </div>
       
       <CardContent className="relative pt-0 pb-6">
-        {/* Avatar overlapping header */}
-        <div className="flex items-end gap-4 -mt-10">
-          <div className="relative">
+        {/* Avatar and info section - positioned below the gradient */}
+        <div className="flex items-start gap-4 -mt-12">
+          <div className="relative shrink-0">
             <Avatar className="h-20 w-20 ring-4 ring-background shadow-xl">
               <AvatarFallback className={cn("bg-gradient-to-br text-white font-bold text-2xl", roleConfig.gradient)}>
                 {getInitials()}
@@ -159,31 +159,35 @@ const IdentityCard = ({ variant = 'compact', className, showEditButton = true }:
               </div>
             )}
           </div>
-          <div className="flex-1 min-w-0 pb-1">
-            <h2 className="text-2xl font-bold text-foreground truncate">{getDisplayName()}</h2>
-            <div className="flex items-center gap-2 mt-1">
-              <Badge className={cn("text-xs font-semibold", roleConfig.bgLight, roleConfig.text)}>
-                {roleConfig.label}
-              </Badge>
-              {isComplete ? (
-                <Badge variant="outline" className="bg-success/10 text-success border-success/20 text-xs">
-                  <CheckCircle className="w-3 h-3 mr-1" />
-                  Verified
-                </Badge>
-              ) : (
-                <Badge variant="outline" className="bg-warning/10 text-warning border-warning/20 text-xs">
-                  <AlertCircle className="w-3 h-3 mr-1" />
-                  Incomplete
-                </Badge>
+          <div className="flex-1 min-w-0 pt-14">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <h2 className="text-2xl font-bold text-foreground truncate">{getDisplayName()}</h2>
+                <div className="flex items-center gap-2 mt-1">
+                  <Badge className={cn("text-xs font-semibold", roleConfig.bgLight, roleConfig.text)}>
+                    {roleConfig.label}
+                  </Badge>
+                  {isComplete ? (
+                    <Badge variant="outline" className="bg-success/10 text-success border-success/20 text-xs">
+                      <CheckCircle className="w-3 h-3 mr-1" />
+                      Verified
+                    </Badge>
+                  ) : (
+                    <Badge variant="outline" className="bg-warning/10 text-warning border-warning/20 text-xs">
+                      <AlertCircle className="w-3 h-3 mr-1" />
+                      Incomplete
+                    </Badge>
+                  )}
+                </div>
+              </div>
+              {showEditButton && (
+                <Button variant="outline" size="sm" onClick={() => navigate(getProfilePath())} className="shrink-0">
+                  <ExternalLink className="w-4 h-4 mr-1" />
+                  Edit Profile
+                </Button>
               )}
             </div>
           </div>
-          {showEditButton && (
-            <Button variant="outline" size="sm" onClick={() => navigate(getProfilePath())} className="shrink-0">
-              <ExternalLink className="w-4 h-4 mr-1" />
-              Edit Profile
-            </Button>
-          )}
         </div>
         
         {/* Details Grid */}

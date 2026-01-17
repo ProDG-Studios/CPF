@@ -2,6 +2,23 @@
 
 All demo accounts use the password: **`demo1234`**
 
+---
+
+## 🔄 RECOMMENDED TEST FLOW
+
+Use these 4 accounts together for a complete end-to-end test:
+
+| Step | Role | Login | Action |
+|------|------|-------|--------|
+| 1 | Supplier | `apex@demo.com` | Submit bill to **Federal Ministry of Works** |
+| 2 | SPV | `alpha.capital@demo.com` | Make offer (e.g., 5% discount) |
+| 3 | Supplier | `apex@demo.com` | Accept offer |
+| 4 | MDA | `fmw@demo.com` | Approve bill & set payment terms |
+| 5 | Treasury | `federal.treasury@demo.com` | Certify (creates blockchain deed) |
+| 6 | SPV | `alpha.capital@demo.com` | View blockchain deed |
+
+---
+
 ## Supplier Accounts
 
 | Email | Company Name | Full Name |
@@ -13,6 +30,8 @@ All demo accounts use the password: **`demo1234`**
 | `foodserve@demo.com` | FoodServe Enterprises | Tunde Bakare |
 | `cleanenergy@demo.com` | CleanEnergy Systems | Funke Adeleke |
 
+---
+
 ## SPV Accounts (Special Purpose Vehicles)
 
 | Email | SPV Name | Full Name |
@@ -22,9 +41,11 @@ All demo accounts use the password: **`demo1234`**
 | `gamma.finance@demo.com` | Gamma Finance | Ibrahim Yusuf |
 | `delta.funding@demo.com` | Delta Funding | Oluwaseun Alade |
 
+---
+
 ## MDA Accounts (Ministries, Departments, Agencies)
 
-**⚠️ Important:** When submitting a bill to a specific MDA, use the corresponding MDA account to approve it.
+**⚠️ Important:** When a supplier submits a bill to an MDA, use the matching MDA account to approve it!
 
 | Email | MDA | Department |
 |-------|-----|------------|
@@ -35,6 +56,8 @@ All demo accounts use the password: **`demo1234`**
 | `fma@demo.com` | Federal Ministry of Agriculture | Finance |
 | `fmd@demo.com` | Federal Ministry of Defence | Procurement |
 
+---
+
 ## Treasury Accounts
 
 | Email | Office | Full Name |
@@ -42,6 +65,8 @@ All demo accounts use the password: **`demo1234`**
 | `federal.treasury@demo.com` | Federal Treasury | Babajide Sanwo-Olu |
 | `state.treasury@demo.com` | State Treasury | Hafsat Abubakar |
 | `cbn.liaison@demo.com` | Central Bank Liaison | Godwin Emefiele Jr |
+
+---
 
 ## Admin Accounts
 
@@ -52,43 +77,10 @@ All demo accounts use the password: **`demo1234`**
 
 ---
 
-## Complete Test Flow Example
+## MDA Quick Reference
 
-Here's how to test the full bill lifecycle:
-
-### 1. Supplier Submits Bill
-- **Login:** `apex@demo.com` / `demo1234`
-- **Action:** Submit a new bill to "Federal Ministry of Works"
-- **Note:** Remember which MDA you selected!
-
-### 2. SPV Makes Offer
-- **Login:** `alpha.capital@demo.com` / `demo1234`
-- **Action:** Go to Bills → Find the bill → Make an offer (e.g., 5% discount)
-
-### 3. Supplier Accepts Offer
-- **Login:** `apex@demo.com` / `demo1234`
-- **Action:** Go to My Bills → Accept the offer
-
-### 4. MDA Approves Bill
-- **Login:** `fmw@demo.com` / `demo1234` (matches the MDA selected in step 1)
-- **Action:** Go to Bills → Find the bill → Approve and set payment terms
-
-### 5. Treasury Certifies
-- **Login:** `federal.treasury@demo.com` / `demo1234`
-- **Action:** Go to Pending → Find the bill → Certify (creates blockchain deed)
-
-### 6. View Blockchain Deed (SPV)
-- **Login:** `alpha.capital@demo.com` / `demo1234`
-- **Action:** Go to Blockchain → View the created deed
-
----
-
-## Matching MDAs to Accounts
-
-When a supplier submits a bill to an MDA, use this guide to know which account to log in with:
-
-| If bill is sent to... | Log in as... |
-|----------------------|--------------|
+| If supplier sends bill to... | Log in as MDA... |
+|------------------------------|------------------|
 | Federal Ministry of Works | `fmw@demo.com` |
 | Federal Ministry of Health | `fmh@demo.com` |
 | Federal Ministry of Education | `fme@demo.com` |
