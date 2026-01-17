@@ -46,6 +46,7 @@ import WorkflowPage from "./pages/WorkflowPage";
 import AnalyticsPage from "./pages/AnalyticsPage";
 import PaymentSchedulePage from "./pages/PaymentSchedulePage";
 import NotFound from "./pages/NotFound";
+import ConceptNotePage from "./pages/ConceptNotePage";
 
 const queryClient = new QueryClient();
 
@@ -60,8 +61,9 @@ const App = () => (
             <BrowserRouter>
               <ScrollToTop />
               <Routes>
-                {/* Auth */}
+                {/* Public Pages */}
                 <Route path="/auth" element={<AuthPage />} />
+                <Route path="/conceptnote" element={<ConceptNotePage />} />
                 
                 {/* Supplier Portal */}
                 <Route path="/supplier" element={<ProtectedRoute allowedRoles={['supplier']}><SupplierDashboard /></ProtectedRoute>} />
