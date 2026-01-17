@@ -26,12 +26,12 @@ const CPFLogo = ({ className, size = "md", showText = true, collapsed = false }:
       <div className={cn(
         "relative flex items-center justify-center",
         "rounded-2xl p-1.5",
-        "bg-gradient-to-br from-card/50 to-card/30",
+        "bg-gradient-to-br from-card to-card/95",
         "backdrop-blur-sm",
-        "border border-border/30",
-        "shadow-lg shadow-primary/5",
+        "border border-border",
+        "shadow-md",
         "transition-all duration-300",
-        "hover:shadow-xl hover:shadow-primary/10",
+        "hover:shadow-lg hover:shadow-primary/10",
         "hover:scale-[1.02]",
         size === "sm" ? "p-1" : size === "md" ? "p-1.5" : "p-2"
       )}>
