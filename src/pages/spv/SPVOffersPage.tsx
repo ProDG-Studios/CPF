@@ -65,11 +65,10 @@ const SPVOffersPage = () => {
   const [termsData, setTermsData] = useState({
     payment_quarters: '4',
     start_quarter: 'Q1 2025',
-    interest_rate: '12',
   });
 
-  // Quarter breakdown for per-quarter rates
-  const [quarterBreakdown, setQuarterBreakdown] = useState<{quarter: string; amount: number; rate: number}[]>([]);
+  // Quarter breakdown for per-quarter coupon rates
+  const [quarterBreakdown, setQuarterBreakdown] = useState<{quarter: string; amount: number; couponRate: number}[]>([]);
 
   const fetchData = async () => {
     if (!user) return;
@@ -104,16 +103,19 @@ const SPVOffersPage = () => {
       const startQ = termsData.start_quarter;
       const baseAmount = selectedAcceptedOffer.amount / quarters;
       
-      const breakdown: {quarter: string; amount: number; rate: number}[] = [];
+      const breakdown: {quarter: string; amount: number; couponRate: number}[] = [];
       const startYear = parseInt(startQ.split(' ')[1]);
       let qNum = parseInt(startQ.replace('Q', ''));
       let year = startYear;
+      
+      // Default coupon rates - varying by quarter position
+      const defaultRates = [10, 10.5, 11, 11.5, 12, 12.5, 13, 13.5];
       
       for (let i = 0; i < quarters; i++) {
         breakdown.push({
           quarter: `Q${qNum} ${year}`,
           amount: baseAmount,
-          rate: parseFloat(termsData.interest_rate),
+          couponRate: defaultRates[i] || 12,
         });
         qNum++;
         if (qNum > 4) {
@@ -123,7 +125,7 @@ const SPVOffersPage = () => {
       }
       setQuarterBreakdown(breakdown);
     }
-  }, [selectedAcceptedOffer, showTermsModal, termsData.payment_quarters, termsData.start_quarter, termsData.interest_rate]);
+  }, [selectedAcceptedOffer, showTermsModal, termsData.payment_quarters, termsData.start_quarter]);
 
   const getStatusBadge = (status: string, lastRejected?: boolean | null) => {
     if (lastRejected && status === 'submitted') {
@@ -250,8 +252,12 @@ const SPVOffersPage = () => {
     setSubmitting(false);
   };
 
-  const updateQuarterRate = (index: number, rate: number) => {
-    setQuarterBreakdown(prev => prev.map((q, i) => i === index ? { ...q, rate } : q));
+  const updateQuarterCouponRate = (index: number, couponRate: number) => {
+    setQuarterBreakdown(prev => prev.map((q, i) => i === index ? { ...q, couponRate } : q));
+  };
+
+  const getTotalSpvMargin = () => {
+    return quarterBreakdown.reduce((sum, q) => sum + (q.amount * q.couponRate / 100), 0);
   };
 
   return (
@@ -573,38 +579,47 @@ const SPVOffersPage = () => {
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="space-y-2">
-                  <Label>Base Interest Rate (%)</Label>
-                  <Input
-                    type="number"
-                    value={termsData.interest_rate}
-                    onChange={(e) => setTermsData(prev => ({ ...prev, interest_rate: e.target.value }))}
-                  />
-                </div>
               </div>
 
-              {/* Per-Quarter Breakdown */}
+              {/* Per-Quarter Breakdown with Coupon Rates */}
               <div className="space-y-3">
-                <h4 className="font-semibold text-sm">Per-Quarter Breakdown</h4>
+                <div className="flex items-center justify-between">
+                  <h4 className="font-semibold text-sm">Per-Quarter Coupon Rates</h4>
+                  <p className="text-sm text-muted-foreground">Set individual coupon rates for each payment</p>
+                </div>
                 <div className="space-y-2">
                   {quarterBreakdown.map((q, index) => (
                     <div key={q.quarter} className="flex items-center gap-4 p-3 bg-secondary/50 rounded-lg">
                       <div className="flex-1">
                         <p className="font-medium">{q.quarter}</p>
-                        <p className="text-sm text-muted-foreground">₦{q.amount.toLocaleString()}</p>
+                        <p className="text-sm text-muted-foreground">Principal: ₦{q.amount.toLocaleString()}</p>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Label className="text-sm">Rate:</Label>
+                        <Label className="text-sm">Coupon Rate:</Label>
                         <Input
                           type="number"
-                          value={q.rate}
-                          onChange={(e) => updateQuarterRate(index, parseFloat(e.target.value))}
+                          step="0.5"
+                          value={q.couponRate}
+                          onChange={(e) => updateQuarterCouponRate(index, parseFloat(e.target.value) || 0)}
                           className="w-20 h-8"
                         />
                         <span className="text-sm">%</span>
                       </div>
+                      <div className="text-right min-w-[100px]">
+                        <p className="text-xs text-muted-foreground">Coupon</p>
+                        <p className="text-sm font-medium text-accent">₦{Math.round(q.amount * q.couponRate / 100).toLocaleString()}</p>
+                      </div>
                     </div>
                   ))}
+                </div>
+                
+                {/* SPV Margin Summary */}
+                <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm font-medium text-green-700">Total SPV Margin:</span>
+                    <span className="text-lg font-bold text-green-700">₦{getTotalSpvMargin().toLocaleString()}</span>
+                  </div>
+                  <p className="text-xs text-green-600 mt-1">Sum of all quarterly coupon payments</p>
                 </div>
               </div>
 
