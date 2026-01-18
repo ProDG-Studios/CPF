@@ -384,19 +384,20 @@ const SPVOffersPage = () => {
             </div>
           )}
 
-          <DialogFooter className="gap-2">
+          <DialogFooter className="flex-col sm:flex-row gap-2 pt-4">
             <Button 
               variant="outline" 
               onClick={() => setShowRejectionModal(false)}
+              className="w-full sm:w-auto"
             >
               Close
             </Button>
             <Button 
               onClick={() => { setShowRejectionModal(false); setShowReofferModal(true); }}
-              className="bg-accent hover:bg-accent/90"
+              className="w-full sm:w-auto bg-primary hover:bg-primary/90"
             >
               <RefreshCw className="w-4 h-4 mr-2" />
-              Submit New Offer
+              Revise & Resubmit
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -404,21 +405,20 @@ const SPVOffersPage = () => {
 
       {/* Re-offer Modal */}
       <Dialog open={showReofferModal} onOpenChange={setShowReofferModal}>
-        <DialogContent className="max-w-lg" aria-describedby="reoffer-modal-description">
-          <DialogHeader>
+        <DialogContent className="max-w-lg max-h-[90vh] flex flex-col" aria-describedby="reoffer-modal-description">
+          <DialogHeader className="flex-shrink-0">
             <DialogTitle>Submit Revised Offer</DialogTitle>
             <DialogDescription id="reoffer-modal-description">
-              Create a new offer for invoice {selectedRejectedBill?.invoice_number}. 
-              Consider the supplier's previous feedback when setting your terms.
+              Create a new offer for invoice {selectedRejectedBill?.invoice_number}.
             </DialogDescription>
           </DialogHeader>
           
           {selectedRejectedBill && (
-            <>
+            <div className="flex-1 overflow-y-auto pr-2 space-y-4">
               {selectedRejectedBill.rejection_reason && (
-                <div className="p-3 bg-amber-50 rounded-lg border border-amber-200 mb-4">
-                  <p className="text-xs font-semibold text-amber-700 mb-1">Previous Rejection Reason:</p>
-                  <p className="text-sm text-amber-600">{selectedRejectedBill.rejection_reason}</p>
+                <div className="p-3 bg-amber-50 dark:bg-amber-900/20 rounded-lg border border-amber-200 dark:border-amber-800">
+                  <p className="text-xs font-semibold text-amber-700 dark:text-amber-400 mb-1">Previous Rejection Reason:</p>
+                  <p className="text-sm text-amber-600 dark:text-amber-300">{selectedRejectedBill.rejection_reason}</p>
                 </div>
               )}
               
@@ -430,7 +430,7 @@ const SPVOffersPage = () => {
                 onSubmit={handleSubmitNewOffer}
                 submitting={submitting}
               />
-            </>
+            </div>
           )}
         </DialogContent>
       </Dialog>
