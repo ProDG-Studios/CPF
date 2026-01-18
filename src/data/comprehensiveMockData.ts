@@ -267,7 +267,7 @@ export const mockSPVBrowsePayablesData = Array.from({ length: 24 }, (_, i) => {
     mda_name: mdaNames[i % mdaNames.length],
     supplier_name: supplierNames[i % supplierNames.length],
     supplier_company: `${supplierNames[i % supplierNames.length]} Holdings`,
-    supplier_address: `${Math.floor(Math.random() * 200) + 1} Industrial Road, Lagos`,
+    supplier_address: `${Math.floor(Math.random() * 200) + 1} Industrial Road, Nairobi`,
     days_outstanding: Math.floor(Math.random() * 120) + 30,
   };
 });

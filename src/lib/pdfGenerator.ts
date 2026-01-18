@@ -106,9 +106,9 @@ export const generateConceptNotePDF = () => {
 
   // Stats Grid
   const stats = [
-    { value: '₦5-8T', label: 'Nigerian Contractor Debt' },
+    { value: 'KES 500B+', label: 'Kenyan Contractor Debt' },
     { value: '6-18', label: 'Months Payment Delay' },
-    { value: '₦18T+', label: 'Pension Fund AUM' },
+    { value: 'KES 1.8T+', label: 'Pension Fund AUM' },
     { value: '92%', label: 'Typical Advance Rate' }
   ];
 
@@ -340,12 +340,12 @@ export const generateConceptNotePDF = () => {
   y += 8;
 
   const exampleData = [
-    ['Invoice Amount', '₦100,000,000'],
+    ['Invoice Amount', 'KES 100,000,000'],
     ['Discount Rate', '8%'],
-    ['SPV Purchase Price', '₦92,000,000'],
-    ['Supplier Receives (Immediate)', '₦92,000,000'],
-    ['SPV Receives at Maturity', '₦100,000,000'],
-    ['SPV Profit', '₦8,000,000']
+    ['SPV Purchase Price', 'KES 92,000,000'],
+    ['Supplier Receives (Immediate)', 'KES 92,000,000'],
+    ['SPV Receives at Maturity', 'KES 100,000,000'],
+    ['SPV Profit', 'KES 8,000,000']
   ];
 
   exampleData.forEach((row, index) => {
@@ -373,47 +373,47 @@ export const generateConceptNotePDF = () => {
   drawGoldLine(y + 3);
   y += 15;
 
-  // Nigeria
+  // Kenya
   doc.setTextColor(26, 26, 26);
   doc.setFontSize(12);
   doc.setFont('helvetica', 'bold');
-  doc.text('Nigeria Focus', margin, y);
+  doc.text('Kenya Focus', margin, y);
   y += 8;
 
-  const nigeriaPoints = [
-    '• Government Contractor Debt: Estimated ₦5-8 trillion',
-    '• Annual Government Procurement: ₦3+ trillion',
-    '• Pension Fund AUM: ₦18+ trillion (seeking quality investments)',
-    '• SME Supplier Base: 40+ million (majority government contractors)'
+  const kenyaPoints = [
+    '• Government Contractor Debt: Estimated KES 500+ billion',
+    '• Annual Government Procurement: KES 800+ billion',
+    '• Pension Fund AUM: KES 1.8+ trillion (seeking quality investments)',
+    '• SME Supplier Base: 7+ million (majority government contractors)'
   ];
 
   doc.setTextColor(64, 64, 64);
   doc.setFontSize(9);
   doc.setFont('helvetica', 'normal');
-  nigeriaPoints.forEach(point => {
+  kenyaPoints.forEach(point => {
     doc.text(point, margin + 5, y);
     y += 6;
   });
 
   y += 8;
 
-  // Ghana
+  // Uganda
   doc.setTextColor(26, 26, 26);
   doc.setFontSize(12);
   doc.setFont('helvetica', 'bold');
-  doc.text('Ghana Expansion', margin, y);
+  doc.text('Uganda Expansion', margin, y);
   y += 8;
 
-  const ghanaPoints = [
-    '• Government Contractor Arrears: GH₵15-20 billion',
-    '• Growing Pension Industry: GH₵50+ billion AUM',
-    '• Strong Regulatory Framework: Bank of Ghana oversight'
+  const ugandaPoints = [
+    '• Government Contractor Arrears: UGX 3-5 trillion',
+    '• Growing Pension Industry: UGX 20+ trillion AUM',
+    '• Strong Regulatory Framework: Bank of Uganda oversight'
   ];
 
   doc.setTextColor(64, 64, 64);
   doc.setFontSize(9);
   doc.setFont('helvetica', 'normal');
-  ghanaPoints.forEach(point => {
+  ugandaPoints.forEach(point => {
     doc.text(point, margin + 5, y);
     y += 6;
   });

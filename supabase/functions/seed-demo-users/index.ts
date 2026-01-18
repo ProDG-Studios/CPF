@@ -36,12 +36,12 @@ serve(async (req) => {
 
     // Supplier accounts - named by company
     const suppliers = [
-      { email: 'apex@demo.com', company: 'Apex Construction Ltd', name: 'Chidi Okonkwo' },
-      { email: 'buildright@demo.com', company: 'BuildRight Nigeria', name: 'Amaka Eze' },
-      { email: 'techsupply@demo.com', company: 'TechSupply Co', name: 'Emeka Nwosu' },
-      { email: 'medequip@demo.com', company: 'MedEquip Solutions', name: 'Ngozi Adeyemi' },
-      { email: 'foodserve@demo.com', company: 'FoodServe Enterprises', name: 'Tunde Bakare' },
-      { email: 'cleanenergy@demo.com', company: 'CleanEnergy Systems', name: 'Funke Adeleke' },
+      { email: 'apex@demo.com', company: 'Apex Construction Ltd', name: 'James Mwangi' },
+      { email: 'buildright@demo.com', company: 'BuildRight Kenya', name: 'Amina Wanjiku' },
+      { email: 'techsupply@demo.com', company: 'TechSupply Co', name: 'Peter Ochieng' },
+      { email: 'medequip@demo.com', company: 'MedEquip Solutions', name: 'Grace Nyambura' },
+      { email: 'foodserve@demo.com', company: 'FoodServe Enterprises', name: 'Joseph Kiprop' },
+      { email: 'cleanenergy@demo.com', company: 'CleanEnergy Systems', name: 'Sarah Akinyi' },
     ];
 
     for (let i = 0; i < suppliers.length; i++) {
@@ -53,11 +53,11 @@ serve(async (req) => {
         profile: {
           full_name: s.name,
           company_name: s.company,
-          registration_number: `RC${100000 + i}`,
-          tax_id: `TIN${200000 + i}`,
-          phone: `+234801${String(i).padStart(7, '0')}`,
-          address: `${i + 1} Industrial Avenue, Lagos`,
-          bank_name: ['First Bank', 'GTBank', 'Zenith Bank', 'Access Bank'][i % 4],
+          registration_number: `PVT${100000 + i}`,
+          tax_id: `KRA${200000 + i}`,
+          phone: `+254701${String(i).padStart(6, '0')}`,
+          address: `${i + 1} Industrial Road, Nairobi`,
+          bank_name: ['Equity Bank', 'KCB', 'Co-operative Bank', 'NCBA'][i % 4],
           bank_account: `${1000000000 + i}`,
           profile_completed: true,
         }
@@ -66,10 +66,10 @@ serve(async (req) => {
 
     // SPV accounts - named by SPV name
     const spvs = [
-      { email: 'alpha.capital@demo.com', spv: 'Alpha Capital SPV', name: 'Adekunle Johnson' },
-      { email: 'beta.investments@demo.com', spv: 'Beta Investments', name: 'Chioma Onyekachi' },
-      { email: 'gamma.finance@demo.com', spv: 'Gamma Finance', name: 'Ibrahim Yusuf' },
-      { email: 'delta.funding@demo.com', spv: 'Delta Funding', name: 'Oluwaseun Alade' },
+      { email: 'alpha.capital@demo.com', spv: 'Alpha Capital SPV', name: 'David Omondi' },
+      { email: 'beta.investments@demo.com', spv: 'Beta Investments', name: 'Mary Njeri' },
+      { email: 'gamma.finance@demo.com', spv: 'Gamma Finance', name: 'John Kamau' },
+      { email: 'delta.funding@demo.com', spv: 'Delta Funding', name: 'Lucy Wambui' },
     ];
 
     for (let i = 0; i < spvs.length; i++) {
@@ -82,7 +82,7 @@ serve(async (req) => {
           full_name: s.name,
           spv_name: s.spv,
           license_number: `SPV-LIC-${3000 + i}`,
-          phone: `+234802${String(i).padStart(7, '0')}`,
+          phone: `+254702${String(i).padStart(6, '0')}`,
           profile_completed: true,
         }
       });
@@ -112,7 +112,7 @@ serve(async (req) => {
           mda_name: mda?.name || m.mdaName,
           mda_code: mda?.id || null,
           department: m.dept,
-          phone: `+234803${String(i).padStart(7, '0')}`,
+          phone: `+254703${String(i).padStart(6, '0')}`,
           profile_completed: true,
         }
       });
@@ -135,7 +135,7 @@ serve(async (req) => {
           full_name: t.name,
           treasury_office: t.office,
           employee_id: t.empId,
-          phone: `+234804${String(i).padStart(7, '0')}`,
+          phone: `+254704${String(i).padStart(6, '0')}`,
           profile_completed: true,
         }
       });
