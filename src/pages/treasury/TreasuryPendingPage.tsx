@@ -12,7 +12,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { FileText, Shield, ExternalLink, Building2, Calendar, Wallet, Edit, Eye, CheckCircle, Clock } from 'lucide-react';
+import { FileText, Shield, ExternalLink, Building2, Calendar, Wallet, Edit, Eye, CheckCircle, Clock, PenLine, User } from 'lucide-react';
 import { format, subDays, subMonths } from 'date-fns';
 import { useBlockchainDeed } from '@/hooks/useBlockchainDeed';
 
@@ -57,9 +57,19 @@ const TreasuryPendingPage = () => {
   const [showCertifyModal, setShowCertifyModal] = useState(false);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [showAmendModal, setShowAmendModal] = useState(false);
+  const [showSigningModal, setShowSigningModal] = useState(false);
+  const [showFinalDocumentModal, setShowFinalDocumentModal] = useState(false);
   const [certificateNumber, setCertificateNumber] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [activeTab, setActiveTab] = useState('pending');
+
+  // Signature tracking
+  const [signatures, setSignatures] = useState({
+    supplier: { signed: true, date: '2025-01-10', name: '' },
+    spv: { signed: true, date: '2025-01-12', name: 'Capital Finance Partners' },
+    mda: { signed: true, date: '2025-01-14', name: '' },
+    treasury: { signed: false, date: '', name: 'National Treasury' },
+  });
 
   // Amend form state
   const [amendData, setAmendData] = useState({
@@ -131,6 +141,46 @@ const TreasuryPendingPage = () => {
 
     toast.success(`Terms amended for ${selectedMockBill.invoice_number}. SPV, MDA, and Supplier have been notified.`);
     setShowAmendModal(false);
+    setSelectedMockBill(null);
+    setSubmitting(false);
+  };
+
+  const handleOpenSigningModal = (bill: typeof mockPendingBills[0]) => {
+    setSelectedMockBill(bill);
+    setSignatures(prev => ({
+      ...prev,
+      supplier: { ...prev.supplier, name: bill.supplier_name },
+      mda: { ...prev.mda, name: bill.mda_name },
+    }));
+    setCertificateNumber(generateCertificateNumber());
+    setShowSigningModal(true);
+  };
+
+  const handleTreasurySign = async () => {
+    if (!selectedMockBill) return;
+
+    setSubmitting(true);
+    await new Promise(resolve => setTimeout(resolve, 1500));
+
+    // Update treasury signature
+    setSignatures(prev => ({
+      ...prev,
+      treasury: { signed: true, date: format(new Date(), 'yyyy-MM-dd'), name: 'National Treasury' },
+    }));
+
+    setShowSigningModal(false);
+    setShowFinalDocumentModal(true);
+    setSubmitting(false);
+  };
+
+  const handleCompleteCertification = async () => {
+    if (!selectedMockBill) return;
+
+    setSubmitting(true);
+    await new Promise(resolve => setTimeout(resolve, 1000));
+
+    toast.success(`Certificate ${certificateNumber} issued! All parties have been notified. Document fully executed.`);
+    setShowFinalDocumentModal(false);
     setSelectedMockBill(null);
     setSubmitting(false);
   };
@@ -366,9 +416,9 @@ const TreasuryPendingPage = () => {
                       <Eye className="w-4 h-4 mr-2" />
                       View & Amend
                     </Button>
-                    <Button size="sm" onClick={() => toast.success('Certification modal would open')}>
-                      <Shield className="w-4 h-4 mr-2" />
-                      Issue Certificate
+                    <Button size="sm" onClick={() => handleOpenSigningModal(bill)}>
+                      <PenLine className="w-4 h-4 mr-2" />
+                      Sign & Certify
                     </Button>
                   </div>
                 </CardContent>
@@ -691,6 +741,267 @@ const TreasuryPendingPage = () => {
               </Button>
               <Button onClick={handleCertify} disabled={submitting || !certificateNumber}>
                 {submitting ? 'Issuing...' : 'Issue Certificate'}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Treasury Signing Modal */}
+        <Dialog open={showSigningModal} onOpenChange={setShowSigningModal}>
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <PenLine className="w-5 h-5" />
+                Treasury Certification & Signing
+              </DialogTitle>
+              <DialogDescription>
+                Review signatures and certify {selectedMockBill?.invoice_number}
+              </DialogDescription>
+            </DialogHeader>
+            
+            {selectedMockBill && (
+              <div className="space-y-6 py-4">
+                {/* Document Summary */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="p-4 bg-secondary rounded-lg">
+                    <p className="text-sm text-muted-foreground">Invoice Amount</p>
+                    <p className="text-xl font-bold">₦{selectedMockBill.amount.toLocaleString()}</p>
+                  </div>
+                  <div className="p-4 bg-accent/10 rounded-lg">
+                    <p className="text-sm text-muted-foreground">SPV Purchase</p>
+                    <p className="text-xl font-bold text-accent">₦{selectedMockBill.offer_amount.toLocaleString()}</p>
+                  </div>
+                </div>
+
+                {/* Signature Status */}
+                <div className="space-y-3">
+                  <h4 className="font-semibold">Tripartite Deed of Assignment - Signatures</h4>
+                  
+                  {/* Supplier Signature */}
+                  <div className={`p-4 rounded-lg border-2 ${signatures.supplier.signed ? 'bg-green-50 border-green-300' : 'bg-gray-50 border-dashed border-gray-300'}`}>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className={`p-2 rounded-full ${signatures.supplier.signed ? 'bg-green-100' : 'bg-gray-200'}`}>
+                          <User className="w-4 h-4 text-green-600" />
+                        </div>
+                        <div>
+                          <p className="font-medium">Assignor (Supplier)</p>
+                          <p className="text-sm text-muted-foreground">{signatures.supplier.name}</p>
+                        </div>
+                      </div>
+                      {signatures.supplier.signed ? (
+                        <div className="text-right">
+                          <Badge className="bg-green-100 text-green-700">
+                            <CheckCircle className="w-3 h-3 mr-1" />
+                            Signed
+                          </Badge>
+                          <p className="text-xs text-muted-foreground mt-1">{signatures.supplier.date}</p>
+                        </div>
+                      ) : (
+                        <Badge variant="outline">Pending</Badge>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* MDA Signature */}
+                  <div className={`p-4 rounded-lg border-2 ${signatures.mda.signed ? 'bg-green-50 border-green-300' : 'bg-gray-50 border-dashed border-gray-300'}`}>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className={`p-2 rounded-full ${signatures.mda.signed ? 'bg-green-100' : 'bg-gray-200'}`}>
+                          <Building2 className="w-4 h-4 text-green-600" />
+                        </div>
+                        <div>
+                          <p className="font-medium">Procuring Entity (MDA)</p>
+                          <p className="text-sm text-muted-foreground">{signatures.mda.name}</p>
+                        </div>
+                      </div>
+                      {signatures.mda.signed ? (
+                        <div className="text-right">
+                          <Badge className="bg-green-100 text-green-700">
+                            <CheckCircle className="w-3 h-3 mr-1" />
+                            Signed
+                          </Badge>
+                          <p className="text-xs text-muted-foreground mt-1">{signatures.mda.date}</p>
+                        </div>
+                      ) : (
+                        <Badge variant="outline">Pending</Badge>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* SPV Signature */}
+                  <div className={`p-4 rounded-lg border-2 ${signatures.spv.signed ? 'bg-green-50 border-green-300' : 'bg-gray-50 border-dashed border-gray-300'}`}>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className={`p-2 rounded-full ${signatures.spv.signed ? 'bg-green-100' : 'bg-gray-200'}`}>
+                          <Wallet className="w-4 h-4 text-green-600" />
+                        </div>
+                        <div>
+                          <p className="font-medium">Special Purpose Vehicle (SPV)</p>
+                          <p className="text-sm text-muted-foreground">{signatures.spv.name}</p>
+                        </div>
+                      </div>
+                      {signatures.spv.signed ? (
+                        <div className="text-right">
+                          <Badge className="bg-green-100 text-green-700">
+                            <CheckCircle className="w-3 h-3 mr-1" />
+                            Signed
+                          </Badge>
+                          <p className="text-xs text-muted-foreground mt-1">{signatures.spv.date}</p>
+                        </div>
+                      ) : (
+                        <Badge variant="outline">Pending</Badge>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Treasury Signature - Current Step */}
+                  <div className={`p-4 rounded-lg border-2 ${signatures.treasury.signed ? 'bg-green-50 border-green-300' : 'bg-blue-50 border-blue-300'}`}>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className={`p-2 rounded-full ${signatures.treasury.signed ? 'bg-green-100' : 'bg-blue-100'}`}>
+                          <Shield className="w-4 h-4 text-blue-600" />
+                        </div>
+                        <div>
+                          <p className="font-medium">Servicing Agent (National Treasury)</p>
+                          <p className="text-sm text-muted-foreground">{signatures.treasury.name}</p>
+                        </div>
+                      </div>
+                      {signatures.treasury.signed ? (
+                        <div className="text-right">
+                          <Badge className="bg-green-100 text-green-700">
+                            <CheckCircle className="w-3 h-3 mr-1" />
+                            Signed
+                          </Badge>
+                          <p className="text-xs text-muted-foreground mt-1">{signatures.treasury.date}</p>
+                        </div>
+                      ) : (
+                        <Badge className="bg-blue-100 text-blue-700 animate-pulse">Your Signature Required</Badge>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Certificate Number */}
+                <div className="space-y-2">
+                  <Label>Certificate Number</Label>
+                  <Input
+                    value={certificateNumber}
+                    onChange={(e) => setCertificateNumber(e.target.value)}
+                    placeholder="CERT-2025-00001"
+                  />
+                </div>
+
+                <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-700">
+                  <p className="font-medium">By signing, you:</p>
+                  <ul className="list-disc list-inside mt-1 text-xs">
+                    <li>Certify this receivable for payment</li>
+                    <li>Authorize the assignment to the SPV</li>
+                    <li>Complete the tripartite deed execution</li>
+                  </ul>
+                </div>
+              </div>
+            )}
+
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setShowSigningModal(false)}>
+                Cancel
+              </Button>
+              <Button onClick={handleTreasurySign} disabled={submitting || !certificateNumber}>
+                <PenLine className="w-4 h-4 mr-2" />
+                {submitting ? 'Signing...' : 'Sign & Certify'}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Final Document Complete Modal */}
+        <Dialog open={showFinalDocumentModal} onOpenChange={setShowFinalDocumentModal}>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2 text-green-700">
+                <CheckCircle className="w-5 h-5" />
+                Document Fully Executed
+              </DialogTitle>
+              <DialogDescription>
+                All parties have signed. The receivable is now officially assigned.
+              </DialogDescription>
+            </DialogHeader>
+            
+            {selectedMockBill && (
+              <div className="space-y-6 py-4">
+                {/* Success Banner */}
+                <div className="p-6 bg-green-50 border-2 border-green-300 rounded-lg text-center">
+                  <CheckCircle className="w-12 h-12 mx-auto text-green-600 mb-3" />
+                  <h3 className="text-lg font-bold text-green-700">Tripartite Deed of Assignment Complete</h3>
+                  <p className="text-sm text-green-600 mt-1">Certificate: {certificateNumber}</p>
+                </div>
+
+                {/* All Signatures Summary */}
+                <div className="space-y-2">
+                  <h4 className="font-semibold text-sm">Collected Signatures</h4>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="p-3 bg-secondary rounded-lg flex items-center gap-3">
+                      <CheckCircle className="w-5 h-5 text-green-600" />
+                      <div>
+                        <p className="text-xs text-muted-foreground">Supplier</p>
+                        <p className="text-sm font-medium">{signatures.supplier.name}</p>
+                      </div>
+                    </div>
+                    <div className="p-3 bg-secondary rounded-lg flex items-center gap-3">
+                      <CheckCircle className="w-5 h-5 text-green-600" />
+                      <div>
+                        <p className="text-xs text-muted-foreground">MDA</p>
+                        <p className="text-sm font-medium">{signatures.mda.name}</p>
+                      </div>
+                    </div>
+                    <div className="p-3 bg-secondary rounded-lg flex items-center gap-3">
+                      <CheckCircle className="w-5 h-5 text-green-600" />
+                      <div>
+                        <p className="text-xs text-muted-foreground">SPV</p>
+                        <p className="text-sm font-medium">{signatures.spv.name}</p>
+                      </div>
+                    </div>
+                    <div className="p-3 bg-secondary rounded-lg flex items-center gap-3">
+                      <CheckCircle className="w-5 h-5 text-green-600" />
+                      <div>
+                        <p className="text-xs text-muted-foreground">National Treasury</p>
+                        <p className="text-sm font-medium">{signatures.treasury.name}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Final Summary */}
+                <div className="grid grid-cols-3 gap-4 text-center">
+                  <div className="p-4 bg-secondary rounded-lg">
+                    <p className="text-xs text-muted-foreground">Face Value</p>
+                    <p className="font-bold">₦{selectedMockBill.amount.toLocaleString()}</p>
+                  </div>
+                  <div className="p-4 bg-secondary rounded-lg">
+                    <p className="text-xs text-muted-foreground">Purchase Price</p>
+                    <p className="font-bold text-accent">₦{selectedMockBill.offer_amount.toLocaleString()}</p>
+                  </div>
+                  <div className="p-4 bg-secondary rounded-lg">
+                    <p className="text-xs text-muted-foreground">Payment Terms</p>
+                    <p className="font-bold">{selectedMockBill.payment_quarters}Q from {selectedMockBill.payment_start_quarter}</p>
+                  </div>
+                </div>
+
+                <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-700">
+                  <p className="font-medium">Next Steps:</p>
+                  <ul className="list-disc list-inside mt-1 text-xs">
+                    <li>The SPV can now mint Receivable Notes as NFTs</li>
+                    <li>All parties have received confirmation notifications</li>
+                    <li>The deed is recorded on the blockchain</li>
+                  </ul>
+                </div>
+              </div>
+            )}
+
+            <DialogFooter>
+              <Button onClick={handleCompleteCertification} disabled={submitting}>
+                {submitting ? 'Completing...' : 'Complete & Close'}
               </Button>
             </DialogFooter>
           </DialogContent>

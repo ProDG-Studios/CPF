@@ -59,6 +59,7 @@ const MDABillsPage = () => {
   const [rejectReason, setRejectReason] = useState('');
   const [paymentQuarters, setPaymentQuarters] = useState('4');
   const [startQuarter, setStartQuarter] = useState('Q1 2025');
+  const [selectedTermsOption, setSelectedTermsOption] = useState<string>('spv_proposed');
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
@@ -225,6 +226,7 @@ const MDABillsPage = () => {
     setSelectedMockBill(bill);
     setPaymentQuarters(bill.payment_quarters.toString());
     setStartQuarter(bill.payment_start_quarter);
+    setSelectedTermsOption('spv_proposed');
     setShowApprovalModal(true);
   };
 
@@ -554,26 +556,74 @@ const MDABillsPage = () => {
                   </div>
                 </div>
 
+                {/* SPV Proposed Terms */}
                 <div className="p-4 bg-purple-50 border border-purple-200 rounded-lg">
-                  <p className="font-medium text-purple-700 mb-2">SPV Proposed Terms:</p>
-                  <div className="grid grid-cols-2 gap-3 text-sm">
+                  <p className="font-medium text-purple-700 mb-2">SPV Proposed Payment Schedule:</p>
+                  <div className="grid grid-cols-2 gap-3 text-sm mb-3">
                     <div>
-                      <p className="text-muted-foreground">Quarters</p>
-                      <p className="font-medium">{selectedMockBill.payment_quarters}</p>
+                      <p className="text-muted-foreground">Payment Quarters</p>
+                      <p className="font-medium">{selectedMockBill.payment_quarters} quarters</p>
                     </div>
                     <div>
-                      <p className="text-muted-foreground">Start Quarter</p>
+                      <p className="text-muted-foreground">Starting From</p>
                       <p className="font-medium">{selectedMockBill.payment_start_quarter}</p>
                     </div>
                   </div>
-                  <div className="mt-3">
-                    <p className="text-muted-foreground text-sm">Interest Rates per Quarter:</p>
-                    <p className="font-medium">{selectedMockBill.quarter_rates.join('%, ')}%</p>
+                  <div className="space-y-2">
+                    <p className="text-muted-foreground text-sm">Coupon Rates per Quarter:</p>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                      {selectedMockBill.quarter_rates.map((rate, idx) => (
+                        <div key={idx} className="p-2 bg-white rounded border text-center">
+                          <p className="text-xs text-muted-foreground">Q{idx + 1}</p>
+                          <p className="font-semibold text-purple-700">{rate}%</p>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </div>
 
+                {/* Selection Dropdown */}
+                <div className="space-y-2">
+                  <Label>Select Payment Terms Option</Label>
+                  <Select value={selectedTermsOption} onValueChange={setSelectedTermsOption}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Choose terms" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="spv_proposed">
+                        Accept SPV Proposed Terms ({selectedMockBill.payment_quarters}Q from {selectedMockBill.payment_start_quarter})
+                      </SelectItem>
+                      <SelectItem value="accelerated">
+                        Accelerated ({Math.max(2, selectedMockBill.payment_quarters - 2)}Q from {selectedMockBill.payment_start_quarter})
+                      </SelectItem>
+                      <SelectItem value="extended">
+                        Extended ({selectedMockBill.payment_quarters + 2}Q from {selectedMockBill.payment_start_quarter})
+                      </SelectItem>
+                      <SelectItem value="deferred">
+                        Deferred Start ({selectedMockBill.payment_quarters}Q from Q{parseInt(selectedMockBill.payment_start_quarter.replace('Q', '')) % 4 + 1} 2025)
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground">
+                    {selectedTermsOption === 'spv_proposed' && 'Use the exact terms proposed by the SPV'}
+                    {selectedTermsOption === 'accelerated' && 'Shorter payment period with higher quarterly payments'}
+                    {selectedTermsOption === 'extended' && 'Longer payment period with lower quarterly payments'}
+                    {selectedTermsOption === 'deferred' && 'Same duration but starting one quarter later'}
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Approval Notes (Optional)</Label>
+                  <Textarea
+                    value={approvalNotes}
+                    onChange={(e) => setApprovalNotes(e.target.value)}
+                    placeholder="Add any notes about this approval..."
+                    rows={2}
+                  />
+                </div>
+
                 <div className="p-3 bg-green-50 border border-green-200 rounded-lg text-sm text-green-700">
-                  By approving, you confirm that the terms are acceptable and the bill will be forwarded to National Treasury.
+                  By approving, you confirm that the terms are acceptable and the bill will be forwarded to National Treasury for final certification.
                 </div>
               </div>
             )}
