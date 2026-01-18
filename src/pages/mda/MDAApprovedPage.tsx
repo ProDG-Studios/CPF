@@ -91,7 +91,7 @@ const MDAApprovedPage = () => {
             <CardContent className="py-4">
               <p className="text-sm text-purple-600">Total Value</p>
               <p className="text-2xl font-bold text-purple-700">
-                ₦{(bills.reduce((sum, b) => sum + Number(b.amount), 0) / 1000000).toFixed(1)}M
+                KES {(bills.reduce((sum, b) => sum + Number(b.amount), 0) / 1000000).toFixed(1)}M
               </p>
             </CardContent>
           </Card>
@@ -130,7 +130,7 @@ const MDAApprovedPage = () => {
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="font-bold text-lg">₦{Number(bill.amount).toLocaleString()}</p>
+                      <p className="font-bold text-lg">KES {Number(bill.amount).toLocaleString()}</p>
                       <Badge className={getStatusBadge(bill.status)}>
                         {bill.status.replace(/_/g, ' ')}
                       </Badge>

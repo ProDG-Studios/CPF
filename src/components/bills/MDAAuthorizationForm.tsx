@@ -90,12 +90,12 @@ const MDAAuthorizationForm = ({
           </div>
           <div className="flex justify-between">
             <span className="text-muted-foreground">Pending Bill Amount</span>
-            <span className="font-bold">₦{billAmount.toLocaleString()}</span>
+            <span className="font-bold">KES {billAmount.toLocaleString()}</span>
           </div>
           {offerAmount && (
             <div className="flex justify-between">
               <span className="text-muted-foreground">SPV Purchase Price</span>
-              <span className="font-medium text-accent">₦{offerAmount.toLocaleString()}</span>
+              <span className="font-medium text-accent">KES {offerAmount.toLocaleString()}</span>
             </div>
           )}
         </div>
@@ -146,14 +146,14 @@ const MDAAuthorizationForm = ({
             {getPaymentSchedule().map((item, index) => (
               <div key={index} className="flex justify-between text-sm py-1 border-b last:border-0">
                 <span className="text-muted-foreground">{item.quarter}</span>
-                <span className="font-medium">₦{item.amount.toLocaleString()}</span>
+                <span className="font-medium">KES {item.amount.toLocaleString()}</span>
               </div>
             ))}
           </div>
           <Separator className="my-2" />
           <div className="flex justify-between text-sm font-bold">
             <span>Total</span>
-            <span>₦{billAmount.toLocaleString()}</span>
+            <span>KES {billAmount.toLocaleString()}</span>
           </div>
         </div>
       </div>
@@ -172,7 +172,7 @@ const MDAAuthorizationForm = ({
           
           <ol className="list-decimal list-inside text-xs space-y-2 text-muted-foreground">
             <li>
-              We have accumulated <strong>₦{billAmount.toLocaleString()}</strong> of Pending Bills owed to 
+              We have accumulated <strong>KES {billAmount.toLocaleString()}</strong> of Pending Bills owed to 
               the supplier verified by the Pending Bills Verification Committee.
             </li>
             <li>

@@ -129,7 +129,7 @@ const SPVDashboard = () => {
                   <DollarSign className="w-5 h-5 text-accent" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold">₦{(stats.totalInvested / 1000000).toFixed(1)}M</p>
+                  <p className="text-2xl font-bold">KES {(stats.totalInvested / 1000000).toFixed(1)}M</p>
                   <p className="text-sm text-muted-foreground">Total Invested</p>
                 </div>
               </div>
@@ -166,7 +166,7 @@ const SPVDashboard = () => {
                           {formatDistanceToNow(new Date(bill.created_at), { addSuffix: true })}
                         </p>
                       </div>
-                      <span className="font-bold">₦{Number(bill.amount).toLocaleString()}</span>
+                      <span className="font-bold">KES {Number(bill.amount).toLocaleString()}</span>
                     </div>
                   ))}
                 </div>
@@ -201,7 +201,7 @@ const SPVDashboard = () => {
                           {bill.status.replace(/_/g, ' ')}
                         </Badge>
                       </div>
-                      <span className="font-bold">₦{Number(bill.amount).toLocaleString()}</span>
+                      <span className="font-bold">KES {Number(bill.amount).toLocaleString()}</span>
                     </div>
                   ))}
                 </div>

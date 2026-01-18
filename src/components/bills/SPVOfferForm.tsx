@@ -70,7 +70,7 @@ const SPVOfferForm = ({
           </div>
           
           <div className="space-y-2">
-            <Label htmlFor="offerAmount">Net Pay (₦)</Label>
+            <Label htmlFor="offerAmount">Net Pay (KES)</Label>
             <Input
               id="offerAmount"
               type="number"
@@ -85,17 +85,17 @@ const SPVOfferForm = ({
         <div className="mt-4 p-3 bg-background rounded-lg border space-y-2">
           <div className="flex justify-between text-sm">
             <span className="text-muted-foreground">Invoice Face Value</span>
-            <span className="font-medium">₦{billAmount.toLocaleString()}</span>
+            <span className="font-medium">KES {billAmount.toLocaleString()}</span>
           </div>
           <div className="flex justify-between text-sm">
             <span className="text-muted-foreground">Net Pay</span>
-            <span className="font-medium text-accent">₦{parseFloat(offerAmount || '0').toLocaleString()}</span>
+            <span className="font-medium text-accent">KES {parseFloat(offerAmount || '0').toLocaleString()}</span>
           </div>
           <Separator className="my-2" />
           <div className="flex justify-between text-sm">
             <span className="text-muted-foreground">SPV Margin</span>
             <span className="font-bold text-green-600">
-              ₦{profit.toLocaleString()} ({profitPercent.toFixed(1)}%)
+              KES {profit.toLocaleString()} ({profitPercent.toFixed(1)}%)
             </span>
           </div>
         </div>
@@ -127,11 +127,11 @@ const SPVOfferForm = ({
           
           <ul className="list-disc list-inside text-xs space-y-1 text-muted-foreground">
             <li>
-              The pending payout of <strong>₦{billAmount.toLocaleString()}</strong> owed by {mdaName || 'the MDA'} 
+              The pending payout of <strong>KES {billAmount.toLocaleString()}</strong> owed by {mdaName || 'the MDA'} 
               will be assigned to you
             </li>
             <li>
-              You will pay the Assignor <strong>₦{parseFloat(offerAmount || '0').toLocaleString()}</strong> as consideration
+              You will pay the Assignor <strong>KES {parseFloat(offerAmount || '0').toLocaleString()}</strong> as consideration
             </li>
             <li>You will have full rights to collect the pending payout from the debtor</li>
             <li>The assignment is irrevocable and absolute</li>
@@ -167,7 +167,7 @@ const SPVOfferForm = ({
         className="w-full"
         size="lg"
       >
-        {submitting ? 'Submitting Offer...' : `Submit Offer of ₦${parseFloat(offerAmount || '0').toLocaleString()}`}
+        {submitting ? 'Submitting Offer...' : `Submit Offer of KES ${parseFloat(offerAmount || '0').toLocaleString()}`}
       </Button>
     </div>
   );

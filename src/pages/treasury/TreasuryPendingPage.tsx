@@ -272,7 +272,7 @@ const TreasuryPendingPage = () => {
         const adminNotifications = adminUsers.map(a => ({
           user_id: a.user_id,
           title: 'Bill Certified & Deed Created',
-          message: `Invoice ${selectedBill.invoice_number} worth ₦${Number(selectedBill.amount).toLocaleString()} has been certified. Blockchain deed initiated.`,
+          message: `Invoice ${selectedBill.invoice_number} worth KES ${Number(selectedBill.amount).toLocaleString()} has been certified. Blockchain deed initiated.`,
           type: 'info',
           bill_id: selectedBill.id,
         }));
@@ -328,7 +328,7 @@ const TreasuryPendingPage = () => {
             <CardContent className="py-4">
               <p className="text-sm text-blue-600">Total Value</p>
               <p className="text-2xl font-bold text-blue-700">
-                ₦{(totalValue / 1000000).toFixed(1)}M
+                KES {(totalValue / 1000000).toFixed(1)}M
               </p>
             </CardContent>
           </Card>
@@ -393,7 +393,7 @@ const TreasuryPendingPage = () => {
                         </div>
                         <div>
                           <p className="text-muted-foreground">Per Quarter</p>
-                          <p className="font-medium">₦{(bill.amount / bill.payment_quarters).toLocaleString()}</p>
+                          <p className="font-medium">KES {(bill.amount / bill.payment_quarters).toLocaleString()}</p>
                         </div>
                       </div>
                     </div>
@@ -401,11 +401,11 @@ const TreasuryPendingPage = () => {
                     <div className="text-right space-y-3">
                       <div>
                         <p className="text-sm text-muted-foreground">Invoice Amount</p>
-                        <p className="text-xl font-bold">₦{bill.amount.toLocaleString()}</p>
+                        <p className="text-xl font-bold">KES {bill.amount.toLocaleString()}</p>
                       </div>
                       <div>
                         <p className="text-sm text-muted-foreground">SPV Amount</p>
-                        <p className="text-lg font-semibold text-accent">₦{bill.offer_amount.toLocaleString()}</p>
+                        <p className="text-lg font-semibold text-accent">KES {bill.offer_amount.toLocaleString()}</p>
                       </div>
                       <Badge className="bg-orange-100 text-orange-700">MDA Approved</Badge>
                     </div>

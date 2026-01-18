@@ -161,7 +161,7 @@ const MDABillsPage = () => {
         const treasuryNotifications = treasuryUsers.map(t => ({
           user_id: t.user_id,
           title: 'Financial Offer Pending Certification',
-          message: `Invoice ${selectedBill.invoice_number} worth ₦${Number(selectedBill.amount).toLocaleString()} requires Treasury certification.`,
+          message: `Invoice ${selectedBill.invoice_number} worth KES ${Number(selectedBill.amount).toLocaleString()} requires Treasury certification.`,
           type: 'info',
           bill_id: selectedBill.id,
         }));
@@ -346,11 +346,11 @@ const MDABillsPage = () => {
                       <div className="text-right space-y-3">
                         <div>
                           <p className="text-sm text-muted-foreground">Invoice Amount</p>
-                          <p className="text-xl font-bold">₦{bill.amount.toLocaleString()}</p>
+                          <p className="text-xl font-bold">KES {bill.amount.toLocaleString()}</p>
                         </div>
                         <div>
                           <p className="text-sm text-muted-foreground">SPV Offer</p>
-                          <p className="text-lg font-semibold text-accent">₦{bill.offer_amount.toLocaleString()}</p>
+                          <p className="text-lg font-semibold text-accent">KES {bill.offer_amount.toLocaleString()}</p>
                         </div>
                         <Badge className="bg-amber-100 text-amber-700">Awaiting Your Approval</Badge>
                       </div>
@@ -428,12 +428,12 @@ const MDABillsPage = () => {
                     <div className="text-right space-y-3">
                       <div>
                         <p className="text-sm text-muted-foreground">Invoice Amount</p>
-                        <p className="text-xl font-bold">₦{Number(bill.amount).toLocaleString()}</p>
+                        <p className="text-xl font-bold">KES {Number(bill.amount).toLocaleString()}</p>
                       </div>
                       {bill.offer_amount && (
                         <div>
                           <p className="text-sm text-muted-foreground">SPV Offer</p>
-                          <p className="text-lg font-semibold text-accent">₦{Number(bill.offer_amount).toLocaleString()}</p>
+                          <p className="text-lg font-semibold text-accent">KES {Number(bill.offer_amount).toLocaleString()}</p>
                         </div>
                       )}
                       <Badge className="bg-orange-100 text-orange-700">Awaiting Approval</Badge>
@@ -482,7 +482,7 @@ const MDABillsPage = () => {
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Amount</span>
-                    <span className="font-bold">₦{Number(selectedBill.amount).toLocaleString()}</span>
+                    <span className="font-bold">KES {Number(selectedBill.amount).toLocaleString()}</span>
                   </div>
                 </div>
 
@@ -520,7 +520,7 @@ const MDABillsPage = () => {
                 <div className="p-3 bg-accent/10 rounded-lg text-sm">
                   <p>
                     Quarterly Payment: <span className="font-bold">
-                      ₦{(Number(selectedBill.amount) / parseInt(paymentQuarters)).toLocaleString()}
+                      KES {(Number(selectedBill.amount) / parseInt(paymentQuarters)).toLocaleString()}
                     </span>
                   </p>
                 </div>
@@ -563,11 +563,11 @@ const MDABillsPage = () => {
                 <div className="p-4 bg-secondary rounded-lg space-y-2">
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Invoice Amount</span>
-                    <span className="font-bold">₦{selectedMockBill.amount.toLocaleString()}</span>
+                    <span className="font-bold">KES {selectedMockBill.amount.toLocaleString()}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">SPV Offer</span>
-                    <span className="font-bold text-accent">₦{selectedMockBill.offer_amount.toLocaleString()}</span>
+                    <span className="font-bold text-accent">KES {selectedMockBill.offer_amount.toLocaleString()}</span>
                   </div>
                 </div>
 
@@ -656,7 +656,7 @@ const MDABillsPage = () => {
                           </div>
                           <div>
                             <p className="text-muted-foreground">Per Quarter</p>
-                            <p className="font-bold text-green-700">₦{quarterlyAmount.toLocaleString()}</p>
+                            <p className="font-bold text-green-700">KES {quarterlyAmount.toLocaleString()}</p>
                           </div>
                         </div>
                       );

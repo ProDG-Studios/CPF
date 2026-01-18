@@ -374,7 +374,7 @@ const SPVBlockchainPage = () => {
                               <div className="p-3 rounded-lg bg-muted/30">
                                 <div className="flex justify-between text-sm">
                                   <span className="text-muted-foreground">Face Value:</span>
-                                  <span className="font-bold">₦{deed.principal_amount.toLocaleString()}</span>
+                                  <span className="font-bold">KES {deed.principal_amount.toLocaleString()}</span>
                                 </div>
                               </div>
                               <div className="space-y-2">

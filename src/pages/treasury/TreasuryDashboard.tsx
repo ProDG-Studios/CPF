@@ -115,7 +115,7 @@ const TreasuryDashboard = () => {
                   <Wallet className="w-5 h-5 text-yellow-600" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold">₦{(stats.pendingValue / 1000000).toFixed(1)}M</p>
+                  <p className="text-2xl font-bold">KES {(stats.pendingValue / 1000000).toFixed(1)}M</p>
                   <p className="text-sm text-muted-foreground">Pending Value</p>
                 </div>
               </div>
@@ -129,7 +129,7 @@ const TreasuryDashboard = () => {
                   <CheckCircle className="w-5 h-5 text-accent" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold">₦{(stats.certifiedValue / 1000000).toFixed(1)}M</p>
+                  <p className="text-2xl font-bold">KES {(stats.certifiedValue / 1000000).toFixed(1)}M</p>
                   <p className="text-sm text-muted-foreground">Certified Value</p>
                 </div>
               </div>
@@ -168,7 +168,7 @@ const TreasuryDashboard = () => {
                             : 'Pending'}
                         </p>
                       </div>
-                      <span className="font-bold">₦{Number(bill.amount).toLocaleString()}</span>
+                      <span className="font-bold">KES {Number(bill.amount).toLocaleString()}</span>
                     </div>
                   ))}
                 </div>
@@ -201,7 +201,7 @@ const TreasuryDashboard = () => {
                         <p className="font-medium">{bill.invoice_number}</p>
                         <p className="text-xs text-accent font-medium">{bill.certificate_number}</p>
                       </div>
-                      <span className="font-bold">₦{Number(bill.amount).toLocaleString()}</span>
+                      <span className="font-bold">KES {Number(bill.amount).toLocaleString()}</span>
                     </div>
                   ))}
                 </div>
