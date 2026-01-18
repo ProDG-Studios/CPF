@@ -168,8 +168,8 @@ const AuthPage = () => {
               <Landmark className="w-7 h-7 text-black" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold bg-gradient-to-r from-amber-200 via-amber-400 to-amber-200 bg-clip-text text-transparent">CPF Settlement</h1>
-              <p className="text-sm text-neutral-400">Securitization Platform</p>
+              <h1 className="text-2xl font-bold bg-gradient-to-r from-amber-200 via-amber-400 to-amber-200 bg-clip-text text-transparent">Receivables Securitisation</h1>
+              <p className="text-sm text-neutral-400">Origination Platform</p>
             </div>
           </div>
 
@@ -205,7 +205,7 @@ const AuthPage = () => {
           {/* Footer */}
           <div className="flex items-center gap-3 text-sm text-neutral-500">
             <Coins className="w-4 h-4 text-amber-500/50" />
-            <span>© 2026 CPF Settlement Platform. All rights reserved.</span>
+            <span>© 2026 Receivables Securitisation Origination. All rights reserved.</span>
           </div>
         </div>
       </div>
@@ -219,8 +219,8 @@ const AuthPage = () => {
               <Landmark className="w-7 h-7 text-black" />
             </div>
             <div>
-              <h1 className="text-xl font-bold bg-gradient-to-r from-amber-200 via-amber-400 to-amber-200 bg-clip-text text-transparent">CPF Settlement</h1>
-              <p className="text-sm text-neutral-400">Securitization Platform</p>
+              <h1 className="text-xl font-bold bg-gradient-to-r from-amber-200 via-amber-400 to-amber-200 bg-clip-text text-transparent">Receivables Securitisation</h1>
+              <p className="text-sm text-neutral-400">Origination Platform</p>
             </div>
           </div>
 
@@ -310,7 +310,7 @@ const AuthPage = () => {
             <form onSubmit={handleSignup} className="space-y-6 animate-fade-in">
               <div className="space-y-2">
                 <h2 className="text-2xl font-bold text-white">Create account</h2>
-                <p className="text-neutral-400">Get started with the CPF Settlement Platform</p>
+                <p className="text-neutral-400">Get started with Receivables Securitisation Origination</p>
               </div>
 
               <div className="space-y-4">

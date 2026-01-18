@@ -78,7 +78,7 @@ export const generateConceptNotePDF = () => {
   // Footer on cover
   doc.setTextColor(115, 115, 115);
   doc.setFontSize(10);
-  doc.text('CPF Settlement Platform', pageWidth / 2, pageHeight - 40, { align: 'center' });
+  doc.text('Receivables Securitisation Origination', pageWidth / 2, pageHeight - 40, { align: 'center' });
   doc.text('Confidential Document • For Authorized Recipients Only', pageWidth / 2, pageHeight - 32, { align: 'center' });
 
   // ============ PAGE 2: EXECUTIVE SUMMARY ============
@@ -533,12 +533,12 @@ export const generateConceptNotePDF = () => {
   doc.setTextColor(26, 26, 26);
   doc.setFontSize(10);
   doc.setFont('helvetica', 'bold');
-  doc.text('CPF Settlement Platform', margin + 12, y + 11);
+  doc.text('Receivables Securitisation Origination', margin + 12, y + 11);
 
   doc.setTextColor(107, 114, 128);
   doc.setFontSize(8);
   doc.setFont('helvetica', 'normal');
-  doc.text('© 2026 CPF Settlement Platform. All rights reserved.', pageWidth / 2, y + 18, { align: 'center' });
+  doc.text('© 2026 Receivables Securitisation Origination. All rights reserved.', pageWidth / 2, y + 18, { align: 'center' });
   doc.text('This document is confidential and intended for authorized recipients only.', pageWidth / 2, y + 23, { align: 'center' });
 
   // Save the PDF
