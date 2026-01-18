@@ -120,9 +120,9 @@ const ConceptNotePage = () => {
             </div>
             <div>
               <h1 className="text-xl font-bold bg-gradient-to-r from-amber-200 via-amber-400 to-amber-200 bg-clip-text text-transparent">
-                CPF Settlement
+                Receivables Securitisation
               </h1>
-              <p className="text-xs text-neutral-500">Securitization Platform</p>
+              <p className="text-xs text-neutral-500">Origination Platform</p>
             </div>
           </div>
           <Link to="/auth">
@@ -401,13 +401,13 @@ const ConceptNotePage = () => {
               <Landmark className="w-5 h-5 text-black" />
             </div>
             <div>
-              <p className="text-sm font-semibold text-white">CPF Settlement Platform</p>
+              <p className="text-sm font-semibold text-white">Receivables Securitisation Origination</p>
               <p className="text-xs text-neutral-500">Government Debt Securitization</p>
             </div>
           </div>
           <div className="flex items-center gap-3 text-sm text-neutral-500">
             <Coins className="w-4 h-4 text-amber-500/50" />
-            <span>© 2026 CPF Settlement Platform. All rights reserved.</span>
+            <span>© 2026 Receivables Securitisation Origination. All rights reserved.</span>
           </div>
         </div>
       </footer>
