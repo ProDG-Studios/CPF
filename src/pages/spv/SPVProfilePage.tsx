@@ -87,7 +87,7 @@ const SPVProfilePage = () => {
                     id="phone"
                     value={formData.phone}
                     onChange={(e) => updateField('phone', e.target.value)}
-                    placeholder="+234 xxx xxx xxxx"
+                    placeholder="+254 xxx xxx xxx"
                   />
                 </div>
               </div>

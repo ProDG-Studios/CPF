@@ -18,7 +18,7 @@ const mdaNames = [
   'Ministry of Works', 'Ministry of Health', 'Ministry of Education', 'Ministry of Transport',
   'Ministry of Agriculture', 'Ministry of Communications', 'Ministry of Finance', 'Ministry of Defense',
   'Ministry of Housing', 'Ministry of Water Resources', 'Ministry of Power', 'Ministry of Environment',
-  'Federal Road Safety Corps', 'Nigerian Customs Service', 'Federal Inland Revenue Service'
+  'Kenya Revenue Authority', 'Kenya National Highways Authority', 'National Construction Authority'
 ];
 
 // ============ SPV NAMES ============
@@ -267,7 +267,7 @@ export const mockSPVBrowsePayablesData = Array.from({ length: 24 }, (_, i) => {
     mda_name: mdaNames[i % mdaNames.length],
     supplier_name: supplierNames[i % supplierNames.length],
     supplier_company: `${supplierNames[i % supplierNames.length]} Holdings`,
-    supplier_address: `${Math.floor(Math.random() * 200) + 1} Industrial Road, Lagos`,
+    supplier_address: `${Math.floor(Math.random() * 200) + 1} Industrial Road, Nairobi`,
     days_outstanding: Math.floor(Math.random() * 120) + 30,
   };
 });

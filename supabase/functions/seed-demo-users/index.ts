@@ -36,12 +36,12 @@ serve(async (req) => {
 
     // Supplier accounts - named by company
     const suppliers = [
-      { email: 'apex@demo.com', company: 'Apex Construction Ltd', name: 'Chidi Okonkwo' },
-      { email: 'buildright@demo.com', company: 'BuildRight Nigeria', name: 'Amaka Eze' },
-      { email: 'techsupply@demo.com', company: 'TechSupply Co', name: 'Emeka Nwosu' },
-      { email: 'medequip@demo.com', company: 'MedEquip Solutions', name: 'Ngozi Adeyemi' },
-      { email: 'foodserve@demo.com', company: 'FoodServe Enterprises', name: 'Tunde Bakare' },
-      { email: 'cleanenergy@demo.com', company: 'CleanEnergy Systems', name: 'Funke Adeleke' },
+      { email: 'apex@demo.com', company: 'Apex Construction Ltd', name: 'James Mwangi' },
+      { email: 'buildright@demo.com', company: 'BuildRight Kenya', name: 'Amina Wanjiku' },
+      { email: 'techsupply@demo.com', company: 'TechSupply Co', name: 'Peter Ochieng' },
+      { email: 'medequip@demo.com', company: 'MedEquip Solutions', name: 'Grace Nyambura' },
+      { email: 'foodserve@demo.com', company: 'FoodServe Enterprises', name: 'Joseph Kiprop' },
+      { email: 'cleanenergy@demo.com', company: 'CleanEnergy Systems', name: 'Sarah Akinyi' },
     ];
 
     for (let i = 0; i < suppliers.length; i++) {
@@ -53,11 +53,11 @@ serve(async (req) => {
         profile: {
           full_name: s.name,
           company_name: s.company,
-          registration_number: `RC${100000 + i}`,
-          tax_id: `TIN${200000 + i}`,
-          phone: `+234801${String(i).padStart(7, '0')}`,
-          address: `${i + 1} Industrial Avenue, Lagos`,
-          bank_name: ['First Bank', 'GTBank', 'Zenith Bank', 'Access Bank'][i % 4],
+          registration_number: `PVT${100000 + i}`,
+          tax_id: `KRA${200000 + i}`,
+          phone: `+254701${String(i).padStart(6, '0')}`,
+          address: `${i + 1} Industrial Road, Nairobi`,
+          bank_name: ['Equity Bank', 'KCB', 'Co-operative Bank', 'NCBA'][i % 4],
           bank_account: `${1000000000 + i}`,
           profile_completed: true,
         }
@@ -66,10 +66,10 @@ serve(async (req) => {
 
     // SPV accounts - named by SPV name
     const spvs = [
-      { email: 'alpha.capital@demo.com', spv: 'Alpha Capital SPV', name: 'Adekunle Johnson' },
-      { email: 'beta.investments@demo.com', spv: 'Beta Investments', name: 'Chioma Onyekachi' },
-      { email: 'gamma.finance@demo.com', spv: 'Gamma Finance', name: 'Ibrahim Yusuf' },
-      { email: 'delta.funding@demo.com', spv: 'Delta Funding', name: 'Oluwaseun Alade' },
+      { email: 'alpha.capital@demo.com', spv: 'Alpha Capital SPV', name: 'David Omondi' },
+      { email: 'beta.investments@demo.com', spv: 'Beta Investments', name: 'Mary Njeri' },
+      { email: 'gamma.finance@demo.com', spv: 'Gamma Finance', name: 'John Kamau' },
+      { email: 'delta.funding@demo.com', spv: 'Delta Funding', name: 'Lucy Wambui' },
     ];
 
     for (let i = 0; i < spvs.length; i++) {
@@ -82,7 +82,7 @@ serve(async (req) => {
           full_name: s.name,
           spv_name: s.spv,
           license_number: `SPV-LIC-${3000 + i}`,
-          phone: `+234802${String(i).padStart(7, '0')}`,
+          phone: `+254702${String(i).padStart(6, '0')}`,
           profile_completed: true,
         }
       });
@@ -91,12 +91,12 @@ serve(async (req) => {
     // MDA accounts - named by MDA code for easy identification
     // These match specific MDAs in the database
     const mdaAccounts = [
-      { email: 'fmw@demo.com', mdaCode: 'FMW', mdaName: 'Federal Ministry of Works', name: 'Adebayo Ogundimu', dept: 'Procurement' },
-      { email: 'fmh@demo.com', mdaCode: 'FMH', mdaName: 'Federal Ministry of Health', name: 'Fatima Mohammed', dept: 'Finance' },
-      { email: 'fme@demo.com', mdaCode: 'FME', mdaName: 'Federal Ministry of Education', name: 'Olumide Akinwale', dept: 'Administration' },
-      { email: 'fmit@demo.com', mdaCode: 'FMIT', mdaName: 'Federal Ministry of IT', name: 'Blessing Okafor', dept: 'Procurement' },
-      { email: 'fma@demo.com', mdaCode: 'FMA', mdaName: 'Federal Ministry of Agriculture', name: 'Yusuf Garba', dept: 'Finance' },
-      { email: 'fmd@demo.com', mdaCode: 'FMD', mdaName: 'Federal Ministry of Defence', name: 'Aisha Bello', dept: 'Procurement' },
+      { email: 'mow@demo.com', mdaCode: 'MOW', mdaName: 'Ministry of Works', name: 'James Mwangi', dept: 'Procurement' },
+      { email: 'moh@demo.com', mdaCode: 'MOH', mdaName: 'Ministry of Health', name: 'Amina Wanjiku', dept: 'Finance' },
+      { email: 'moe@demo.com', mdaCode: 'MOE', mdaName: 'Ministry of Education', name: 'Peter Ochieng', dept: 'Administration' },
+      { email: 'moit@demo.com', mdaCode: 'MOIT', mdaName: 'Ministry of ICT', name: 'Grace Nyambura', dept: 'Procurement' },
+      { email: 'moa@demo.com', mdaCode: 'MOA', mdaName: 'Ministry of Agriculture', name: 'Joseph Kiprop', dept: 'Finance' },
+      { email: 'mod@demo.com', mdaCode: 'MOD', mdaName: 'Ministry of Defence', name: 'Sarah Akinyi', dept: 'Procurement' },
     ];
 
     for (let i = 0; i < mdaAccounts.length; i++) {
@@ -112,7 +112,7 @@ serve(async (req) => {
           mda_name: mda?.name || m.mdaName,
           mda_code: mda?.id || null,
           department: m.dept,
-          phone: `+234803${String(i).padStart(7, '0')}`,
+          phone: `+254703${String(i).padStart(6, '0')}`,
           profile_completed: true,
         }
       });
@@ -120,9 +120,9 @@ serve(async (req) => {
 
     // Treasury accounts - named by office
     const treasuryAccounts = [
-      { email: 'federal.treasury@demo.com', office: 'Federal Treasury', name: 'Babajide Sanwo-Olu', empId: 'NT-4001' },
-      { email: 'state.treasury@demo.com', office: 'State Treasury', name: 'Hafsat Abubakar', empId: 'NT-4002' },
-      { email: 'cbn.liaison@demo.com', office: 'Central Bank Liaison', name: 'Godwin Emefiele Jr', empId: 'NT-4003' },
+      { email: 'national.treasury@demo.com', office: 'National Treasury', name: 'John Kamau', empId: 'NT-4001' },
+      { email: 'county.treasury@demo.com', office: 'County Treasury', name: 'Mary Njeri', empId: 'NT-4002' },
+      { email: 'cbk.liaison@demo.com', office: 'Central Bank Liaison', name: 'David Omondi', empId: 'NT-4003' },
     ];
 
     for (let i = 0; i < treasuryAccounts.length; i++) {
@@ -135,7 +135,7 @@ serve(async (req) => {
           full_name: t.name,
           treasury_office: t.office,
           employee_id: t.empId,
-          phone: `+234804${String(i).padStart(7, '0')}`,
+          phone: `+254704${String(i).padStart(6, '0')}`,
           profile_completed: true,
         }
       });

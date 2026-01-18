@@ -93,8 +93,8 @@ const ConceptNotePage = () => {
   const phases = [
     { phase: '1', title: 'Proof of Concept', status: 'current', items: ['Platform complete', 'Demo operational', 'Testing underway'] },
     { phase: '2', title: 'Pilot Program', status: 'upcoming', items: ['2-3 pilot MDAs', '10-20 suppliers', 'KES 1-5B transactions'] },
-    { phase: '3', title: 'National Rollout', status: 'future', items: ['All federal MDAs', 'Banking integration', 'Mobile app launch'] },
-    { phase: '4', title: 'Regional Expansion', status: 'future', items: ['Ghana launch', 'West Africa', 'Multi-currency'] },
+    { phase: '3', title: 'National Rollout', status: 'future', items: ['All national MDAs', 'Banking integration', 'Mobile app launch'] },
+    { phase: '4', title: 'Regional Expansion', status: 'future', items: ['Uganda launch', 'East Africa', 'Multi-currency'] },
   ];
 
   return (

@@ -823,7 +823,7 @@ const TreasuryPendingPage = () => {
 
         {/* Treasury Signing Modal */}
         <Dialog open={showSigningModal} onOpenChange={setShowSigningModal}>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogContent className="max-w-2xl h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
                 <PenLine className="w-5 h-5" />
@@ -838,14 +838,14 @@ const TreasuryPendingPage = () => {
               <div className="space-y-6 py-4">
                 {/* Document Summary */}
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="p-4 bg-secondary rounded-lg">
-                    <p className="text-sm text-muted-foreground">Invoice Amount</p>
-                    <p className="text-xl font-bold">₦{selectedMockBill.amount.toLocaleString()}</p>
-                  </div>
-                  <div className="p-4 bg-accent/10 rounded-lg">
-                    <p className="text-sm text-muted-foreground">SPV Purchase</p>
-                    <p className="text-xl font-bold text-accent">₦{selectedMockBill.offer_amount.toLocaleString()}</p>
-                  </div>
+                    <div className="p-4 bg-secondary rounded-lg">
+                      <p className="text-sm text-muted-foreground">Invoice Amount</p>
+                      <p className="text-xl font-bold">KES {selectedMockBill.amount.toLocaleString()}</p>
+                    </div>
+                    <div className="p-4 bg-accent/10 rounded-lg">
+                      <p className="text-sm text-muted-foreground">SPV Purchase</p>
+                      <p className="text-xl font-bold text-accent">KES {selectedMockBill.offer_amount.toLocaleString()}</p>
+                    </div>
                 </div>
 
                 {/* Signature Status */}
@@ -992,7 +992,7 @@ const TreasuryPendingPage = () => {
 
         {/* Final Document Complete Modal */}
         <Dialog open={showFinalDocumentModal} onOpenChange={setShowFinalDocumentModal}>
-          <DialogContent className="max-w-2xl">
+          <DialogContent className="max-w-2xl h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2 text-green-700">
                 <CheckCircle className="w-5 h-5" />
@@ -1051,11 +1051,11 @@ const TreasuryPendingPage = () => {
                 <div className="grid grid-cols-3 gap-4 text-center">
                   <div className="p-4 bg-secondary rounded-lg">
                     <p className="text-xs text-muted-foreground">Face Value</p>
-                    <p className="font-bold">₦{selectedMockBill.amount.toLocaleString()}</p>
+                    <p className="font-bold">KES {selectedMockBill.amount.toLocaleString()}</p>
                   </div>
                   <div className="p-4 bg-secondary rounded-lg">
                     <p className="text-xs text-muted-foreground">Purchase Price</p>
-                    <p className="font-bold text-accent">₦{selectedMockBill.offer_amount.toLocaleString()}</p>
+                    <p className="font-bold text-accent">KES {selectedMockBill.offer_amount.toLocaleString()}</p>
                   </div>
                   <div className="p-4 bg-secondary rounded-lg">
                     <p className="text-xs text-muted-foreground">Payment Terms</p>
@@ -1074,7 +1074,7 @@ const TreasuryPendingPage = () => {
               </div>
             )}
 
-            <DialogFooter>
+            <DialogFooter className="mt-4">
               <Button onClick={handleCompleteCertification} disabled={submitting}>
                 {submitting ? 'Completing...' : 'Complete & Close'}
               </Button>

@@ -93,7 +93,7 @@ const SupplierProfilePage = () => {
                     id="phone"
                     value={formData.phone}
                     onChange={(e) => updateField('phone', e.target.value)}
-                    placeholder="+234 xxx xxx xxxx"
+                    placeholder="+254 xxx xxx xxx"
                   />
                 </div>
               </div>
@@ -149,7 +149,7 @@ const SupplierProfilePage = () => {
                   id="address"
                   value={formData.address}
                   onChange={(e) => updateField('address', e.target.value)}
-                  placeholder="123 Business Street, Lagos, Nigeria"
+                  placeholder="123 Business Street, Nairobi, Kenya"
                   rows={2}
                 />
               </div>
