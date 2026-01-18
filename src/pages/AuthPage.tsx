@@ -411,6 +411,8 @@ const AuthPage = () => {
                 <div className="grid grid-cols-2 gap-1 text-neutral-400">
                   <div><span className="text-amber-200">apex@demo.com</span> (Apex Construction)</div>
                   <div><span className="text-amber-200">techsupply@demo.com</span> (TechSupply Co)</div>
+                  <div><span className="text-amber-200">buildright@demo.com</span> (BuildRight Kenya)</div>
+                  <div><span className="text-amber-200">medequip@demo.com</span> (MedEquip Solutions)</div>
                 </div>
               </div>
               
@@ -418,8 +420,8 @@ const AuthPage = () => {
               <div>
                 <p className="text-amber-400 font-semibold mb-1">SPVs</p>
                 <div className="grid grid-cols-2 gap-1 text-neutral-400">
-                  <div><span className="text-amber-200">alpha.capital@demo.com</span></div>
-                  <div><span className="text-amber-200">beta.investments@demo.com</span></div>
+                  <div><span className="text-amber-200">alpha.capital@demo.com</span> (Alpha Capital)</div>
+                  <div><span className="text-amber-200">beta.investments@demo.com</span> (Beta Investments)</div>
                 </div>
               </div>
               
@@ -427,18 +429,26 @@ const AuthPage = () => {
               <div>
                 <p className="text-amber-400 font-semibold mb-1">MDAs (use matching MDA for bills)</p>
                 <div className="grid grid-cols-2 gap-1 text-neutral-400">
-                  <div><span className="text-amber-200">fmw@demo.com</span> (Ministry of Works)</div>
-                  <div><span className="text-amber-200">fmh@demo.com</span> (Ministry of Health)</div>
-                  <div><span className="text-amber-200">fme@demo.com</span> (Ministry of Education)</div>
-                  <div><span className="text-amber-200">fmit@demo.com</span> (Ministry of IT)</div>
+                  <div><span className="text-amber-200">mow@demo.com</span> (Ministry of Works)</div>
+                  <div><span className="text-amber-200">moh@demo.com</span> (Ministry of Health)</div>
+                  <div><span className="text-amber-200">moe@demo.com</span> (Ministry of Education)</div>
+                  <div><span className="text-amber-200">moit@demo.com</span> (Ministry of ICT)</div>
                 </div>
               </div>
               
               {/* Treasury */}
               <div>
-                <p className="text-amber-400 font-semibold mb-1">Treasury</p>
+                <p className="text-amber-400 font-semibold mb-1">National Treasury</p>
                 <div className="text-neutral-400">
                   <span className="text-amber-200">national.treasury@demo.com</span> (National Treasury)
+                </div>
+              </div>
+
+              {/* Admin */}
+              <div>
+                <p className="text-amber-400 font-semibold mb-1">Admin</p>
+                <div className="text-neutral-400">
+                  <span className="text-amber-200">admin@demo.com</span> (System Administrator)
                 </div>
               </div>
             </div>
