@@ -1,83 +1,105 @@
 import { useNavigate } from 'react-router-dom';
 import { useFilters } from '@/contexts/FilterContext';
-import { mdaData, formatCurrency } from '@/data/mockData';
-import { ArrowRight, Building2 } from 'lucide-react';
+import { useData } from '@/contexts/DataContext';
+import { formatCurrency } from '@/data/mockData';
+import { ArrowRight, Download } from 'lucide-react';
+import { generateCSV } from '@/lib/exportUtils';
 
 const TopMDAs = () => {
   const navigate = useNavigate();
   const { toggleArrayFilter } = useFilters();
+  const { bills, mdas } = useData();
   
-  const topMDAs = [...mdaData]
-    .sort((a, b) => b.totalAmount - a.totalAmount)
-    .slice(0, 5);
+  // Calculate live MDA stats from bills
+  const mdaStats = mdas.map(mda => {
+    const mdaBills = bills.filter(b => b.mdaId === mda.id);
+    const totalAmount = mdaBills.reduce((sum, b) => sum + b.amount, 0);
+    const verifiedAmount = mdaBills.filter(b => b.status === 'verified' || b.status === 'paid').reduce((sum, b) => sum + b.amount, 0);
+    return {
+      ...mda,
+      liveTotalAmount: totalAmount,
+      liveVerifiedAmount: verifiedAmount,
+      liveBillCount: mdaBills.length,
+    };
+  }).filter(m => m.liveTotalAmount > 0);
 
-  const maxAmount = topMDAs[0]?.totalAmount || 1;
+  const topMDAs = [...mdaStats]
+    .sort((a, b) => b.liveTotalAmount - a.liveTotalAmount)
+    .slice(0, 5);
 
   const handleMDAClick = (mdaId: string) => {
     toggleArrayFilter('mdaIds', mdaId);
     navigate('/bills');
   };
 
+  const handleExport = () => {
+    generateCSV(
+      topMDAs.map(m => ({
+        MDA: m.shortName,
+        'Full Name': m.name,
+        'Total Bills': m.liveBillCount,
+        'Total Amount': m.liveTotalAmount,
+        'Verified Amount': m.liveVerifiedAmount,
+        'Verified %': ((m.liveVerifiedAmount / m.liveTotalAmount) * 100).toFixed(1) + '%',
+      })),
+      'top_mdas'
+    );
+  };
+
   return (
-    <div className="glass-card p-6">
-      <div className="flex items-center justify-between mb-6">
+    <div className="glass-card p-5">
+      <div className="flex items-center justify-between mb-4">
         <div>
-          <h3 className="font-display text-lg font-bold text-foreground">
-            Top MDAs by Value
-          </h3>
-          <p className="text-sm text-muted-foreground">Click to filter bills</p>
+          <h3 className="font-semibold text-foreground">Top MDAs</h3>
+          <p className="text-xs text-muted-foreground">By total value (live)</p>
         </div>
-        <button 
-          onClick={() => navigate('/mdas')}
-          className="text-sm text-primary hover:text-primary/80 flex items-center gap-1"
-        >
-          View all <ArrowRight className="w-4 h-4" />
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleExport}
+            className="p-1.5 rounded-md hover:bg-secondary transition-colors text-muted-foreground hover:text-foreground"
+            title="Export to CSV"
+          >
+            <Download className="w-4 h-4" />
+          </button>
+          <button 
+            onClick={() => navigate('/mdas')}
+            className="text-xs text-muted-foreground font-medium flex items-center gap-1 hover:text-foreground"
+          >
+            View all <ArrowRight className="w-3 h-3" />
+          </button>
+        </div>
       </div>
 
-      <div className="space-y-4">
+      <div className="space-y-3">
         {topMDAs.map((mda, index) => {
-          const percentage = (mda.totalAmount / maxAmount) * 100;
-          const verifiedPercentage = (mda.verifiedAmount / mda.totalAmount) * 100;
+          const verifiedPct = mda.liveTotalAmount > 0 ? (mda.liveVerifiedAmount / mda.liveTotalAmount) * 100 : 0;
           
           return (
             <button
               key={mda.id}
               onClick={() => handleMDAClick(mda.id)}
-              className="w-full text-left p-3 rounded-lg hover:bg-muted/50 transition-colors group"
+              className="w-full text-left p-2.5 rounded-md hover:bg-secondary transition-colors"
             >
-              <div className="flex items-center gap-3 mb-2">
-                <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center text-primary font-bold text-sm">
+              <div className="flex items-center gap-2.5 mb-1.5">
+                <div className="w-6 h-6 rounded-md bg-secondary flex items-center justify-center text-foreground text-xs font-semibold">
                   {index + 1}
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className="font-medium text-foreground truncate group-hover:text-primary transition-colors">
-                    {mda.shortName}
-                  </p>
-                  <p className="text-xs text-muted-foreground truncate">{mda.name}</p>
-                </div>
-                <div className="text-right">
-                  <p className="font-semibold text-accent">{formatCurrency(mda.totalAmount, true)}</p>
-                  <p className="text-xs text-muted-foreground">{mda.totalBills.toLocaleString()} bills</p>
-                </div>
+                <span className="text-sm font-medium text-foreground flex-1 truncate">{mda.shortName}</span>
+                <span className="text-sm font-medium text-foreground">{formatCurrency(mda.liveTotalAmount, true)}</span>
               </div>
-              
-              <div className="relative h-2 bg-muted rounded-full overflow-hidden">
-                <div 
-                  className="absolute inset-y-0 left-0 bg-success/50 rounded-full"
-                  style={{ width: `${percentage}%` }}
-                />
-                <div 
-                  className="absolute inset-y-0 left-0 bg-success rounded-full"
-                  style={{ width: `${(verifiedPercentage / 100) * percentage}%` }}
-                />
+              <div className="flex items-center gap-2 pl-8">
+                <div className="flex-1 h-1.5 bg-secondary rounded-full overflow-hidden">
+                  <div className="h-full bg-foreground/20 rounded-full" style={{ width: `${verifiedPct}%` }} />
+                </div>
+                <span className="text-xs text-muted-foreground w-10 text-right">{verifiedPct.toFixed(0)}%</span>
               </div>
-              <p className="text-xs text-muted-foreground mt-1">
-                {verifiedPercentage.toFixed(0)}% verified
-              </p>
             </button>
           );
         })}
+        
+        {topMDAs.length === 0 && (
+          <p className="text-sm text-muted-foreground text-center py-4">No MDA data available</p>
+        )}
       </div>
     </div>
   );

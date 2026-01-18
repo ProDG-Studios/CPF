@@ -2,74 +2,189 @@ import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import TopBar from '@/components/layout/TopBar';
 import DataTable from '@/components/common/DataTable';
-import { mdaData, MDA, formatCurrency, billsData } from '@/data/mockData';
+import { MDA, formatCurrency } from '@/data/mockData';
 import { useFilters } from '@/contexts/FilterContext';
-import { 
-  Building2, 
-  TrendingUp, 
-  TrendingDown,
-  Search,
-  ArrowRight,
-  BarChart3
-} from 'lucide-react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, PieChart, Pie } from 'recharts';
+import { useData } from '@/contexts/DataContext';
+import { Building2, Search, ArrowRight, Download, Eye, FileText, CheckCircle, Printer, TrendingUp } from 'lucide-react';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { cn } from '@/lib/utils';
+import { generateCSV, generatePrintableReport } from '@/lib/exportUtils';
+import { DocumentModal } from '@/components/common/DocumentUpload';
+import { Progress } from '@/components/ui/progress';
 
 const MDAsPage = () => {
   const navigate = useNavigate();
   const { toggleArrayFilter } = useFilters();
+  const { mdas, bills, paymentSchedules } = useData();
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedMDA, setSelectedMDA] = useState<MDA | null>(null);
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
+  const [selectedMDA, setSelectedMDA] = useState<MDA | null>(null);
+  const [showDocModal, setShowDocModal] = useState(false);
+  const [docMDAId, setDocMDAId] = useState<string>('');
+
+  // Calculate live MDA stats from bills
+  const getMDAStats = (mdaId: string) => {
+    const mdaBills = bills.filter(b => b.mdaId === mdaId);
+    return {
+      totalBills: mdaBills.length,
+      totalAmount: mdaBills.reduce((sum, b) => sum + b.amount, 0),
+      verifiedBills: mdaBills.filter(b => b.status === 'verified').length,
+      verifiedAmount: mdaBills.filter(b => b.status === 'verified').reduce((sum, b) => sum + b.amount, 0),
+      pendingBills: mdaBills.filter(b => b.status === 'pending').length,
+      pendingAmount: mdaBills.filter(b => b.status === 'pending').reduce((sum, b) => sum + b.amount, 0),
+      paidBills: mdaBills.filter(b => b.status === 'paid').length,
+      paidAmount: mdaBills.filter(b => b.status === 'paid').reduce((sum, b) => sum + b.amount, 0),
+      processingBills: mdaBills.filter(b => b.status === 'processing').length,
+      processingAmount: mdaBills.filter(b => b.status === 'processing').reduce((sum, b) => sum + b.amount, 0),
+    };
+  };
+
+  // Enrich MDAs with live stats
+  const enrichedMDAs = useMemo(() => {
+    return mdas.map(mda => ({
+      ...mda,
+      ...getMDAStats(mda.id),
+    }));
+  }, [mdas, bills]);
 
   const filteredMDAs = useMemo(() => {
-    return mdaData.filter(mda => {
-      const matchesSearch = 
-        mda.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    return enrichedMDAs.filter(mda => {
+      const matchesSearch = mda.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         mda.shortName.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesCategory = categoryFilter === 'all' || mda.category === categoryFilter;
       return matchesSearch && matchesCategory;
     });
-  }, [searchTerm, categoryFilter]);
+  }, [enrichedMDAs, searchTerm, categoryFilter]);
 
-  const chartData = [...mdaData]
-    .sort((a, b) => b.totalAmount - a.totalAmount)
-    .slice(0, 8)
-    .map(mda => ({
-      name: mda.shortName,
-      total: mda.totalAmount / 1000000000,
-      verified: mda.verifiedAmount / 1000000000,
-      pending: mda.pendingAmount / 1000000000,
-    }));
-
-  const categoryData = [
-    { name: 'Ministries', value: mdaData.filter(m => m.category === 'ministry').length, color: 'hsl(217, 91%, 45%)' },
-    { name: 'Agencies', value: mdaData.filter(m => m.category === 'agency').length, color: 'hsl(173, 58%, 39%)' },
-    { name: 'Counties', value: mdaData.filter(m => m.category === 'county').length, color: 'hsl(43, 96%, 56%)' },
-  ];
-
-  const handleMDAClick = (mda: MDA) => {
-    setSelectedMDA(mda);
+  // Get payment schedule for MDA
+  const getMDAPaymentSchedule = (mdaId: string) => {
+    return paymentSchedules.find(ps => ps.mdaId === mdaId);
   };
+
+  // Chart data using live stats
+  const chartData = useMemo(() => {
+    return [...enrichedMDAs]
+      .sort((a, b) => b.totalAmount - a.totalAmount)
+      .slice(0, 8)
+      .map(mda => ({
+        name: mda.shortName,
+        verified: (mda.verifiedAmount + mda.paidAmount) / 1000000000,
+        pending: mda.pendingAmount / 1000000000,
+      }));
+  }, [enrichedMDAs]);
+
+  const categoryData = useMemo(() => [
+    { name: 'Ministries', value: mdas.filter(m => m.category === 'ministry').length, color: 'hsl(220, 25%, 12%)' },
+    { name: 'Agencies', value: mdas.filter(m => m.category === 'agency').length, color: 'hsl(174, 72%, 45%)' },
+    { name: 'Counties', value: mdas.filter(m => m.category === 'county').length, color: 'hsl(142, 76%, 36%)' },
+  ], [mdas]);
 
   const handleViewBills = (mdaId: string) => {
     toggleArrayFilter('mdaIds', mdaId);
     navigate('/bills');
   };
 
+  const handleViewPaymentSchedule = (mdaId: string) => {
+    navigate('/payment-schedule');
+  };
+
+  const handleExportCSV = () => {
+    generateCSV(
+      filteredMDAs.map(m => ({
+        'Short Name': m.shortName,
+        'Full Name': m.name,
+        'Category': m.category,
+        'Total Bills': m.totalBills,
+        'Total Amount': m.totalAmount,
+        'Verified Amount': m.verifiedAmount,
+        'Paid Amount': m.paidAmount,
+        'Pending Amount': m.pendingAmount,
+        'Verified %': ((m.verifiedAmount / m.totalAmount) * 100).toFixed(1) + '%',
+      })),
+      'mdas_export'
+    );
+  };
+
+  const handlePrintReport = () => {
+    const totalAmount = filteredMDAs.reduce((sum, m) => sum + m.totalAmount, 0);
+    const totalVerified = filteredMDAs.reduce((sum, m) => sum + m.verifiedAmount, 0);
+    const totalPaid = filteredMDAs.reduce((sum, m) => sum + m.paidAmount, 0);
+    
+    const content = `
+      <div style="margin-bottom: 24px;">
+        <h2 style="margin-bottom: 16px; color: #333;">Summary Statistics</h2>
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;">
+          <div style="padding: 16px; background: #f9fafb; border-radius: 8px;">
+            <p style="font-size: 24px; font-weight: bold; margin: 0;">${filteredMDAs.length}</p>
+            <p style="color: #666; margin: 4px 0 0;">Total MDAs</p>
+          </div>
+          <div style="padding: 16px; background: #f9fafb; border-radius: 8px;">
+            <p style="font-size: 24px; font-weight: bold; margin: 0;">${formatCurrency(totalAmount, true)}</p>
+            <p style="color: #666; margin: 4px 0 0;">Total Value</p>
+          </div>
+          <div style="padding: 16px; background: #f9fafb; border-radius: 8px;">
+            <p style="font-size: 24px; font-weight: bold; color: #22c55e; margin: 0;">${formatCurrency(totalVerified, true)}</p>
+            <p style="color: #666; margin: 4px 0 0;">Verified</p>
+          </div>
+          <div style="padding: 16px; background: #f9fafb; border-radius: 8px;">
+            <p style="font-size: 24px; font-weight: bold; color: #3b82f6; margin: 0;">${formatCurrency(totalPaid, true)}</p>
+            <p style="color: #666; margin: 4px 0 0;">Paid</p>
+          </div>
+        </div>
+      </div>
+      <table style="width: 100%; border-collapse: collapse;">
+        <thead>
+          <tr style="background: #f9fafb;">
+            <th style="padding: 12px; text-align: left; border-bottom: 2px solid #e5e7eb;">MDA</th>
+            <th style="padding: 12px; text-align: left; border-bottom: 2px solid #e5e7eb;">Category</th>
+            <th style="padding: 12px; text-align: right; border-bottom: 2px solid #e5e7eb;">Bills</th>
+            <th style="padding: 12px; text-align: right; border-bottom: 2px solid #e5e7eb;">Total Value</th>
+            <th style="padding: 12px; text-align: right; border-bottom: 2px solid #e5e7eb;">Verified</th>
+            <th style="padding: 12px; text-align: right; border-bottom: 2px solid #e5e7eb;">Progress</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${filteredMDAs.slice(0, 25).map(m => `
+            <tr>
+              <td style="padding: 12px; border-bottom: 1px solid #e5e7eb;">
+                <strong>${m.shortName}</strong><br/>
+                <span style="font-size: 12px; color: #666;">${m.name}</span>
+              </td>
+              <td style="padding: 12px; border-bottom: 1px solid #e5e7eb; text-transform: capitalize;">${m.category}</td>
+              <td style="padding: 12px; border-bottom: 1px solid #e5e7eb; text-align: right;">${m.totalBills.toLocaleString()}</td>
+              <td style="padding: 12px; border-bottom: 1px solid #e5e7eb; text-align: right;">${formatCurrency(m.totalAmount, true)}</td>
+              <td style="padding: 12px; border-bottom: 1px solid #e5e7eb; text-align: right; color: #22c55e;">${formatCurrency(m.verifiedAmount, true)}</td>
+              <td style="padding: 12px; border-bottom: 1px solid #e5e7eb; text-align: right;">${((m.verifiedAmount / m.totalAmount) * 100).toFixed(1)}%</td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+      ${filteredMDAs.length > 25 ? `<p style="margin-top: 16px; color: #666;">Showing 25 of ${filteredMDAs.length} MDAs</p>` : ''}
+    `;
+    generatePrintableReport('MDAs Summary Report', content);
+  };
+
+  const handleUploadDocs = (mdaId: string) => {
+    setDocMDAId(mdaId);
+    setShowDocModal(true);
+  };
+
+  // Get selected MDA with live stats
+  const selectedMDAStats = selectedMDA ? getMDAStats(selectedMDA.id) : null;
+
   const columns = [
     {
       key: 'name',
       header: 'MDA Name',
       sortable: true,
-      render: (mda: MDA) => (
+      render: (mda: MDA & ReturnType<typeof getMDAStats>) => (
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
-            <Building2 className="w-5 h-5 text-primary" />
+          <div className="w-8 h-8 rounded-md bg-secondary flex items-center justify-center">
+            <Building2 className="w-4 h-4 text-muted-foreground" />
           </div>
           <div>
-            <p className="font-medium">{mda.shortName}</p>
-            <p className="text-xs text-muted-foreground truncate max-w-[200px]">{mda.name}</p>
+            <p className="font-medium text-foreground text-sm">{mda.shortName}</p>
+            <p className="text-xs text-muted-foreground truncate max-w-[160px]">{mda.name}</p>
           </div>
         </div>
       ),
@@ -78,13 +193,8 @@ const MDAsPage = () => {
       key: 'category',
       header: 'Type',
       sortable: true,
-      render: (mda: MDA) => (
-        <span className={cn(
-          "px-2 py-1 rounded text-xs font-medium capitalize",
-          mda.category === 'ministry' ? 'bg-primary/20 text-primary' :
-          mda.category === 'agency' ? 'bg-secondary/20 text-secondary-foreground' :
-          'bg-accent/20 text-accent'
-        )}>
+      render: (mda: MDA & ReturnType<typeof getMDAStats>) => (
+        <span className="px-2 py-0.5 rounded text-xs font-medium capitalize bg-secondary text-muted-foreground">
           {mda.category}
         </span>
       ),
@@ -94,8 +204,13 @@ const MDAsPage = () => {
       header: 'Bills',
       sortable: true,
       align: 'right' as const,
-      render: (mda: MDA) => (
-        <span className="font-medium">{mda.totalBills.toLocaleString()}</span>
+      render: (mda: MDA & ReturnType<typeof getMDAStats>) => (
+        <div className="text-right">
+          <span className="font-medium">{mda.totalBills.toLocaleString()}</span>
+          {mda.pendingBills > 0 && (
+            <p className="text-xs text-warning">{mda.pendingBills} pending</p>
+          )}
+        </div>
       ),
     },
     {
@@ -103,21 +218,19 @@ const MDAsPage = () => {
       header: 'Total Value',
       sortable: true,
       align: 'right' as const,
-      render: (mda: MDA) => (
-        <span className="font-semibold text-accent">{formatCurrency(mda.totalAmount, true)}</span>
-      ),
+      render: (mda: MDA & ReturnType<typeof getMDAStats>) => <span className="font-medium">{formatCurrency(mda.totalAmount, true)}</span>,
     },
     {
       key: 'verifiedAmount',
       header: 'Verified',
       sortable: true,
       align: 'right' as const,
-      render: (mda: MDA) => {
-        const percentage = (mda.verifiedAmount / mda.totalAmount) * 100;
+      render: (mda: MDA & ReturnType<typeof getMDAStats>) => {
+        const pct = mda.totalAmount > 0 ? (mda.verifiedAmount / mda.totalAmount) * 100 : 0;
         return (
           <div className="text-right">
             <span className="font-medium text-success">{formatCurrency(mda.verifiedAmount, true)}</span>
-            <p className="text-xs text-muted-foreground">{percentage.toFixed(0)}%</p>
+            <p className="text-xs text-muted-foreground">{pct.toFixed(0)}%</p>
           </div>
         );
       },
@@ -125,16 +238,11 @@ const MDAsPage = () => {
     {
       key: 'progress',
       header: 'Progress',
-      render: (mda: MDA) => {
-        const percentage = (mda.verifiedAmount / mda.totalAmount) * 100;
+      render: (mda: MDA & ReturnType<typeof getMDAStats>) => {
+        const pct = mda.totalAmount > 0 ? (mda.verifiedAmount / mda.totalAmount) * 100 : 0;
         return (
-          <div className="w-24">
-            <div className="h-2 bg-muted rounded-full overflow-hidden">
-              <div 
-                className="h-full bg-success rounded-full"
-                style={{ width: `${percentage}%` }}
-              />
-            </div>
+          <div className="w-20">
+            <Progress value={pct} className="h-1.5" />
           </div>
         );
       },
@@ -142,148 +250,119 @@ const MDAsPage = () => {
     {
       key: 'actions',
       header: '',
-      render: (mda: MDA) => (
-        <button 
-          onClick={(e) => {
-            e.stopPropagation();
-            handleViewBills(mda.id);
-          }}
-          className="flex items-center gap-1 text-sm text-primary hover:text-primary/80"
-        >
-          View Bills <ArrowRight className="w-4 h-4" />
-        </button>
+      render: (mda: MDA & ReturnType<typeof getMDAStats>) => (
+        <div className="flex items-center gap-1">
+          <button 
+            onClick={(e) => { e.stopPropagation(); setSelectedMDA(mda); }}
+            className="p-1.5 hover:bg-secondary rounded-md transition-colors"
+            title="View Details"
+          >
+            <Eye className="w-4 h-4 text-muted-foreground" />
+          </button>
+          <button 
+            onClick={(e) => { e.stopPropagation(); handleViewBills(mda.id); }}
+            className="text-xs text-muted-foreground font-medium flex items-center gap-1 hover:text-foreground p-1.5"
+          >
+            Bills <ArrowRight className="w-3 h-3" />
+          </button>
+        </div>
       ),
     },
   ];
 
   const totalAmount = filteredMDAs.reduce((sum, mda) => sum + mda.totalAmount, 0);
   const totalBills = filteredMDAs.reduce((sum, mda) => sum + mda.totalBills, 0);
+  const totalVerified = filteredMDAs.reduce((sum, mda) => sum + mda.verifiedAmount, 0);
+  const totalPaid = filteredMDAs.reduce((sum, mda) => sum + mda.paidAmount, 0);
+  const verificationRate = totalAmount > 0 ? ((totalVerified / totalAmount) * 100).toFixed(1) : '0';
 
   return (
     <div className="min-h-screen">
-      <TopBar 
-        title="MDAs" 
-        subtitle={`${filteredMDAs.length} Ministries, Departments & Agencies`}
-      />
+      <TopBar title="MDAs" subtitle={`${filteredMDAs.length} Ministries, Departments & Agencies`} />
       
-      <div className="p-6">
-        {/* Summary Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-          <div className="glass-card p-4">
-            <p className="text-sm text-muted-foreground mb-1">Total MDAs</p>
-            <p className="text-2xl font-bold">{mdaData.length}</p>
-          </div>
-          <div className="glass-card p-4">
-            <p className="text-sm text-muted-foreground mb-1">Total Bills</p>
-            <p className="text-2xl font-bold">{totalBills.toLocaleString()}</p>
-          </div>
-          <div className="glass-card p-4">
-            <p className="text-sm text-muted-foreground mb-1">Total Value</p>
-            <p className="text-2xl font-bold text-accent">{formatCurrency(totalAmount, true)}</p>
-          </div>
-          <div className="glass-card p-4">
-            <p className="text-sm text-muted-foreground mb-1">Avg Verification</p>
-            <p className="text-2xl font-bold text-success">68.4%</p>
-          </div>
+      <div className="p-6 space-y-6">
+        {/* Stats */}
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+          {[
+            { label: 'Total MDAs', value: mdas.length, icon: Building2 },
+            { label: 'Total Bills', value: totalBills.toLocaleString() },
+            { label: 'Total Value', value: formatCurrency(totalAmount, true) },
+            { label: 'Verified', value: formatCurrency(totalVerified, true), color: 'text-success' },
+            { label: 'Verification Rate', value: `${verificationRate}%`, icon: TrendingUp },
+          ].map((stat) => (
+            <div key={stat.label} className="glass-card p-4">
+              <div className="flex items-center justify-between">
+                <p className={cn("text-xl font-semibold", stat.color || "text-foreground")}>{stat.value}</p>
+                {stat.icon && <stat.icon className="w-4 h-4 text-muted-foreground" />}
+              </div>
+              <p className="text-xs text-muted-foreground">{stat.label}</p>
+            </div>
+          ))}
         </div>
 
-        {/* Charts Row */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-          <div className="lg:col-span-2 glass-card p-6">
-            <h3 className="font-display text-lg font-bold mb-4">Top MDAs by Value</h3>
-            <div className="h-72">
+        {/* Charts */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2 glass-card p-5">
+            <h3 className="font-semibold text-foreground mb-4">Top MDAs by Value (Live)</h3>
+            <div className="h-56">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={chartData} layout="vertical" margin={{ left: 60 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(217, 33%, 20%)" />
-                  <XAxis 
-                    type="number"
-                    stroke="hsl(215, 20%, 55%)"
-                    tick={{ fill: 'hsl(215, 20%, 55%)', fontSize: 12 }}
-                    tickFormatter={(v) => `${v}B`}
-                  />
-                  <YAxis 
-                    type="category"
-                    dataKey="name"
-                    stroke="hsl(215, 20%, 55%)"
-                    tick={{ fill: 'hsl(215, 20%, 55%)', fontSize: 12 }}
-                    width={60}
-                  />
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: 'hsl(222, 47%, 11%)',
-                      border: '1px solid hsl(217, 33%, 20%)',
-                      borderRadius: '8px',
-                    }}
-                    formatter={(value: number) => [`KES ${value.toFixed(1)}B`]}
-                  />
+                <BarChart data={chartData} layout="vertical" margin={{ left: 50 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(220, 15%, 88%)" horizontal vertical={false} />
+                  <XAxis type="number" tick={{ fill: 'hsl(220, 10%, 50%)', fontSize: 11 }} axisLine={false} tickLine={false} tickFormatter={(v) => `${v}B`} />
+                  <YAxis type="category" dataKey="name" tick={{ fill: 'hsl(220, 10%, 50%)', fontSize: 11 }} width={50} axisLine={false} tickLine={false} />
+                  <Tooltip contentStyle={{ backgroundColor: '#fff', border: '1px solid hsl(220, 15%, 88%)', borderRadius: '6px', fontSize: '12px' }} />
                   <Bar dataKey="verified" stackId="a" fill="hsl(142, 76%, 36%)" name="Verified" />
-                  <Bar dataKey="pending" stackId="a" fill="hsl(38, 92%, 50%)" name="Pending" radius={[0, 4, 4, 0]} />
+                  <Bar dataKey="pending" stackId="a" fill="hsl(40, 85%, 55%)" name="Pending" radius={[0, 3, 3, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
           </div>
 
-          <div className="glass-card p-6">
-            <h3 className="font-display text-lg font-bold mb-4">By Category</h3>
-            <div className="h-48">
+          <div className="glass-card p-5">
+            <h3 className="font-semibold text-foreground mb-4">By Category</h3>
+            <div className="h-36">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
-                  <Pie
-                    data={categoryData}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={40}
-                    outerRadius={70}
-                    dataKey="value"
-                    label={({ name, value }) => `${name}: ${value}`}
-                  >
-                    {categoryData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
+                  <Pie data={categoryData} cx="50%" cy="50%" innerRadius={30} outerRadius={55} dataKey="value">
+                    {categoryData.map((entry, i) => <Cell key={i} fill={entry.color} />)}
                   </Pie>
-                  <Tooltip />
+                  <Tooltip contentStyle={{ backgroundColor: '#fff', border: '1px solid hsl(220, 15%, 88%)', borderRadius: '6px', fontSize: '12px' }} />
                 </PieChart>
               </ResponsiveContainer>
             </div>
-            <div className="flex justify-center gap-4 mt-4">
+            <div className="flex justify-center gap-4 mt-2">
               {categoryData.map((item) => (
-                <button
-                  key={item.name}
-                  onClick={() => setCategoryFilter(item.name.toLowerCase().slice(0, -1) === 'ministr' ? 'ministry' : item.name.toLowerCase().slice(0, -1) === 'agenc' ? 'agency' : 'county')}
-                  className="flex items-center gap-2"
-                >
-                  <div className="w-3 h-3 rounded-full" style={{ backgroundColor: item.color }} />
-                  <span className="text-xs text-muted-foreground">{item.name}</span>
-                </button>
+                <div key={item.name} className="flex items-center gap-1.5">
+                  <div className="w-2 h-2 rounded-full" style={{ backgroundColor: item.color }} />
+                  <span className="text-xs text-muted-foreground">{item.name} ({item.value})</span>
+                </div>
               ))}
             </div>
           </div>
         </div>
 
-        {/* Filters & Table */}
+        {/* Table */}
         <div className="glass-card overflow-hidden">
           <div className="flex items-center justify-between p-4 border-b border-border">
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <input
                   type="text"
                   placeholder="Search MDAs..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 pr-4 py-2 bg-muted border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 w-64"
+                  className="pl-8 pr-3 py-1.5 bg-secondary border border-border rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-foreground/20 w-48"
                 />
               </div>
-              <div className="flex gap-2">
+              <div className="flex gap-1">
                 {['all', 'ministry', 'agency', 'county'].map((cat) => (
                   <button
                     key={cat}
                     onClick={() => setCategoryFilter(cat)}
                     className={cn(
-                      "px-3 py-1.5 rounded-lg text-sm font-medium transition-colors capitalize",
-                      categoryFilter === cat 
-                        ? 'bg-primary text-primary-foreground' 
-                        : 'bg-muted text-muted-foreground hover:text-foreground'
+                      "px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors capitalize",
+                      categoryFilter === cat ? 'bg-foreground text-background' : 'bg-secondary text-muted-foreground hover:text-foreground'
                     )}
                   >
                     {cat === 'all' ? 'All' : cat}
@@ -291,16 +370,154 @@ const MDAsPage = () => {
                 ))}
               </div>
             </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handlePrintReport}
+                className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs bg-secondary hover:bg-secondary/80 rounded-md transition-colors"
+                title="Print Report"
+              >
+                <Printer className="w-3.5 h-3.5" />
+              </button>
+              <button
+                onClick={handleExportCSV}
+                className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs bg-secondary hover:bg-secondary/80 rounded-md transition-colors"
+              >
+                <Download className="w-3.5 h-3.5" />
+                Export
+              </button>
+              <p className="text-xs text-muted-foreground">{filteredMDAs.length} of {mdas.length}</p>
+            </div>
           </div>
-
-          <DataTable
-            data={filteredMDAs}
-            columns={columns}
+          <DataTable 
+            data={filteredMDAs} 
+            columns={columns} 
             keyExtractor={(mda) => mda.id}
-            onRowClick={handleMDAClick}
+            onRowClick={(mda) => setSelectedMDA(mda)}
           />
         </div>
       </div>
+
+      {/* MDA Detail Modal */}
+      {selectedMDA && selectedMDAStats && (
+        <div 
+          className="fixed inset-0 bg-foreground/20 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+          onClick={() => setSelectedMDA(null)}
+        >
+          <div 
+            className="bg-card border border-border rounded-lg max-w-lg w-full max-h-[85vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="p-4 border-b border-border">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-md bg-secondary flex items-center justify-center">
+                  <Building2 className="w-5 h-5 text-muted-foreground" />
+                </div>
+                <div>
+                  <h2 className="font-semibold text-foreground">{selectedMDA.name}</h2>
+                  <p className="text-xs text-muted-foreground capitalize">{selectedMDA.category}</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="p-4 space-y-4">
+              {/* Stats Grid - Live Data */}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="p-3 bg-secondary/30 rounded-lg">
+                  <p className="text-xs text-muted-foreground">Total Bills</p>
+                  <p className="text-xl font-bold">{selectedMDAStats.totalBills.toLocaleString()}</p>
+                </div>
+                <div className="p-3 bg-secondary/30 rounded-lg">
+                  <p className="text-xs text-muted-foreground">Total Value</p>
+                  <p className="text-xl font-bold text-accent">{formatCurrency(selectedMDAStats.totalAmount, true)}</p>
+                </div>
+                <div className="p-3 bg-success/10 rounded-lg">
+                  <p className="text-xs text-muted-foreground">Verified</p>
+                  <p className="text-lg font-bold text-success">{formatCurrency(selectedMDAStats.verifiedAmount, true)}</p>
+                  <p className="text-xs text-success">{selectedMDAStats.verifiedBills} bills</p>
+                </div>
+                <div className="p-3 bg-warning/10 rounded-lg">
+                  <p className="text-xs text-muted-foreground">Pending</p>
+                  <p className="text-lg font-bold text-warning">{formatCurrency(selectedMDAStats.pendingAmount, true)}</p>
+                  <p className="text-xs text-warning">{selectedMDAStats.pendingBills} bills</p>
+                </div>
+                {selectedMDAStats.paidBills > 0 && (
+                  <div className="p-3 bg-accent/10 rounded-lg col-span-2">
+                    <p className="text-xs text-muted-foreground">Paid</p>
+                    <p className="text-lg font-bold text-accent">{formatCurrency(selectedMDAStats.paidAmount, true)}</p>
+                    <p className="text-xs text-accent">{selectedMDAStats.paidBills} bills settled</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Progress */}
+              <div>
+                <div className="flex justify-between text-sm mb-2">
+                  <span className="text-muted-foreground">Verification Progress</span>
+                  <span className="font-medium">
+                    {selectedMDAStats.totalAmount > 0 
+                      ? ((selectedMDAStats.verifiedAmount / selectedMDAStats.totalAmount) * 100).toFixed(1) 
+                      : 0}%
+                  </span>
+                </div>
+                <Progress 
+                  value={selectedMDAStats.totalAmount > 0 
+                    ? (selectedMDAStats.verifiedAmount / selectedMDAStats.totalAmount) * 100 
+                    : 0} 
+                  className="h-2" 
+                />
+              </div>
+
+              {/* Payment Schedule Link */}
+              {getMDAPaymentSchedule(selectedMDA.id) && (
+                <div className="p-3 bg-accent/10 rounded-lg">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-accent">Payment Schedule Active</p>
+                      <p className="text-xs text-muted-foreground">View quarterly payment plan</p>
+                    </div>
+                    <CheckCircle className="w-5 h-5 text-accent" />
+                  </div>
+                </div>
+              )}
+
+              {/* Actions */}
+              <div className="flex gap-2">
+                <button
+                  onClick={() => handleViewBills(selectedMDA.id)}
+                  className="flex-1 px-4 py-2 bg-primary text-primary-foreground rounded-md text-sm font-medium hover:bg-primary/90 transition-colors flex items-center justify-center gap-2"
+                >
+                  View Bills <ArrowRight className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => handleUploadDocs(selectedMDA.id)}
+                  className="px-4 py-2 bg-secondary text-foreground rounded-md text-sm font-medium hover:bg-secondary/80 transition-colors flex items-center justify-center gap-2"
+                >
+                  <FileText className="w-4 h-4" />
+                  Documents
+                </button>
+              </div>
+
+              {getMDAPaymentSchedule(selectedMDA.id) && (
+                <button
+                  onClick={() => handleViewPaymentSchedule(selectedMDA.id)}
+                  className="w-full px-4 py-2 bg-accent/10 text-accent rounded-md text-sm font-medium hover:bg-accent/20 transition-colors"
+                >
+                  View Payment Schedule
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Document Modal */}
+      <DocumentModal
+        isOpen={showDocModal}
+        onClose={() => setShowDocModal(false)}
+        entityType="mda"
+        entityId={docMDAId}
+        title="MDA Documents"
+      />
     </div>
   );
 };

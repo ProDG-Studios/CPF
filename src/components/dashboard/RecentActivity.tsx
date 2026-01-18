@@ -1,8 +1,17 @@
-import { timelineEvents, getStatusColor } from '@/data/mockData';
-import { Calendar, DollarSign, FileCheck, FileText, ArrowRight } from 'lucide-react';
+import { Calendar, DollarSign, FileCheck, FileText, ArrowRight, Clock, XCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { cn } from '@/lib/utils';
+import { useData } from '@/contexts/DataContext';
+import { formatCurrency } from '@/data/mockData';
 
 const typeIcons = {
+  bill_verified: FileCheck,
+  bill_processed: Clock,
+  bill_paid: DollarSign,
+  bill_rejected: XCircle,
+  step_completed: Calendar,
+  payment_made: DollarSign,
+  supplier_verified: FileText,
   milestone: Calendar,
   payment: DollarSign,
   verification: FileCheck,
@@ -11,67 +20,86 @@ const typeIcons = {
 
 const RecentActivity = () => {
   const navigate = useNavigate();
+  const { activityLog, timelineEvents } = useData();
+  
+  // Combine activity log with timeline events for display
+  const combinedActivity = [
+    ...activityLog.slice(0, 10).map(log => ({
+      id: log.id,
+      title: log.title,
+      description: log.description,
+      type: log.type,
+      amount: log.amount,
+      status: 'completed' as const,
+      date: log.timestamp,
+    })),
+    ...(activityLog.length < 5 ? timelineEvents.slice(0, 5 - activityLog.length).map(event => ({
+      id: event.id,
+      title: event.title,
+      description: event.description,
+      type: event.type as keyof typeof typeIcons,
+      amount: event.amount,
+      status: event.status,
+      date: new Date(event.date),
+    })) : []),
+  ].slice(0, 5);
   
   return (
-    <div className="glass-card p-6">
-      <div className="flex items-center justify-between mb-6">
+    <div className="glass-card p-5">
+      <div className="flex items-center justify-between mb-4">
         <div>
-          <h3 className="font-display text-lg font-bold text-foreground">
-            Recent Activity
-          </h3>
-          <p className="text-sm text-muted-foreground">Latest updates & milestones</p>
+          <h3 className="font-semibold text-foreground">Recent Activity</h3>
+          <p className="text-xs text-muted-foreground">
+            {activityLog.length > 0 ? `${activityLog.length} actions recorded` : 'Latest updates'}
+          </p>
         </div>
         <button 
           onClick={() => navigate('/timeline')}
-          className="text-sm text-primary hover:text-primary/80 flex items-center gap-1"
+          className="text-xs text-muted-foreground font-medium flex items-center gap-1 hover:text-foreground"
         >
-          View all <ArrowRight className="w-4 h-4" />
+          View all <ArrowRight className="w-3 h-3" />
         </button>
       </div>
 
-      <div className="space-y-4">
-        {timelineEvents.slice(0, 5).map((event, index) => {
-          const Icon = typeIcons[event.type];
-          
-          return (
-            <div 
-              key={event.id}
-              className="flex gap-4 p-3 rounded-lg hover:bg-muted/30 transition-colors cursor-pointer"
-            >
-              <div className="relative">
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                  event.status === 'completed' ? 'bg-success/20 text-success' :
-                  event.status === 'in-progress' ? 'bg-primary/20 text-primary' :
-                  'bg-muted text-muted-foreground'
-                }`}>
-                  <Icon className="w-5 h-5" />
+      <div className="space-y-1">
+        {combinedActivity.length === 0 ? (
+          <div className="text-center py-8 text-muted-foreground">
+            <FileText className="w-8 h-8 mx-auto mb-2 opacity-50" />
+            <p className="text-sm">No recent activity</p>
+            <p className="text-xs">Start by verifying or processing bills</p>
+          </div>
+        ) : (
+          combinedActivity.map((event) => {
+            const Icon = typeIcons[event.type as keyof typeof typeIcons] || FileText;
+            
+            return (
+              <div 
+                key={event.id}
+                className="flex gap-3 p-2.5 rounded-md hover:bg-secondary transition-colors cursor-pointer"
+              >
+                <div className={cn(
+                  "w-8 h-8 rounded-md flex items-center justify-center shrink-0",
+                  event.status === 'completed' ? 'bg-success/10 text-success' :
+                  event.status === 'in-progress' ? 'bg-secondary text-muted-foreground' :
+                  'bg-secondary text-muted-foreground'
+                )}>
+                  <Icon className="w-4 h-4" />
                 </div>
-                {index < timelineEvents.slice(0, 5).length - 1 && (
-                  <div className="absolute top-10 left-1/2 w-0.5 h-8 -translate-x-1/2 bg-border" />
+                
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-foreground truncate">{event.title}</p>
+                  <p className="text-xs text-muted-foreground line-clamp-1">{event.description}</p>
+                </div>
+
+                {event.amount && (
+                  <span className="text-sm font-medium text-foreground shrink-0">
+                    {formatCurrency(event.amount, true)}
+                  </span>
                 )}
               </div>
-              
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-1">
-                  <p className="font-medium text-foreground truncate">{event.title}</p>
-                  <span className={`text-xs px-2 py-0.5 rounded-full ${getStatusColor(event.status)}`}>
-                    {event.status}
-                  </span>
-                </div>
-                <p className="text-sm text-muted-foreground line-clamp-2">{event.description}</p>
-                <p className="text-xs text-muted-foreground/70 mt-1">{event.date}</p>
-              </div>
-
-              {event.amount && (
-                <div className="text-right shrink-0">
-                  <p className="font-semibold text-accent">
-                    KES {(event.amount / 1000000000).toFixed(1)}B
-                  </p>
-                </div>
-              )}
-            </div>
-          );
-        })}
+            );
+          })
+        )}
       </div>
     </div>
   );

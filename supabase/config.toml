@@ -1,0 +1,7 @@
+project_id = "vwljsuedrhtjycjavucz"
+
+[functions.blockchain-deed]
+verify_jwt = false
+
+[functions.seed-demo-users]
+verify_jwt = false
