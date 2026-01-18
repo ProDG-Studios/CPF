@@ -28,6 +28,7 @@ import SPVBlockchainPage from "./pages/spv/SPVBlockchainPage";
 // MDA Portal
 import MDADashboard from "./pages/mda/MDADashboard";
 import MDABillsPage from "./pages/mda/MDABillsPage";
+import MDAPayablesPage from "./pages/mda/MDAPayablesPage";
 import MDAApprovedPage from "./pages/mda/MDAApprovedPage";
 import MDAProfilePage from "./pages/mda/MDAProfilePage";
 
@@ -81,6 +82,7 @@ const App = () => (
                 {/* MDA Portal */}
                 <Route path="/mda" element={<ProtectedRoute allowedRoles={['mda']}><MDADashboard /></ProtectedRoute>} />
                 <Route path="/mda/bills" element={<ProtectedRoute allowedRoles={['mda']}><MDABillsPage /></ProtectedRoute>} />
+                <Route path="/mda/payables" element={<ProtectedRoute allowedRoles={['mda']}><MDAPayablesPage /></ProtectedRoute>} />
                 <Route path="/mda/approved" element={<ProtectedRoute allowedRoles={['mda']}><MDAApprovedPage /></ProtectedRoute>} />
                 <Route path="/mda/profile" element={<ProtectedRoute allowedRoles={['mda']}><MDAProfilePage /></ProtectedRoute>} />
 

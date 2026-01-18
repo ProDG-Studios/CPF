@@ -4,10 +4,14 @@ import PortalLayout from '@/components/layout/PortalLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
-import { FileText, Clock, CheckCircle, XCircle, AlertTriangle, RefreshCw } from 'lucide-react';
-import { format } from 'date-fns';
+import { FileText, Clock, CheckCircle, XCircle, AlertTriangle, RefreshCw, Calendar, PenLine, Wallet } from 'lucide-react';
+import { format, subDays } from 'date-fns';
 import { toast } from 'sonner';
 import SPVOfferForm from '@/components/bills/SPVOfferForm';
 
@@ -36,16 +40,56 @@ interface SupplierProfile {
   company_name: string | null;
 }
 
+// Mock accepted offers that need terms set
+const mockAcceptedOffers = [
+  {
+    id: 'acc1',
+    invoice_number: 'INV-2024-A001',
+    supplier_name: 'Global Construction Ltd',
+    mda_name: 'Ministry of Infrastructure',
+    amount: 75000000,
+    offer_amount: 69000000,
+    offer_discount_rate: 8,
+    offer_accepted_date: subDays(new Date(), 2).toISOString(),
+    needs_terms: true,
+  },
+  {
+    id: 'acc2',
+    invoice_number: 'INV-2024-A002',
+    supplier_name: 'Premier Supplies Co',
+    mda_name: 'Ministry of Education',
+    amount: 32000000,
+    offer_amount: 30400000,
+    offer_discount_rate: 5,
+    offer_accepted_date: subDays(new Date(), 1).toISOString(),
+    needs_terms: true,
+  },
+];
+
 const SPVOffersPage = () => {
   const { user } = useAuth();
   const [offers, setOffers] = useState<Bill[]>([]);
   const [mdas, setMdas] = useState<Record<string, MDA>>({});
   const [loading, setLoading] = useState(true);
   const [selectedRejectedBill, setSelectedRejectedBill] = useState<Bill | null>(null);
+  const [selectedAcceptedOffer, setSelectedAcceptedOffer] = useState<typeof mockAcceptedOffers[0] | null>(null);
   const [showRejectionModal, setShowRejectionModal] = useState(false);
   const [showReofferModal, setShowReofferModal] = useState(false);
+  const [showTermsModal, setShowTermsModal] = useState(false);
+  const [showSigningModal, setShowSigningModal] = useState(false);
   const [supplierProfile, setSupplierProfile] = useState<SupplierProfile | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [activeTab, setActiveTab] = useState('accepted');
+
+  // Terms form state
+  const [termsData, setTermsData] = useState({
+    payment_quarters: '4',
+    start_quarter: 'Q1 2025',
+    interest_rate: '12',
+  });
+
+  // Quarter breakdown for per-quarter rates
+  const [quarterBreakdown, setQuarterBreakdown] = useState<{quarter: string; amount: number; rate: number}[]>([]);
 
   const fetchData = async () => {
     if (!user) return;
@@ -73,8 +117,35 @@ const SPVOffersPage = () => {
     fetchData();
   }, [user]);
 
+  useEffect(() => {
+    // Generate quarter breakdown when modal opens
+    if (selectedAcceptedOffer && showTermsModal) {
+      const quarters = parseInt(termsData.payment_quarters);
+      const startQ = termsData.start_quarter;
+      const baseAmount = selectedAcceptedOffer.amount / quarters;
+      
+      const breakdown: {quarter: string; amount: number; rate: number}[] = [];
+      const startYear = parseInt(startQ.split(' ')[1]);
+      let qNum = parseInt(startQ.replace('Q', ''));
+      let year = startYear;
+      
+      for (let i = 0; i < quarters; i++) {
+        breakdown.push({
+          quarter: `Q${qNum} ${year}`,
+          amount: baseAmount,
+          rate: parseFloat(termsData.interest_rate),
+        });
+        qNum++;
+        if (qNum > 4) {
+          qNum = 1;
+          year++;
+        }
+      }
+      setQuarterBreakdown(breakdown);
+    }
+  }, [selectedAcceptedOffer, showTermsModal, termsData.payment_quarters, termsData.start_quarter, termsData.interest_rate]);
+
   const getStatusBadge = (status: string, lastRejected?: boolean | null) => {
-    // Check if this is a rejected offer that needs attention
     if (lastRejected && status === 'submitted') {
       return { 
         class: 'bg-red-100 text-red-700 border-red-300', 
@@ -103,7 +174,6 @@ const SPVOffersPage = () => {
   const handleViewRejection = async (bill: Bill) => {
     setSelectedRejectedBill(bill);
     
-    // Fetch supplier profile for the re-offer modal
     const { data: profile } = await supabase
       .from('profiles')
       .select('company_name')
@@ -135,7 +205,6 @@ const SPVOffersPage = () => {
 
       if (error) throw error;
 
-      // Notify supplier of new offer
       await supabase.from('notifications').insert({
         user_id: selectedRejectedBill.supplier_id,
         title: 'New Offer Received',
@@ -144,7 +213,6 @@ const SPVOffersPage = () => {
         bill_id: selectedRejectedBill.id,
       });
 
-      // Log activity
       await supabase.from('activity_logs').insert({
         action: 'SPV Resubmitted Offer',
         user_id: user.id,
@@ -171,16 +239,62 @@ const SPVOffersPage = () => {
     }
   };
 
+  const handleSetTerms = (offer: typeof mockAcceptedOffers[0]) => {
+    setSelectedAcceptedOffer(offer);
+    setShowTermsModal(true);
+  };
+
+  const handleSubmitTerms = async () => {
+    if (!selectedAcceptedOffer) return;
+
+    setSubmitting(true);
+    
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 1000));
+
+    toast.success(`Payment terms set for ${selectedAcceptedOffer.invoice_number}. Sent to MDA for approval.`);
+    setShowTermsModal(false);
+    
+    // Show signing modal
+    setShowSigningModal(true);
+    setSubmitting(false);
+  };
+
+  const handleSign = async () => {
+    setSubmitting(true);
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    toast.success('Document signed successfully! Forwarded to MDA.');
+    setShowSigningModal(false);
+    setSelectedAcceptedOffer(null);
+    setSubmitting(false);
+  };
+
+  const updateQuarterRate = (index: number, rate: number) => {
+    setQuarterBreakdown(prev => prev.map((q, i) => i === index ? { ...q, rate } : q));
+  };
+
   return (
     <PortalLayout>
       <div className="p-6 space-y-6">
         <div>
           <h1 className="text-2xl font-bold text-foreground">My Offers</h1>
-          <p className="text-muted-foreground">Track the status of your investment offers</p>
+          <p className="text-muted-foreground">Track and manage your investment offers</p>
         </div>
 
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+          <Card className="bg-green-50 border-green-200">
+            <CardContent className="py-4">
+              <div className="flex items-center gap-2">
+                <p className="text-sm text-green-600">Accepted - Set Terms</p>
+                {mockAcceptedOffers.length > 0 && (
+                  <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+                )}
+              </div>
+              <p className="text-2xl font-bold text-green-700">{mockAcceptedOffers.length}</p>
+            </CardContent>
+          </Card>
           <Card className="bg-yellow-50 border-yellow-200">
             <CardContent className="py-4">
               <p className="text-sm text-yellow-600">Pending Response</p>
@@ -190,7 +304,7 @@ const SPVOffersPage = () => {
           <Card className="bg-red-50 border-red-200">
             <CardContent className="py-4">
               <div className="flex items-center gap-2">
-                <p className="text-sm text-red-600">Rejected - Action Required</p>
+                <p className="text-sm text-red-600">Rejected - Revise</p>
                 {rejectedOffers.length > 0 && (
                   <AlertTriangle className="w-4 h-4 text-red-600 animate-pulse" />
                 )}
@@ -204,148 +318,377 @@ const SPVOffersPage = () => {
               <p className="text-2xl font-bold text-blue-700">{acceptedOffers.length}</p>
             </CardContent>
           </Card>
-          <Card className="bg-green-50 border-green-200">
+          <Card className="bg-emerald-50 border-emerald-200">
             <CardContent className="py-4">
-              <p className="text-sm text-green-600">Completed</p>
-              <p className="text-2xl font-bold text-green-700">{completedOffers.length}</p>
-            </CardContent>
-          </Card>
-          <Card className="bg-gray-50 border-gray-200">
-            <CardContent className="py-4">
-              <p className="text-sm text-gray-600">Total Offers</p>
-              <p className="text-2xl font-bold text-gray-700">{offers.length}</p>
+              <p className="text-sm text-emerald-600">Completed</p>
+              <p className="text-2xl font-bold text-emerald-700">{completedOffers.length}</p>
             </CardContent>
           </Card>
         </div>
 
-        {/* Rejected Offers Alert */}
-        {rejectedOffers.length > 0 && (
-          <Card className="border-red-300 bg-red-50">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-red-700 flex items-center gap-2">
-                <AlertTriangle className="w-5 h-5" />
-                Offers Requiring Your Attention
-              </CardTitle>
-              <CardDescription className="text-red-600">
-                The following offers were rejected by suppliers. Click to view the reason and submit a revised offer.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                {rejectedOffers.map((offer) => (
-                  <div 
-                    key={offer.id}
-                    className="flex items-center justify-between p-3 rounded-lg bg-white border border-red-200 cursor-pointer hover:bg-red-50 transition-colors"
-                    onClick={() => handleViewRejection(offer)}
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 rounded-lg bg-red-100">
-                        <XCircle className="w-4 h-4 text-red-600" />
-                      </div>
-                      <div>
-                        <p className="font-semibold">{offer.invoice_number}</p>
-                        <p className="text-sm text-muted-foreground">{mdas[offer.mda_id]?.name}</p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-bold">₦{Number(offer.amount).toLocaleString()}</p>
-                      <p className="text-xs text-red-600">
-                        Rejected: {offer.last_rejection_date ? format(new Date(offer.last_rejection_date), 'PPP') : 'N/A'}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        )}
+        {/* Tabs */}
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <TabsList>
+            <TabsTrigger value="accepted" className="flex items-center gap-2">
+              <CheckCircle className="w-4 h-4" />
+              Accepted ({mockAcceptedOffers.length})
+            </TabsTrigger>
+            <TabsTrigger value="pending" className="flex items-center gap-2">
+              <Clock className="w-4 h-4" />
+              Pending ({pendingOffers.length})
+            </TabsTrigger>
+            <TabsTrigger value="rejected" className="flex items-center gap-2">
+              <AlertTriangle className="w-4 h-4" />
+              Rejected ({rejectedOffers.length})
+            </TabsTrigger>
+            <TabsTrigger value="all" className="flex items-center gap-2">
+              <FileText className="w-4 h-4" />
+              All Offers
+            </TabsTrigger>
+          </TabsList>
 
-        {/* All Offers List */}
-        <Card>
-          <CardHeader>
-            <CardTitle>All Offers</CardTitle>
-            <CardDescription>Complete history of your offers</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {loading ? (
-              <p className="text-center py-8 text-muted-foreground">Loading...</p>
-            ) : offers.length === 0 ? (
-              <div className="text-center py-8">
-                <FileText className="w-12 h-12 mx-auto text-muted-foreground/50 mb-3" />
-                <p className="text-muted-foreground">No offers made yet</p>
-              </div>
+          {/* Accepted Offers - Need Terms */}
+          <TabsContent value="accepted" className="space-y-4 mt-4">
+            {mockAcceptedOffers.length === 0 ? (
+              <Card>
+                <CardContent className="py-8 text-center">
+                  <CheckCircle className="w-12 h-12 mx-auto text-muted-foreground/50 mb-3" />
+                  <p className="text-muted-foreground">No accepted offers awaiting terms</p>
+                </CardContent>
+              </Card>
             ) : (
-              <div className="space-y-3">
-                {offers.map((offer) => {
-                  const statusConfig = getStatusBadge(offer.status, offer.last_rejected_by_supplier);
-                  const isRejected = offer.last_rejected_by_supplier && offer.status === 'submitted';
-                  
-                  return (
-                    <div 
-                      key={offer.id}
-                      className={`flex items-center justify-between p-4 rounded-lg ${
-                        isRejected ? 'bg-red-50 border border-red-200' : 'bg-secondary/30'
-                      }`}
-                    >
+              mockAcceptedOffers.map((offer) => (
+                <Card key={offer.id} className="border-green-200 bg-green-50/30">
+                  <CardContent className="py-4">
+                    <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-4">
+                      <div className="flex-1 space-y-2">
+                        <div className="flex items-center gap-3">
+                          <h3 className="font-semibold text-lg">{offer.invoice_number}</h3>
+                          <Badge className="bg-green-100 text-green-700">Accepted - Set Terms</Badge>
+                        </div>
+                        <p className="text-sm text-muted-foreground">{offer.supplier_name}</p>
+                        <p className="text-sm text-muted-foreground">{offer.mda_name}</p>
+                        <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                          <span className="flex items-center gap-1">
+                            <Calendar className="w-3 h-3" />
+                            Accepted: {format(new Date(offer.offer_accepted_date), 'PPP')}
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <Wallet className="w-3 h-3" />
+                            Discount: {offer.offer_discount_rate}%
+                          </span>
+                        </div>
+                      </div>
+                      <div className="text-right space-y-2">
+                        <div>
+                          <p className="text-sm text-muted-foreground">Invoice</p>
+                          <p className="text-xl font-bold">₦{offer.amount.toLocaleString()}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-muted-foreground">Your Offer</p>
+                          <p className="text-lg font-semibold text-accent">₦{offer.offer_amount.toLocaleString()}</p>
+                        </div>
+                        <Button onClick={() => handleSetTerms(offer)}>
+                          <PenLine className="w-4 h-4 mr-2" />
+                          Set Payment Terms
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))
+            )}
+          </TabsContent>
+
+          {/* Pending Offers */}
+          <TabsContent value="pending" className="space-y-4 mt-4">
+            {pendingOffers.length === 0 ? (
+              <Card>
+                <CardContent className="py-8 text-center">
+                  <Clock className="w-12 h-12 mx-auto text-muted-foreground/50 mb-3" />
+                  <p className="text-muted-foreground">No pending offers</p>
+                </CardContent>
+              </Card>
+            ) : (
+              pendingOffers.map((offer) => (
+                <Card key={offer.id}>
+                  <CardContent className="py-4">
+                    <div className="flex items-center justify-between">
                       <div className="flex items-center gap-4">
-                        <div className={`p-3 rounded-lg ${isRejected ? 'bg-red-100' : 'bg-background'}`}>
-                          <FileText className={`w-5 h-5 ${isRejected ? 'text-red-600' : ''}`} />
+                        <div className="p-3 rounded-lg bg-yellow-100">
+                          <Clock className="w-5 h-5 text-yellow-600" />
                         </div>
                         <div>
                           <p className="font-semibold">{offer.invoice_number}</p>
                           <p className="text-sm text-muted-foreground">{mdas[offer.mda_id]?.name}</p>
                           <p className="text-xs text-muted-foreground">
-                            {isRejected ? (
-                              <span className="text-red-600">
-                                Rejected: {offer.last_rejection_date ? format(new Date(offer.last_rejection_date), 'PPP') : 'N/A'}
-                              </span>
-                            ) : (
-                              <>Offered: {offer.offer_date ? format(new Date(offer.offer_date), 'PPP') : 'N/A'}</>
-                            )}
+                            Offered: {offer.offer_date ? format(new Date(offer.offer_date), 'PPP') : 'N/A'}
                           </p>
-                          {isRejected && offer.rejection_reason && (
-                            <p className="text-xs text-red-600 mt-1 line-clamp-1">
-                              Reason: {offer.rejection_reason}
-                            </p>
-                          )}
                         </div>
                       </div>
-                      <div className="text-right flex flex-col items-end gap-2">
-                        <p className="font-bold text-lg">₦{Number(offer.offer_amount || offer.amount).toLocaleString()}</p>
-                        <Badge className={`${statusConfig.class} flex items-center gap-1`}>
-                          {statusConfig.icon}
-                          {statusConfig.label || offer.status.replace(/_/g, ' ')}
-                        </Badge>
-                        {isRejected && (
-                          <Button 
-                            size="sm" 
-                            variant="outline"
-                            className="mt-1 border-red-300 text-red-600 hover:bg-red-50"
-                            onClick={() => handleViewRejection(offer)}
-                          >
-                            <RefreshCw className="w-3 h-3 mr-1" />
-                            Revise Offer
-                          </Button>
-                        )}
+                      <div className="text-right">
+                        <p className="font-bold text-lg">₦{Number(offer.offer_amount).toLocaleString()}</p>
+                        <Badge className="bg-yellow-100 text-yellow-700">Awaiting Response</Badge>
                       </div>
                     </div>
-                  );
-                })}
-              </div>
+                  </CardContent>
+                </Card>
+              ))
             )}
-          </CardContent>
-        </Card>
+          </TabsContent>
+
+          {/* Rejected Offers */}
+          <TabsContent value="rejected" className="space-y-4 mt-4">
+            {rejectedOffers.length === 0 ? (
+              <Card>
+                <CardContent className="py-8 text-center">
+                  <AlertTriangle className="w-12 h-12 mx-auto text-muted-foreground/50 mb-3" />
+                  <p className="text-muted-foreground">No rejected offers</p>
+                </CardContent>
+              </Card>
+            ) : (
+              rejectedOffers.map((offer) => (
+                <Card key={offer.id} className="border-red-200 bg-red-50/30">
+                  <CardContent className="py-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-4">
+                        <div className="p-3 rounded-lg bg-red-100">
+                          <XCircle className="w-5 h-5 text-red-600" />
+                        </div>
+                        <div>
+                          <p className="font-semibold">{offer.invoice_number}</p>
+                          <p className="text-sm text-muted-foreground">{mdas[offer.mda_id]?.name}</p>
+                          <p className="text-xs text-red-600">
+                            Reason: {offer.rejection_reason || 'No reason provided'}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="text-right space-y-2">
+                        <p className="font-bold text-lg">₦{Number(offer.amount).toLocaleString()}</p>
+                        <Button 
+                          size="sm" 
+                          variant="outline"
+                          className="border-red-300 text-red-600 hover:bg-red-50"
+                          onClick={() => handleViewRejection(offer)}
+                        >
+                          <RefreshCw className="w-3 h-3 mr-1" />
+                          Revise Offer
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))
+            )}
+          </TabsContent>
+
+          {/* All Offers */}
+          <TabsContent value="all" className="space-y-3 mt-4">
+            {loading ? (
+              <p className="text-center py-8 text-muted-foreground">Loading...</p>
+            ) : offers.length === 0 ? (
+              <Card>
+                <CardContent className="py-8 text-center">
+                  <FileText className="w-12 h-12 mx-auto text-muted-foreground/50 mb-3" />
+                  <p className="text-muted-foreground">No offers made yet</p>
+                </CardContent>
+              </Card>
+            ) : (
+              offers.map((offer) => {
+                const statusConfig = getStatusBadge(offer.status, offer.last_rejected_by_supplier);
+                return (
+                  <Card key={offer.id} className="bg-secondary/30">
+                    <CardContent className="py-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                          <div className="p-3 rounded-lg bg-background">
+                            <FileText className="w-5 h-5" />
+                          </div>
+                          <div>
+                            <p className="font-semibold">{offer.invoice_number}</p>
+                            <p className="text-sm text-muted-foreground">{mdas[offer.mda_id]?.name}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {offer.offer_date ? format(new Date(offer.offer_date), 'PPP') : 'N/A'}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-bold text-lg">₦{Number(offer.offer_amount || offer.amount).toLocaleString()}</p>
+                          <Badge className={statusConfig.class}>
+                            {statusConfig.icon}
+                            <span className="ml-1">{statusConfig.label || offer.status.replace(/_/g, ' ')}</span>
+                          </Badge>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })
+            )}
+          </TabsContent>
+        </Tabs>
       </div>
+
+      {/* Set Payment Terms Modal */}
+      <Dialog open={showTermsModal} onOpenChange={setShowTermsModal}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Set Payment Terms</DialogTitle>
+            <DialogDescription>
+              Define the payment schedule for {selectedAcceptedOffer?.invoice_number}. This will be sent to MDA for approval.
+            </DialogDescription>
+          </DialogHeader>
+          
+          {selectedAcceptedOffer && (
+            <div className="space-y-6 py-4">
+              {/* Summary */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="p-4 bg-secondary rounded-lg">
+                  <p className="text-sm text-muted-foreground">Invoice Amount</p>
+                  <p className="text-xl font-bold">₦{selectedAcceptedOffer.amount.toLocaleString()}</p>
+                </div>
+                <div className="p-4 bg-accent/10 rounded-lg">
+                  <p className="text-sm text-muted-foreground">Your Net Pay</p>
+                  <p className="text-xl font-bold text-accent">₦{selectedAcceptedOffer.offer_amount.toLocaleString()}</p>
+                </div>
+              </div>
+
+              {/* Terms Configuration */}
+              <div className="grid grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <Label>Payment Quarters</Label>
+                  <Select 
+                    value={termsData.payment_quarters} 
+                    onValueChange={(v) => setTermsData(prev => ({ ...prev, payment_quarters: v }))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="2">2 Quarters</SelectItem>
+                      <SelectItem value="4">4 Quarters</SelectItem>
+                      <SelectItem value="6">6 Quarters</SelectItem>
+                      <SelectItem value="8">8 Quarters</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>Start Quarter</Label>
+                  <Select 
+                    value={termsData.start_quarter} 
+                    onValueChange={(v) => setTermsData(prev => ({ ...prev, start_quarter: v }))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Q1 2025">Q1 2025</SelectItem>
+                      <SelectItem value="Q2 2025">Q2 2025</SelectItem>
+                      <SelectItem value="Q3 2025">Q3 2025</SelectItem>
+                      <SelectItem value="Q4 2025">Q4 2025</SelectItem>
+                      <SelectItem value="Q1 2026">Q1 2026</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>Base Interest Rate (%)</Label>
+                  <Input
+                    type="number"
+                    value={termsData.interest_rate}
+                    onChange={(e) => setTermsData(prev => ({ ...prev, interest_rate: e.target.value }))}
+                  />
+                </div>
+              </div>
+
+              {/* Per-Quarter Breakdown */}
+              <div className="space-y-3">
+                <h4 className="font-semibold text-sm">Per-Quarter Breakdown</h4>
+                <div className="space-y-2">
+                  {quarterBreakdown.map((q, index) => (
+                    <div key={q.quarter} className="flex items-center gap-4 p-3 bg-secondary/50 rounded-lg">
+                      <div className="flex-1">
+                        <p className="font-medium">{q.quarter}</p>
+                        <p className="text-sm text-muted-foreground">₦{q.amount.toLocaleString()}</p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Label className="text-sm">Rate:</Label>
+                        <Input
+                          type="number"
+                          value={q.rate}
+                          onChange={(e) => updateQuarterRate(index, parseFloat(e.target.value))}
+                          className="w-20 h-8"
+                        />
+                        <span className="text-sm">%</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-700">
+                <p>After you submit these terms, they will be sent to the MDA for approval. The MDA may accept or reject with suggested changes.</p>
+              </div>
+            </div>
+          )}
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowTermsModal(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleSubmitTerms} disabled={submitting}>
+              {submitting ? 'Submitting...' : 'Submit Terms to MDA'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Document Signing Modal */}
+      <Dialog open={showSigningModal} onOpenChange={setShowSigningModal}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <PenLine className="w-5 h-5" />
+              Sign Document
+            </DialogTitle>
+            <DialogDescription>
+              Sign the Deed of Assignment for {selectedAcceptedOffer?.invoice_number}
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-4">
+            <div className="p-4 bg-purple-50 border border-purple-200 rounded-lg">
+              <p className="text-sm font-medium text-purple-700 mb-2">Document: Deed of Assignment</p>
+              <p className="text-xs text-purple-600">
+                By signing, you confirm that you agree to the payment terms and accept the assignment of the receivable.
+              </p>
+            </div>
+
+            <div className="p-4 border-2 border-dashed border-muted rounded-lg text-center">
+              <PenLine className="w-8 h-8 mx-auto text-muted-foreground mb-2" />
+              <p className="text-sm text-muted-foreground">Click below to apply your digital signature</p>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowSigningModal(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleSign} disabled={submitting}>
+              {submitting ? 'Signing...' : 'Sign & Submit'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Rejection Details Modal */}
       <Dialog open={showRejectionModal} onOpenChange={setShowRejectionModal}>
-        <DialogContent className="max-w-md" aria-describedby="rejection-modal-description">
+        <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-red-700">
               <XCircle className="w-5 h-5" />
               Offer Rejected
             </DialogTitle>
-            <DialogDescription id="rejection-modal-description">
+            <DialogDescription>
               Your offer on invoice {selectedRejectedBill?.invoice_number} was rejected by the supplier.
             </DialogDescription>
           </DialogHeader>
@@ -368,34 +711,15 @@ const SPVOffersPage = () => {
                   <span className="text-muted-foreground">MDA</span>
                   <span className="font-medium">{mdas[selectedRejectedBill.mda_id]?.name}</span>
                 </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Rejected On</span>
-                  <span className="font-medium">
-                    {selectedRejectedBill.last_rejection_date 
-                      ? format(new Date(selectedRejectedBill.last_rejection_date), 'PPP') 
-                      : 'N/A'}
-                  </span>
-                </div>
               </div>
-
-              <p className="text-sm text-muted-foreground">
-                Consider the supplier's feedback and submit a revised offer with better terms.
-              </p>
             </div>
           )}
 
-          <DialogFooter className="flex-col sm:flex-row gap-2 pt-4">
-            <Button 
-              variant="outline" 
-              onClick={() => setShowRejectionModal(false)}
-              className="w-full sm:w-auto"
-            >
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={() => setShowRejectionModal(false)}>
               Close
             </Button>
-            <Button 
-              onClick={() => { setShowRejectionModal(false); setShowReofferModal(true); }}
-              className="w-full sm:w-auto bg-primary hover:bg-primary/90"
-            >
+            <Button onClick={() => { setShowRejectionModal(false); setShowReofferModal(true); }}>
               <RefreshCw className="w-4 h-4 mr-2" />
               Revise & Resubmit
             </Button>
@@ -405,32 +729,23 @@ const SPVOffersPage = () => {
 
       {/* Re-offer Modal */}
       <Dialog open={showReofferModal} onOpenChange={setShowReofferModal}>
-        <DialogContent className="max-w-lg max-h-[90vh] flex flex-col" aria-describedby="reoffer-modal-description">
-          <DialogHeader className="flex-shrink-0">
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
             <DialogTitle>Submit Revised Offer</DialogTitle>
-            <DialogDescription id="reoffer-modal-description">
-              Create a new offer for invoice {selectedRejectedBill?.invoice_number}.
+            <DialogDescription>
+              Adjust your offer terms for {selectedRejectedBill?.invoice_number}
             </DialogDescription>
           </DialogHeader>
           
           {selectedRejectedBill && (
-            <div className="flex-1 overflow-y-auto pr-2 space-y-4">
-              {selectedRejectedBill.rejection_reason && (
-                <div className="p-3 bg-amber-50 dark:bg-amber-900/20 rounded-lg border border-amber-200 dark:border-amber-800">
-                  <p className="text-xs font-semibold text-amber-700 dark:text-amber-400 mb-1">Previous Rejection Reason:</p>
-                  <p className="text-sm text-amber-600 dark:text-amber-300">{selectedRejectedBill.rejection_reason}</p>
-                </div>
-              )}
-              
-              <SPVOfferForm
-                billAmount={selectedRejectedBill.amount}
-                supplierCompany={supplierProfile?.company_name || 'Supplier'}
-                mdaName={mdas[selectedRejectedBill.mda_id]?.name}
-                invoiceNumber={selectedRejectedBill.invoice_number}
-                onSubmit={handleSubmitNewOffer}
-                submitting={submitting}
-              />
-            </div>
+            <SPVOfferForm
+              billAmount={Number(selectedRejectedBill.amount)}
+              supplierCompany={supplierProfile?.company_name || undefined}
+              mdaName={mdas[selectedRejectedBill.mda_id]?.name}
+              invoiceNumber={selectedRejectedBill.invoice_number}
+              onSubmit={handleSubmitNewOffer}
+              submitting={submitting}
+            />
           )}
         </DialogContent>
       </Dialog>

@@ -58,7 +58,7 @@ const Sidebar = () => {
             </div>
             <div>
               <span className="text-sm font-bold bg-gradient-to-r from-amber-200 via-amber-400 to-amber-200 bg-clip-text text-transparent">Admin Portal</span>
-              <p className="text-[10px] text-neutral-500">CPF Settlement</p>
+              <p className="text-[10px] text-neutral-500">Receivables Securitisation</p>
             </div>
           </div>
         )}
