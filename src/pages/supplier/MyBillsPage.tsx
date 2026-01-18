@@ -184,6 +184,8 @@ const MyBillsPage = () => {
     try {
       const spvId = selectedBill.spv_id;
 
+      // Keep spv_id so the SPV can see it in "My Offers" and resubmit
+      // Clear offer details but store rejection reason
       const { error } = await supabase
         .from('bills')
         .update({
@@ -191,7 +193,10 @@ const MyBillsPage = () => {
           offer_amount: null,
           offer_discount_rate: null,
           offer_date: null,
-          spv_id: null,
+          rejection_reason: rejectReason,
+          last_rejected_by_supplier: true,
+          last_rejection_date: new Date().toISOString(),
+          // Keep spv_id so SPV can see it in their rejected offers
         })
         .eq('id', selectedBill.id);
 
@@ -201,8 +206,8 @@ const MyBillsPage = () => {
       if (spvId) {
         await supabase.from('notifications').insert({
           user_id: spvId,
-          title: 'Offer Rejected',
-          message: `Your offer on invoice ${selectedBill.invoice_number} was rejected. Reason: ${rejectReason}`,
+          title: 'Offer Rejected - Action Required',
+          message: `Your offer on invoice ${selectedBill.invoice_number} was rejected. Reason: ${rejectReason}. You can revise and resubmit your offer.`,
           type: 'error',
           bill_id: selectedBill.id,
         });
@@ -223,7 +228,7 @@ const MyBillsPage = () => {
       // Refetch bills
       await fetchBills();
 
-      toast.success('Offer rejected. The SPV has been notified.');
+      toast.success('Offer rejected. The SPV has been notified and can revise their offer.');
       setShowRejectModal(false);
       setShowOfferModal(false);
       setSelectedBill(null);

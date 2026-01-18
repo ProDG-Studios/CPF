@@ -66,6 +66,8 @@ export type Database = {
           invoice_date: string
           invoice_document_url: string | null
           invoice_number: string
+          last_rejected_by_supplier: boolean | null
+          last_rejection_date: string | null
           mda_approved_by: string | null
           mda_approved_date: string | null
           mda_id: string
@@ -77,6 +79,7 @@ export type Database = {
           payment_quarters: number | null
           payment_start_quarter: string | null
           payment_terms: Json | null
+          rejection_reason: string | null
           spv_id: string | null
           status: Database["public"]["Enums"]["bill_status"]
           status_history: Json | null
@@ -105,6 +108,8 @@ export type Database = {
           invoice_date: string
           invoice_document_url?: string | null
           invoice_number: string
+          last_rejected_by_supplier?: boolean | null
+          last_rejection_date?: string | null
           mda_approved_by?: string | null
           mda_approved_date?: string | null
           mda_id: string
@@ -116,6 +121,7 @@ export type Database = {
           payment_quarters?: number | null
           payment_start_quarter?: string | null
           payment_terms?: Json | null
+          rejection_reason?: string | null
           spv_id?: string | null
           status?: Database["public"]["Enums"]["bill_status"]
           status_history?: Json | null
@@ -144,6 +150,8 @@ export type Database = {
           invoice_date?: string
           invoice_document_url?: string | null
           invoice_number?: string
+          last_rejected_by_supplier?: boolean | null
+          last_rejection_date?: string | null
           mda_approved_by?: string | null
           mda_approved_date?: string | null
           mda_id?: string
@@ -155,6 +163,7 @@ export type Database = {
           payment_quarters?: number | null
           payment_start_quarter?: string | null
           payment_terms?: Json | null
+          rejection_reason?: string | null
           spv_id?: string | null
           status?: Database["public"]["Enums"]["bill_status"]
           status_history?: Json | null
