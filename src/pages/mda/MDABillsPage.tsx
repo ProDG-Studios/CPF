@@ -6,11 +6,12 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { FileText, CheckCircle, XCircle, ExternalLink, Building2, Calendar, User, PenLine, AlertTriangle } from 'lucide-react';
+import { FileText, CheckCircle, XCircle, ExternalLink, Building2, Calendar, User, PenLine, AlertTriangle, Check } from 'lucide-react';
 import { format, subDays } from 'date-fns';
 
 interface Bill {
@@ -59,8 +60,17 @@ const MDABillsPage = () => {
   const [rejectReason, setRejectReason] = useState('');
   const [paymentQuarters, setPaymentQuarters] = useState('4');
   const [startQuarter, setStartQuarter] = useState('Q1 2025');
-  const [selectedTermsOption, setSelectedTermsOption] = useState<string>('spv_proposed');
+  const [selectedTermsOption, setSelectedTermsOption] = useState<string>('option-1');
   const [submitting, setSubmitting] = useState(false);
+
+  // Consent checkboxes state
+  const [consents, setConsents] = useState({
+    assignment: false,
+    financialTerms: false,
+    financialCosts: false,
+    paymentTerms: false,
+    treasuryDebit: false,
+  });
 
   useEffect(() => {
     const fetchData = async () => {
@@ -548,26 +558,35 @@ const MDABillsPage = () => {
           </DialogContent>
         </Dialog>
 
-        {/* Approval Modal for Mock Bills */}
-        <Dialog open={showApprovalModal && selectedMockBill !== null && selectedBill === null} onOpenChange={(open) => { if (!open) { setShowApprovalModal(false); setSelectedMockBill(null); } }}>
-          <DialogContent className="max-w-lg">
+        {/* Approval Modal for Mock Bills with Consent Sections */}
+        <Dialog open={showApprovalModal && selectedMockBill !== null && selectedBill === null} onOpenChange={(open) => { if (!open) { setShowApprovalModal(false); setSelectedMockBill(null); setConsents({ assignment: false, financialTerms: false, financialCosts: false, paymentTerms: false, treasuryDebit: false }); } }}>
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>Approve SPV Terms</DialogTitle>
+              <DialogTitle>Approve SPV Terms - Deed of Assignment</DialogTitle>
               <DialogDescription>
-                Review and approve the payment terms for {selectedMockBill?.invoice_number}
+                Review, consent to each section, and approve the terms for {selectedMockBill?.invoice_number}
               </DialogDescription>
             </DialogHeader>
             
             {selectedMockBill && (
               <div className="space-y-4 py-4">
-                <div className="p-4 bg-secondary rounded-lg space-y-2">
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Invoice Amount</span>
-                    <span className="font-bold">KES {selectedMockBill.amount.toLocaleString()}</span>
+                {/* Financial Summary - Principal, Interest, Total */}
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="p-3 bg-secondary rounded-lg text-center">
+                    <p className="text-xs text-muted-foreground">Principal Amount</p>
+                    <p className="text-lg font-bold">KES {selectedMockBill.amount.toLocaleString()}</p>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">SPV Offer</span>
-                    <span className="font-bold text-accent">KES {selectedMockBill.offer_amount.toLocaleString()}</span>
+                  <div className="p-3 bg-accent/10 rounded-lg text-center">
+                    <p className="text-xs text-muted-foreground">Interest/SPV Margin</p>
+                    <p className="text-lg font-bold text-accent">
+                      KES {Math.round(selectedMockBill.amount * (selectedMockBill.term_options?.[0]?.coupon_rate || 10) / 100).toLocaleString()}
+                    </p>
+                  </div>
+                  <div className="p-3 bg-green-50 rounded-lg text-center border border-green-200">
+                    <p className="text-xs text-muted-foreground">Total Repayment</p>
+                    <p className="text-lg font-bold text-green-700">
+                      KES {Math.round(selectedMockBill.amount * (1 + (selectedMockBill.term_options?.[0]?.coupon_rate || 10) / 100)).toLocaleString()}
+                    </p>
                   </div>
                 </div>
 
@@ -581,88 +600,179 @@ const MDABillsPage = () => {
                       <SelectValue placeholder="Select payment terms..." />
                     </SelectTrigger>
                     <SelectContent className="bg-background border shadow-xl z-50">
-                      {selectedMockBill.term_options?.map((option) => (
-                        <SelectItem key={option.id} value={option.id} className="py-3">
-                          <div className="flex items-center gap-4">
-                            <span className="font-semibold text-purple-700">{option.label}:</span>
-                            <span>{option.years} yr(s)</span>
-                            <span>•</span>
-                            <span>{option.quarters} quarters</span>
-                            <span>•</span>
-                            <span>{option.coupon_rate}% coupon</span>
-                            <span>•</span>
-                            <span>from {option.start_quarter}</span>
-                          </div>
-                        </SelectItem>
-                      )) || (
-                        <>
-                          <SelectItem value="option-1" className="py-3">
-                            <div className="flex items-center gap-4">
-                              <span className="font-semibold text-purple-700">Standard:</span>
-                              <span>1 yr</span>
-                              <span>•</span>
-                              <span>{selectedMockBill.payment_quarters} quarters</span>
-                              <span>•</span>
-                              <span>{selectedMockBill.quarter_rates[0]}% coupon</span>
+                      {selectedMockBill.term_options?.map((option) => {
+                        const totalInterest = selectedMockBill.amount * option.coupon_rate / 100 * option.years;
+                        const totalAmount = selectedMockBill.amount + totalInterest;
+                        return (
+                          <SelectItem key={option.id} value={option.id} className="py-3">
+                            <div className="flex flex-col gap-1">
+                              <div className="flex items-center gap-3">
+                                <span className="font-semibold text-purple-700">{option.label}:</span>
+                                <span>{option.years} yr(s) • {option.quarters}Q • {option.coupon_rate}%</span>
+                              </div>
+                              <div className="text-xs text-muted-foreground">
+                                Total: KES {totalAmount.toLocaleString()} (Interest: KES {totalInterest.toLocaleString()})
+                              </div>
                             </div>
                           </SelectItem>
-                          <SelectItem value="option-2" className="py-3">
-                            <div className="flex items-center gap-4">
-                              <span className="font-semibold text-purple-700">Extended:</span>
-                              <span>2 yrs</span>
-                              <span>•</span>
-                              <span>8 quarters</span>
-                              <span>•</span>
-                              <span>12% coupon</span>
-                            </div>
-                          </SelectItem>
-                          <SelectItem value="option-3" className="py-3">
-                            <div className="flex items-center gap-4">
-                              <span className="font-semibold text-purple-700">Short-term:</span>
-                              <span>6 months</span>
-                              <span>•</span>
-                              <span>2 quarters</span>
-                              <span>•</span>
-                              <span>9% coupon</span>
-                            </div>
-                          </SelectItem>
-                        </>
-                      )}
+                        );
+                      })}
                     </SelectContent>
                   </Select>
                 </div>
 
-                {/* Selected Option Details */}
-                {selectedTermsOption && selectedMockBill.term_options && (
-                  <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
-                    <p className="font-medium text-green-700 mb-2">Selected Terms Details:</p>
-                    {(() => {
-                      const selected = selectedMockBill.term_options.find(o => o.id === selectedTermsOption);
-                      if (!selected) return null;
-                      const quarterlyAmount = selectedMockBill.amount / selected.quarters;
-                      return (
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
-                          <div>
-                            <p className="text-muted-foreground">Duration</p>
-                            <p className="font-bold text-green-700">{selected.years} Year(s)</p>
-                          </div>
-                          <div>
-                            <p className="text-muted-foreground">Quarters</p>
-                            <p className="font-bold text-green-700">{selected.quarters}</p>
-                          </div>
-                          <div>
-                            <p className="text-muted-foreground">Coupon Rate</p>
-                            <p className="font-bold text-green-700">{selected.coupon_rate}%</p>
-                          </div>
-                          <div>
-                            <p className="text-muted-foreground">Per Quarter</p>
-                            <p className="font-bold text-green-700">KES {quarterlyAmount.toLocaleString()}</p>
-                          </div>
+                {/* Selected Option Details with Principal/Interest/Total */}
+                {selectedTermsOption && selectedMockBill.term_options && (() => {
+                  const selected = selectedMockBill.term_options.find(o => o.id === selectedTermsOption);
+                  if (!selected) return null;
+                  const quarterlyPrincipal = selectedMockBill.amount / selected.quarters;
+                  const totalInterest = selectedMockBill.amount * selected.coupon_rate / 100 * selected.years;
+                  const totalAmount = selectedMockBill.amount + totalInterest;
+                  const quarterlyInterest = totalInterest / selected.quarters;
+                  const quarterlyTotal = quarterlyPrincipal + quarterlyInterest;
+
+                  return (
+                    <div className="p-4 bg-green-50 border border-green-200 rounded-lg space-y-3">
+                      <p className="font-medium text-green-700">Selected Terms - Financial Breakdown:</p>
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm">
+                        <div className="p-2 bg-white rounded">
+                          <p className="text-xs text-muted-foreground">Duration</p>
+                          <p className="font-bold">{selected.years} Year(s) / {selected.quarters} Quarters</p>
                         </div>
-                      );
-                    })()}
+                        <div className="p-2 bg-white rounded">
+                          <p className="text-xs text-muted-foreground">Coupon Rate</p>
+                          <p className="font-bold">{selected.coupon_rate}% per annum</p>
+                        </div>
+                        <div className="p-2 bg-white rounded">
+                          <p className="text-xs text-muted-foreground">Start Quarter</p>
+                          <p className="font-bold">{selected.start_quarter}</p>
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-3 gap-3 text-sm pt-2 border-t">
+                        <div className="p-2 bg-white rounded text-center">
+                          <p className="text-xs text-muted-foreground">Per Quarter Principal</p>
+                          <p className="font-bold">KES {quarterlyPrincipal.toLocaleString()}</p>
+                        </div>
+                        <div className="p-2 bg-white rounded text-center">
+                          <p className="text-xs text-muted-foreground">Per Quarter Interest</p>
+                          <p className="font-bold text-accent">KES {Math.round(quarterlyInterest).toLocaleString()}</p>
+                        </div>
+                        <div className="p-2 bg-white rounded text-center">
+                          <p className="text-xs text-muted-foreground">Per Quarter Total</p>
+                          <p className="font-bold text-green-700">KES {Math.round(quarterlyTotal).toLocaleString()}</p>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })()}
+
+                {/* Consent Sections */}
+                <div className="space-y-3">
+                  <Label className="text-base font-semibold">Deed of Assignment Consents</Label>
+                  <p className="text-sm text-muted-foreground">Please review and consent to each section below:</p>
+
+                  <div className="space-y-2">
+                    {/* Assignment Consent */}
+                    <div className={`p-3 rounded-lg border-2 ${consents.assignment ? 'bg-green-50 border-green-300' : 'bg-gray-50 border-gray-200'}`}>
+                      <div className="flex items-start gap-3">
+                        <Checkbox 
+                          id="consent-assignment"
+                          checked={consents.assignment}
+                          onCheckedChange={(checked) => setConsents(prev => ({ ...prev, assignment: !!checked }))}
+                        />
+                        <div className="flex-1">
+                          <label htmlFor="consent-assignment" className="font-medium cursor-pointer">
+                            1. Consent to Assignment of Receivable
+                          </label>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            I consent to the assignment of the verified receivable from {selectedMockBill.supplier_name} to {selectedMockBill.spv_name}.
+                          </p>
+                        </div>
+                        {consents.assignment && <Check className="w-5 h-5 text-green-600" />}
+                      </div>
+                    </div>
+
+                    {/* Financial Terms Consent */}
+                    <div className={`p-3 rounded-lg border-2 ${consents.financialTerms ? 'bg-green-50 border-green-300' : 'bg-gray-50 border-gray-200'}`}>
+                      <div className="flex items-start gap-3">
+                        <Checkbox 
+                          id="consent-financial-terms"
+                          checked={consents.financialTerms}
+                          onCheckedChange={(checked) => setConsents(prev => ({ ...prev, financialTerms: !!checked }))}
+                        />
+                        <div className="flex-1">
+                          <label htmlFor="consent-financial-terms" className="font-medium cursor-pointer">
+                            2. Consent to Financial Terms
+                          </label>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            I confirm the principal amount of KES {selectedMockBill.amount.toLocaleString()} and the discount rate of {selectedMockBill.offer_discount_rate}%.
+                          </p>
+                        </div>
+                        {consents.financialTerms && <Check className="w-5 h-5 text-green-600" />}
+                      </div>
+                    </div>
+
+                    {/* Financial Costs Consent */}
+                    <div className={`p-3 rounded-lg border-2 ${consents.financialCosts ? 'bg-green-50 border-green-300' : 'bg-gray-50 border-gray-200'}`}>
+                      <div className="flex items-start gap-3">
+                        <Checkbox 
+                          id="consent-financial-costs"
+                          checked={consents.financialCosts}
+                          onCheckedChange={(checked) => setConsents(prev => ({ ...prev, financialCosts: !!checked }))}
+                        />
+                        <div className="flex-1">
+                          <label htmlFor="consent-financial-costs" className="font-medium cursor-pointer">
+                            3. Consent to Financial Costs (Interest/Coupon)
+                          </label>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            I acknowledge the coupon rate of {selectedMockBill.term_options?.find(o => o.id === selectedTermsOption)?.coupon_rate || 10}% per annum payable to the SPV.
+                          </p>
+                        </div>
+                        {consents.financialCosts && <Check className="w-5 h-5 text-green-600" />}
+                      </div>
+                    </div>
+
+                    {/* Payment Terms Consent */}
+                    <div className={`p-3 rounded-lg border-2 ${consents.paymentTerms ? 'bg-green-50 border-green-300' : 'bg-gray-50 border-gray-200'}`}>
+                      <div className="flex items-start gap-3">
+                        <Checkbox 
+                          id="consent-payment-terms"
+                          checked={consents.paymentTerms}
+                          onCheckedChange={(checked) => setConsents(prev => ({ ...prev, paymentTerms: !!checked }))}
+                        />
+                        <div className="flex-1">
+                          <label htmlFor="consent-payment-terms" className="font-medium cursor-pointer">
+                            4. Consent to Selected Payment Schedule
+                          </label>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            I agree to the selected payment schedule of {selectedMockBill.term_options?.find(o => o.id === selectedTermsOption)?.quarters || 4} quarters starting {selectedMockBill.term_options?.find(o => o.id === selectedTermsOption)?.start_quarter || 'Q1 2025'}.
+                          </p>
+                        </div>
+                        {consents.paymentTerms && <Check className="w-5 h-5 text-green-600" />}
+                      </div>
+                    </div>
+
+                    {/* Treasury Debit Consent */}
+                    <div className={`p-3 rounded-lg border-2 ${consents.treasuryDebit ? 'bg-green-50 border-green-300' : 'bg-gray-50 border-gray-200'}`}>
+                      <div className="flex items-start gap-3">
+                        <Checkbox 
+                          id="consent-treasury-debit"
+                          checked={consents.treasuryDebit}
+                          onCheckedChange={(checked) => setConsents(prev => ({ ...prev, treasuryDebit: !!checked }))}
+                        />
+                        <div className="flex-1">
+                          <label htmlFor="consent-treasury-debit" className="font-medium cursor-pointer">
+                            5. Consent to National Treasury Debiting
+                          </label>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            I authorize the National Treasury to debit our MDA's budgetary allocation according to the agreed payment schedule.
+                          </p>
+                        </div>
+                        {consents.treasuryDebit && <Check className="w-5 h-5 text-green-600" />}
+                      </div>
+                    </div>
                   </div>
-                )}
+                </div>
 
                 <div className="space-y-2">
                   <Label>Approval Notes (Optional)</Label>
@@ -674,18 +784,23 @@ const MDABillsPage = () => {
                   />
                 </div>
 
-                <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-700">
-                  By approving, you confirm that the selected terms are acceptable and the bill will be forwarded to National Treasury for final certification.
-                </div>
+                {!Object.values(consents).every(Boolean) && (
+                  <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-700">
+                    Please review and consent to all 5 sections above before approving.
+                  </div>
+                )}
               </div>
             )}
 
             <DialogFooter>
-              <Button variant="outline" onClick={() => { setShowApprovalModal(false); setSelectedMockBill(null); }}>
+              <Button variant="outline" onClick={() => { setShowApprovalModal(false); setSelectedMockBill(null); setConsents({ assignment: false, financialTerms: false, financialCosts: false, paymentTerms: false, treasuryDebit: false }); }}>
                 Cancel
               </Button>
-              <Button onClick={handleMockFinalApprove} disabled={submitting}>
-                {submitting ? 'Approving...' : 'Approve Terms'}
+              <Button 
+                onClick={handleMockFinalApprove} 
+                disabled={submitting || !Object.values(consents).every(Boolean)}
+              >
+                {submitting ? 'Approving...' : 'Approve & Sign Deed'}
               </Button>
             </DialogFooter>
           </DialogContent>

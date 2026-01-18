@@ -69,8 +69,13 @@ const SPVOffersPage = () => {
     coupon_rate: '10',
   });
 
-  // Generated term options to submit to MDA
-  const [termOptions, setTermOptions] = useState<{id: string; label: string; years: number; quarters: number; coupon_rate: number; start_quarter: string}[]>([]);
+  // Generated term options to submit to MDA (multiple options)
+  const [termOptions, setTermOptions] = useState<{id: string; label: string; years: number; quarters: number; coupon_rate: number; start_quarter: string}[]>([
+    { id: 'option-1', label: 'Standard', years: 1, quarters: 4, coupon_rate: 10, start_quarter: 'Q1 2025' },
+  ]);
+
+  // Current option being edited
+  const [editingOptionIndex, setEditingOptionIndex] = useState(0);
 
   // Quarter breakdown for per-quarter coupon rates
   const [quarterBreakdown, setQuarterBreakdown] = useState<{quarter: string; amount: number; couponRate: number}[]>([]);
@@ -523,13 +528,13 @@ const SPVOffersPage = () => {
         </Tabs>
       </div>
 
-      {/* Set Payment Terms Modal */}
+      {/* Set Payment Terms Modal - Multiple Options */}
       <Dialog open={showTermsModal} onOpenChange={setShowTermsModal}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Set Payment Terms</DialogTitle>
+            <DialogTitle>Set Payment Term Options</DialogTitle>
             <DialogDescription>
-              Define the payment schedule for {selectedAcceptedOffer?.invoice_number}. This will be sent to MDA for approval.
+              Create multiple term options for MDA to choose from for {selectedAcceptedOffer?.invoice_number}. You can add up to 3 different options.
             </DialogDescription>
           </DialogHeader>
           
@@ -538,154 +543,176 @@ const SPVOffersPage = () => {
               {/* Summary */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="p-4 bg-secondary rounded-lg">
-                  <p className="text-sm text-muted-foreground">Invoice Amount</p>
+                  <p className="text-sm text-muted-foreground">Invoice Amount (Principal)</p>
                   <p className="text-xl font-bold">KES {selectedAcceptedOffer.amount.toLocaleString()}</p>
                 </div>
                 <div className="p-4 bg-accent/10 rounded-lg">
-                  <p className="text-sm text-muted-foreground">Your Net Pay</p>
+                  <p className="text-sm text-muted-foreground">Your Net Pay to Supplier</p>
                   <p className="text-xl font-bold text-accent">KES {selectedAcceptedOffer.offer_amount.toLocaleString()}</p>
                 </div>
               </div>
 
-              {/* Terms Configuration */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="space-y-2">
-                  <Label>Duration (Years)</Label>
-                  <Select 
-                    value={termsData.years} 
-                    onValueChange={(v) => {
-                      const years = parseFloat(v);
-                      const quarters = Math.round(years * 4).toString();
-                      setTermsData(prev => ({ ...prev, years: v, payment_quarters: quarters }));
-                    }}
-                  >
-                    <SelectTrigger className="bg-background">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent className="bg-background border shadow-lg z-50">
-                      <SelectItem value="0.5">6 Months</SelectItem>
-                      <SelectItem value="1">1 Year</SelectItem>
-                      <SelectItem value="1.5">1.5 Years</SelectItem>
-                      <SelectItem value="2">2 Years</SelectItem>
-                      <SelectItem value="3">3 Years</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label>Quarters</Label>
-                  <Select 
-                    value={termsData.payment_quarters} 
-                    onValueChange={(v) => setTermsData(prev => ({ ...prev, payment_quarters: v }))}
-                  >
-                    <SelectTrigger className="bg-background">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent className="bg-background border shadow-lg z-50">
-                      <SelectItem value="2">2 Quarters</SelectItem>
-                      <SelectItem value="4">4 Quarters</SelectItem>
-                      <SelectItem value="6">6 Quarters</SelectItem>
-                      <SelectItem value="8">8 Quarters</SelectItem>
-                      <SelectItem value="12">12 Quarters</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label>Start Quarter</Label>
-                  <Select 
-                    value={termsData.start_quarter} 
-                    onValueChange={(v) => setTermsData(prev => ({ ...prev, start_quarter: v }))}
-                  >
-                    <SelectTrigger className="bg-background">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent className="bg-background border shadow-lg z-50">
-                      <SelectItem value="Q1 2025">Q1 2025</SelectItem>
-                      <SelectItem value="Q2 2025">Q2 2025</SelectItem>
-                      <SelectItem value="Q3 2025">Q3 2025</SelectItem>
-                      <SelectItem value="Q4 2025">Q4 2025</SelectItem>
-                      <SelectItem value="Q1 2026">Q1 2026</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label>Coupon Rate (%)</Label>
-                  <Input
-                    type="number"
-                    step="0.5"
-                    value={termsData.coupon_rate}
-                    onChange={(e) => setTermsData(prev => ({ ...prev, coupon_rate: e.target.value }))}
-                    className="bg-background"
-                  />
-                </div>
-              </div>
-
-              {/* Summary of Terms Being Offered */}
-              <div className="p-4 bg-purple-50 border border-purple-200 rounded-lg">
-                <h4 className="font-semibold text-purple-700 mb-2">Terms Summary for MDA</h4>
-                <div className="grid grid-cols-4 gap-4 text-sm">
-                  <div>
-                    <p className="text-muted-foreground">Duration</p>
-                    <p className="font-bold text-purple-700">{termsData.years} Year(s)</p>
-                  </div>
-                  <div>
-                    <p className="text-muted-foreground">Quarters</p>
-                    <p className="font-bold text-purple-700">{termsData.payment_quarters}</p>
-                  </div>
-                  <div>
-                    <p className="text-muted-foreground">Coupon Rate</p>
-                    <p className="font-bold text-purple-700">{termsData.coupon_rate}%</p>
-                  </div>
-                  <div>
-                    <p className="text-muted-foreground">Start</p>
-                    <p className="font-bold text-purple-700">{termsData.start_quarter}</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Per-Quarter Breakdown with Coupon Rates */}
-              <div className="space-y-3">
+              {/* Term Options List */}
+              <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <h4 className="font-semibold text-sm">Per-Quarter Coupon Rates</h4>
-                  <p className="text-sm text-muted-foreground">Set individual coupon rates for each payment</p>
+                  <h4 className="font-semibold">Term Options for MDA</h4>
+                  {termOptions.length < 3 && (
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => {
+                        const labels = ['Standard', 'Extended', 'Short-term'];
+                        const newOption = {
+                          id: `option-${termOptions.length + 1}`,
+                          label: labels[termOptions.length] || `Option ${termOptions.length + 1}`,
+                          years: 1,
+                          quarters: 4,
+                          coupon_rate: 10,
+                          start_quarter: 'Q1 2025',
+                        };
+                        setTermOptions([...termOptions, newOption]);
+                      }}
+                    >
+                      + Add Option
+                    </Button>
+                  )}
                 </div>
-                <div className="space-y-2">
-                  {quarterBreakdown.map((q, index) => (
-                    <div key={q.quarter} className="flex items-center gap-4 p-3 bg-secondary/50 rounded-lg">
-                      <div className="flex-1">
-                        <p className="font-medium">{q.quarter}</p>
-                        <p className="text-sm text-muted-foreground">Principal: KES {q.amount.toLocaleString()}</p>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Label className="text-sm">Coupon Rate:</Label>
+
+                {termOptions.map((option, index) => {
+                  const quarterlyPrincipal = selectedAcceptedOffer.amount / option.quarters;
+                  const totalInterest = (selectedAcceptedOffer.amount * option.coupon_rate / 100) * option.years;
+                  const totalAmount = selectedAcceptedOffer.amount + totalInterest;
+
+                  return (
+                    <div key={option.id} className="p-4 border-2 rounded-lg bg-purple-50 border-purple-200">
+                      <div className="flex items-center justify-between mb-3">
                         <Input
-                          type="number"
-                          step="0.5"
-                          value={q.couponRate}
-                          onChange={(e) => updateQuarterCouponRate(index, parseFloat(e.target.value) || 0)}
-                          className="w-20 h-8"
+                          value={option.label}
+                          onChange={(e) => {
+                            const updated = [...termOptions];
+                            updated[index].label = e.target.value;
+                            setTermOptions(updated);
+                          }}
+                          className="w-40 h-8 font-semibold text-purple-700"
                         />
-                        <span className="text-sm">%</span>
+                        {termOptions.length > 1 && (
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            className="text-destructive"
+                            onClick={() => setTermOptions(termOptions.filter((_, i) => i !== index))}
+                          >
+                            Remove
+                          </Button>
+                        )}
                       </div>
-                      <div className="text-right min-w-[100px]">
-                        <p className="text-xs text-muted-foreground">Coupon</p>
-                        <p className="text-sm font-medium text-accent">KES {Math.round(q.amount * q.couponRate / 100).toLocaleString()}</p>
+
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                        <div className="space-y-1">
+                          <Label className="text-xs">Duration (Years)</Label>
+                          <Select 
+                            value={option.years.toString()} 
+                            onValueChange={(v) => {
+                              const updated = [...termOptions];
+                              updated[index].years = parseFloat(v);
+                              updated[index].quarters = Math.round(parseFloat(v) * 4);
+                              setTermOptions(updated);
+                            }}
+                          >
+                            <SelectTrigger className="h-8 bg-background">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent className="bg-background border shadow-lg z-50">
+                              <SelectItem value="0.5">6 Months</SelectItem>
+                              <SelectItem value="1">1 Year</SelectItem>
+                              <SelectItem value="1.5">1.5 Years</SelectItem>
+                              <SelectItem value="2">2 Years</SelectItem>
+                              <SelectItem value="3">3 Years</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-xs">Quarters</Label>
+                          <Select 
+                            value={option.quarters.toString()} 
+                            onValueChange={(v) => {
+                              const updated = [...termOptions];
+                              updated[index].quarters = parseInt(v);
+                              setTermOptions(updated);
+                            }}
+                          >
+                            <SelectTrigger className="h-8 bg-background">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent className="bg-background border shadow-lg z-50">
+                              <SelectItem value="2">2 Quarters</SelectItem>
+                              <SelectItem value="4">4 Quarters</SelectItem>
+                              <SelectItem value="6">6 Quarters</SelectItem>
+                              <SelectItem value="8">8 Quarters</SelectItem>
+                              <SelectItem value="12">12 Quarters</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-xs">Coupon Rate (%)</Label>
+                          <Input
+                            type="number"
+                            step="0.5"
+                            value={option.coupon_rate}
+                            onChange={(e) => {
+                              const updated = [...termOptions];
+                              updated[index].coupon_rate = parseFloat(e.target.value) || 0;
+                              setTermOptions(updated);
+                            }}
+                            className="h-8 bg-background"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-xs">Start Quarter</Label>
+                          <Select 
+                            value={option.start_quarter} 
+                            onValueChange={(v) => {
+                              const updated = [...termOptions];
+                              updated[index].start_quarter = v;
+                              setTermOptions(updated);
+                            }}
+                          >
+                            <SelectTrigger className="h-8 bg-background">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent className="bg-background border shadow-lg z-50">
+                              <SelectItem value="Q1 2025">Q1 2025</SelectItem>
+                              <SelectItem value="Q2 2025">Q2 2025</SelectItem>
+                              <SelectItem value="Q3 2025">Q3 2025</SelectItem>
+                              <SelectItem value="Q4 2025">Q4 2025</SelectItem>
+                              <SelectItem value="Q1 2026">Q1 2026</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+
+                      {/* Financial Summary for this option */}
+                      <div className="mt-3 pt-3 border-t grid grid-cols-3 gap-3 text-sm">
+                        <div className="p-2 bg-white rounded">
+                          <p className="text-xs text-muted-foreground">Principal</p>
+                          <p className="font-semibold">KES {selectedAcceptedOffer.amount.toLocaleString()}</p>
+                        </div>
+                        <div className="p-2 bg-white rounded">
+                          <p className="text-xs text-muted-foreground">Total Interest</p>
+                          <p className="font-semibold text-accent">KES {totalInterest.toLocaleString()}</p>
+                        </div>
+                        <div className="p-2 bg-white rounded">
+                          <p className="text-xs text-muted-foreground">Total Repayment</p>
+                          <p className="font-semibold text-green-700">KES {totalAmount.toLocaleString()}</p>
+                        </div>
                       </div>
                     </div>
-                  ))}
-                </div>
-                
-                {/* SPV Margin Summary */}
-                <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm font-medium text-green-700">Total SPV Margin:</span>
-                    <span className="text-lg font-bold text-green-700">KES {getTotalSpvMargin().toLocaleString()}</span>
-                  </div>
-                  <p className="text-xs text-green-600 mt-1">Sum of all quarterly coupon payments</p>
-                </div>
+                  );
+                })}
               </div>
 
               <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-700">
-                <p>After you submit these terms, they will be sent to the MDA for approval. The MDA may accept or reject with suggested changes.</p>
+                <p>After you submit these term options, the MDA will choose one and approve. Each option shows the principal, interest, and total repayment amount.</p>
               </div>
             </div>
           )}
@@ -694,8 +721,8 @@ const SPVOffersPage = () => {
             <Button variant="outline" onClick={() => setShowTermsModal(false)}>
               Cancel
             </Button>
-            <Button onClick={handleSubmitTerms} disabled={submitting}>
-              {submitting ? 'Submitting...' : 'Submit Terms to MDA'}
+            <Button onClick={handleSubmitTerms} disabled={submitting || termOptions.length === 0}>
+              {submitting ? 'Submitting...' : `Submit ${termOptions.length} Option(s) to MDA`}
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -38,11 +38,12 @@ const SubmitBillPage = () => {
   // Form state
   const [formData, setFormData] = useState({
     mda_id: '',
+    bill_type: '', // 'goods' or 'services'
     invoice_number: '',
     invoice_date: format(new Date(), 'yyyy-MM-dd'),
     due_date: '',
     amount: '',
-    currency: 'NGN',
+    currency: 'KES',
     description: '',
     contract_reference: '',
     ifmis_id: '',
@@ -138,8 +139,8 @@ const SubmitBillPage = () => {
       return;
     }
 
-    if (!formData.mda_id || !formData.invoice_number || !formData.amount) {
-      toast.error('Please fill in all required fields');
+    if (!formData.mda_id || !formData.invoice_number || !formData.amount || !formData.bill_type) {
+      toast.error('Please fill in all required fields including bill type');
       return;
     }
 
@@ -259,6 +260,30 @@ const SubmitBillPage = () => {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Bill Type Selection */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <FileText className="w-5 h-5" />
+                Type of Bill
+              </CardTitle>
+              <CardDescription>Specify whether this is for goods or services</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Select value={formData.bill_type} onValueChange={(v) => updateField('bill_type', v)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select bill type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="goods">Goods - Physical products, equipment, materials</SelectItem>
+                  <SelectItem value="services">Services - Professional services, labor, consulting</SelectItem>
+                  <SelectItem value="works">Works - Construction, infrastructure, renovation</SelectItem>
+                  <SelectItem value="mixed">Mixed - Combination of goods and services</SelectItem>
+                </SelectContent>
+              </Select>
+            </CardContent>
+          </Card>
+
           {/* MDA Selection */}
           <Card>
             <CardHeader>

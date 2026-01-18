@@ -174,12 +174,74 @@ const TreasuryPendingPage = () => {
   };
 
   const handleCompleteCertification = async () => {
-    if (!selectedMockBill) return;
+    if (!selectedMockBill || !user) return;
 
     setSubmitting(true);
     await new Promise(resolve => setTimeout(resolve, 1000));
 
-    toast.success(`Certificate ${certificateNumber} issued! All parties have been notified. Document fully executed.`);
+    try {
+      // Notify Supplier
+      await supabase.from('notifications').insert({
+        user_id: selectedMockBill.id, // In real scenario, this would be supplier's user_id
+        title: 'Bill Certified by National Treasury',
+        message: `Your invoice ${selectedMockBill.invoice_number} has been certified. Certificate: ${certificateNumber}. Tripartite deed fully executed.`,
+        type: 'success',
+      });
+
+      // Notify all SPV users
+      const { data: spvUsers } = await supabase
+        .from('user_roles')
+        .select('user_id')
+        .eq('role', 'spv');
+      
+      if (spvUsers) {
+        const spvNotifications = spvUsers.map(spv => ({
+          user_id: spv.user_id,
+          title: 'Deed Fully Executed - Mint Receivable Notes',
+          message: `${selectedMockBill.invoice_number} has been certified. You can now mint Receivable Notes as NFTs.`,
+          type: 'success',
+        }));
+        await supabase.from('notifications').insert(spvNotifications);
+      }
+
+      // Notify all MDA users
+      const { data: mdaUsers } = await supabase
+        .from('user_roles')
+        .select('user_id')
+        .eq('role', 'mda');
+      
+      if (mdaUsers) {
+        const mdaNotifications = mdaUsers.map(mda => ({
+          user_id: mda.user_id,
+          title: 'Bill Certified by Treasury',
+          message: `Invoice ${selectedMockBill.invoice_number} from ${selectedMockBill.supplier_name} has been certified. Payment schedule confirmed.`,
+          type: 'info',
+        }));
+        await supabase.from('notifications').insert(mdaNotifications);
+      }
+
+      // Notify all Admin users
+      const { data: adminUsers } = await supabase
+        .from('user_roles')
+        .select('user_id')
+        .eq('role', 'admin');
+      
+      if (adminUsers) {
+        const adminNotifications = adminUsers.map(admin => ({
+          user_id: admin.user_id,
+          title: 'Tripartite Deed Complete',
+          message: `${selectedMockBill.invoice_number} - KES ${selectedMockBill.amount.toLocaleString()} certified. All signatures collected.`,
+          type: 'info',
+        }));
+        await supabase.from('notifications').insert(adminNotifications);
+      }
+
+      toast.success(`Certificate ${certificateNumber} issued! All parties (Supplier, SPV, MDA, Admin) have been notified.`);
+    } catch (error) {
+      console.error('Notification error:', error);
+      toast.success(`Certificate ${certificateNumber} issued! Document fully executed.`);
+    }
+
     setShowFinalDocumentModal(false);
     setSelectedMockBill(null);
     setSubmitting(false);
@@ -531,76 +593,89 @@ const TreasuryPendingPage = () => {
           </TabsContent>
         </Tabs>
 
-        {/* View Details Modal */}
+        {/* View Full Details Modal - Comprehensive */}
         <Dialog open={showDetailsModal} onOpenChange={setShowDetailsModal}>
-          <DialogContent className="max-w-2xl">
+          <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>Bill Details</DialogTitle>
+              <DialogTitle>Complete Transaction Details</DialogTitle>
               <DialogDescription>
-                Review all details and terms for {selectedMockBill?.invoice_number}
+                Full information for {selectedMockBill?.invoice_number}
               </DialogDescription>
             </DialogHeader>
             
             {selectedMockBill && (
-              <div className="space-y-4 py-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="p-4 bg-secondary rounded-lg">
-                    <p className="text-sm text-muted-foreground">Invoice Amount</p>
-                    <p className="text-xl font-bold">₦{selectedMockBill.amount.toLocaleString()}</p>
+              <div className="space-y-6 py-4">
+                {/* Financial Summary - Principal, Interest, Total */}
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="p-4 bg-secondary rounded-lg text-center">
+                    <p className="text-sm text-muted-foreground">Principal Amount</p>
+                    <p className="text-2xl font-bold">KES {selectedMockBill.amount.toLocaleString()}</p>
                   </div>
-                  <div className="p-4 bg-secondary rounded-lg">
-                    <p className="text-sm text-muted-foreground">SPV Offer</p>
-                    <p className="text-xl font-bold text-accent">₦{selectedMockBill.offer_amount.toLocaleString()}</p>
+                  <div className="p-4 bg-accent/10 rounded-lg text-center">
+                    <p className="text-sm text-muted-foreground">Interest (Est.)</p>
+                    <p className="text-2xl font-bold text-accent">KES {Math.round(selectedMockBill.amount * selectedMockBill.offer_discount_rate / 100).toLocaleString()}</p>
                   </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <p className="text-muted-foreground">Supplier</p>
-                    <p className="font-medium">{selectedMockBill.supplier_name}</p>
-                  </div>
-                  <div>
-                    <p className="text-muted-foreground">MDA</p>
-                    <p className="font-medium">{selectedMockBill.mda_name}</p>
-                  </div>
-                  <div>
-                    <p className="text-muted-foreground">Discount Rate</p>
-                    <p className="font-medium">{selectedMockBill.offer_discount_rate}%</p>
-                  </div>
-                  <div>
-                    <p className="text-muted-foreground">Description</p>
-                    <p className="font-medium">{selectedMockBill.description}</p>
+                  <div className="p-4 bg-green-50 border border-green-200 rounded-lg text-center">
+                    <p className="text-sm text-muted-foreground">Total Repayment</p>
+                    <p className="text-2xl font-bold text-green-700">KES {Math.round(selectedMockBill.amount * (1 + selectedMockBill.offer_discount_rate / 100)).toLocaleString()}</p>
                   </div>
                 </div>
 
-                <div className="p-4 bg-blue-50 rounded-lg">
-                  <h4 className="font-semibold text-blue-700 mb-2">Payment Terms</h4>
-                  <div className="grid grid-cols-3 gap-4 text-sm">
-                    <div>
-                      <p className="text-muted-foreground">Quarters</p>
-                      <p className="font-medium">{selectedMockBill.payment_quarters}</p>
-                    </div>
-                    <div>
-                      <p className="text-muted-foreground">Start Quarter</p>
-                      <p className="font-medium">{selectedMockBill.payment_start_quarter}</p>
-                    </div>
-                    <div>
-                      <p className="text-muted-foreground">Per Quarter</p>
-                      <p className="font-medium">₦{(selectedMockBill.amount / selectedMockBill.payment_quarters).toLocaleString()}</p>
-                    </div>
+                {/* Supplier Details */}
+                <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                  <h4 className="font-semibold text-blue-700 mb-3 flex items-center gap-2">
+                    <User className="w-4 h-4" />
+                    Supplier (Assignor)
+                  </h4>
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div><p className="text-muted-foreground">Company</p><p className="font-medium">{selectedMockBill.supplier_name}</p></div>
+                    <div><p className="text-muted-foreground">Invoice Number</p><p className="font-medium">{selectedMockBill.invoice_number}</p></div>
+                    <div><p className="text-muted-foreground">Contract Reference</p><p className="font-medium">{selectedMockBill.contract_reference}</p></div>
+                    <div><p className="text-muted-foreground">Work Period</p><p className="font-medium">{selectedMockBill.work_period}</p></div>
+                  </div>
+                </div>
+
+                {/* MDA Details */}
+                <div className="p-4 bg-purple-50 border border-purple-200 rounded-lg">
+                  <h4 className="font-semibold text-purple-700 mb-3 flex items-center gap-2">
+                    <Building2 className="w-4 h-4" />
+                    MDA (Procuring Entity)
+                  </h4>
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div><p className="text-muted-foreground">Ministry/Department</p><p className="font-medium">{selectedMockBill.mda_name}</p></div>
+                    <div><p className="text-muted-foreground">MDA Approved Date</p><p className="font-medium">{format(new Date(selectedMockBill.mda_approved_date), 'PPP')}</p></div>
+                  </div>
+                </div>
+
+                {/* SPV Details */}
+                <div className="p-4 bg-orange-50 border border-orange-200 rounded-lg">
+                  <h4 className="font-semibold text-orange-700 mb-3 flex items-center gap-2">
+                    <Wallet className="w-4 h-4" />
+                    SPV (Assignee)
+                  </h4>
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div><p className="text-muted-foreground">SPV Name</p><p className="font-medium">{selectedMockBill.spv_name}</p></div>
+                    <div><p className="text-muted-foreground">Discount Rate</p><p className="font-medium">{selectedMockBill.offer_discount_rate}%</p></div>
+                    <div><p className="text-muted-foreground">Purchase Price</p><p className="font-medium">KES {selectedMockBill.offer_amount.toLocaleString()}</p></div>
+                  </div>
+                </div>
+
+                {/* Payment Terms */}
+                <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+                  <h4 className="font-semibold text-green-700 mb-3">Payment Schedule</h4>
+                  <div className="grid grid-cols-4 gap-4 text-sm">
+                    <div><p className="text-muted-foreground">Quarters</p><p className="font-bold">{selectedMockBill.payment_quarters}</p></div>
+                    <div><p className="text-muted-foreground">Start</p><p className="font-bold">{selectedMockBill.payment_start_quarter}</p></div>
+                    <div><p className="text-muted-foreground">Per Quarter</p><p className="font-bold">KES {Math.round(selectedMockBill.amount / selectedMockBill.payment_quarters).toLocaleString()}</p></div>
+                    <div><p className="text-muted-foreground">Description</p><p className="font-medium">{selectedMockBill.description}</p></div>
                   </div>
                 </div>
               </div>
             )}
 
             <DialogFooter>
-              <Button variant="outline" onClick={() => setShowDetailsModal(false)}>
-                Close
-              </Button>
-              <Button onClick={handleAmendTerms}>
-                <Edit className="w-4 h-4 mr-2" />
-                Amend Terms
-              </Button>
+              <Button variant="outline" onClick={() => setShowDetailsModal(false)}>Close</Button>
+              <Button onClick={handleAmendTerms}><Edit className="w-4 h-4 mr-2" />Amend Terms</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
