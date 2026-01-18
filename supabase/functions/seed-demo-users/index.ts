@@ -91,12 +91,12 @@ serve(async (req) => {
     // MDA accounts - named by MDA code for easy identification
     // These match specific MDAs in the database
     const mdaAccounts = [
-      { email: 'fmw@demo.com', mdaCode: 'FMW', mdaName: 'Federal Ministry of Works', name: 'Adebayo Ogundimu', dept: 'Procurement' },
-      { email: 'fmh@demo.com', mdaCode: 'FMH', mdaName: 'Federal Ministry of Health', name: 'Fatima Mohammed', dept: 'Finance' },
-      { email: 'fme@demo.com', mdaCode: 'FME', mdaName: 'Federal Ministry of Education', name: 'Olumide Akinwale', dept: 'Administration' },
-      { email: 'fmit@demo.com', mdaCode: 'FMIT', mdaName: 'Federal Ministry of IT', name: 'Blessing Okafor', dept: 'Procurement' },
-      { email: 'fma@demo.com', mdaCode: 'FMA', mdaName: 'Federal Ministry of Agriculture', name: 'Yusuf Garba', dept: 'Finance' },
-      { email: 'fmd@demo.com', mdaCode: 'FMD', mdaName: 'Federal Ministry of Defence', name: 'Aisha Bello', dept: 'Procurement' },
+      { email: 'mow@demo.com', mdaCode: 'MOW', mdaName: 'Ministry of Works', name: 'James Mwangi', dept: 'Procurement' },
+      { email: 'moh@demo.com', mdaCode: 'MOH', mdaName: 'Ministry of Health', name: 'Amina Wanjiku', dept: 'Finance' },
+      { email: 'moe@demo.com', mdaCode: 'MOE', mdaName: 'Ministry of Education', name: 'Peter Ochieng', dept: 'Administration' },
+      { email: 'moit@demo.com', mdaCode: 'MOIT', mdaName: 'Ministry of ICT', name: 'Grace Nyambura', dept: 'Procurement' },
+      { email: 'moa@demo.com', mdaCode: 'MOA', mdaName: 'Ministry of Agriculture', name: 'Joseph Kiprop', dept: 'Finance' },
+      { email: 'mod@demo.com', mdaCode: 'MOD', mdaName: 'Ministry of Defence', name: 'Sarah Akinyi', dept: 'Procurement' },
     ];
 
     for (let i = 0; i < mdaAccounts.length; i++) {
@@ -120,9 +120,9 @@ serve(async (req) => {
 
     // Treasury accounts - named by office
     const treasuryAccounts = [
-      { email: 'federal.treasury@demo.com', office: 'Federal Treasury', name: 'Babajide Sanwo-Olu', empId: 'NT-4001' },
-      { email: 'state.treasury@demo.com', office: 'State Treasury', name: 'Hafsat Abubakar', empId: 'NT-4002' },
-      { email: 'cbn.liaison@demo.com', office: 'Central Bank Liaison', name: 'Godwin Emefiele Jr', empId: 'NT-4003' },
+      { email: 'national.treasury@demo.com', office: 'National Treasury', name: 'John Kamau', empId: 'NT-4001' },
+      { email: 'county.treasury@demo.com', office: 'County Treasury', name: 'Mary Njeri', empId: 'NT-4002' },
+      { email: 'cbk.liaison@demo.com', office: 'Central Bank Liaison', name: 'David Omondi', empId: 'NT-4003' },
     ];
 
     for (let i = 0; i < treasuryAccounts.length; i++) {

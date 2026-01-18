@@ -111,8 +111,8 @@ const TreasuryProfilePage = () => {
                       <SelectValue placeholder="Select office" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="Federal Treasury">Federal Treasury</SelectItem>
-                      <SelectItem value="State Treasury">State Treasury</SelectItem>
+                      <SelectItem value="National Treasury">National Treasury</SelectItem>
+                      <SelectItem value="County Treasury">County Treasury</SelectItem>
                       <SelectItem value="Central Bank Liaison">Central Bank Liaison</SelectItem>
                     </SelectContent>
                   </Select>

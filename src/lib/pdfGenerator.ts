@@ -430,9 +430,9 @@ export const generateConceptNotePDF = () => {
 
   const phases = [
     { num: '01', title: 'Proof of Concept', status: 'CURRENT', items: ['✓ Platform complete', '✓ Demo operational', '✓ Testing underway'] },
-    { num: '02', title: 'Pilot Program (Q2 2026)', status: '', items: ['Select 2-3 pilot MDAs', 'Onboard 10-20 suppliers', 'Process ₦1-5 billion'] },
-    { num: '03', title: 'National Rollout (Q4 2026)', status: '', items: ['All federal MDAs', 'Banking integration', 'Mobile app launch'] },
-    { num: '04', title: 'Regional Expansion (2027)', status: '', items: ['Ghana launch', 'West Africa expansion', 'Multi-currency support'] }
+    { num: '02', title: 'Pilot Program (Q2 2026)', status: '', items: ['Select 2-3 pilot MDAs', 'Onboard 10-20 suppliers', 'Process KES 1-5 billion'] },
+    { num: '03', title: 'National Rollout (Q4 2026)', status: '', items: ['All national MDAs', 'Banking integration', 'Mobile app launch'] },
+    { num: '04', title: 'Regional Expansion (2027)', status: '', items: ['Uganda launch', 'East Africa expansion', 'Multi-currency support'] }
   ];
 
   const phaseWidth = (contentWidth - 10) / 2;

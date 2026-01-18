@@ -438,7 +438,7 @@ const AuthPage = () => {
               <div>
                 <p className="text-amber-400 font-semibold mb-1">Treasury</p>
                 <div className="text-neutral-400">
-                  <span className="text-amber-200">federal.treasury@demo.com</span> (Federal Treasury)
+                  <span className="text-amber-200">national.treasury@demo.com</span> (National Treasury)
                 </div>
               </div>
             </div>
