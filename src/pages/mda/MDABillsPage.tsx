@@ -39,37 +39,11 @@ interface Profile {
   address: string | null;
 }
 
-// Mock data for bills with SPV-set terms awaiting MDA approval
-const mockPendingBills = [
-  {
-    id: 'mpb1',
-    invoice_number: 'INV-2024-SPV001',
-    supplier_name: 'Global Construction Ltd',
-    spv_name: 'Capital Finance SPV',
-    amount: 75000000,
-    offer_amount: 69000000,
-    offer_discount_rate: 8,
-    payment_quarters: 4,
-    payment_start_quarter: 'Q1 2025',
-    quarter_rates: [12, 12, 11, 11],
-    description: 'Highway construction phase 2',
-    terms_submitted_date: subDays(new Date(), 1).toISOString(),
-  },
-  {
-    id: 'mpb2',
-    invoice_number: 'INV-2024-SPV002',
-    supplier_name: 'Premier Supplies Co',
-    spv_name: 'Investment Partners SPV',
-    amount: 32000000,
-    offer_amount: 30400000,
-    offer_discount_rate: 5,
-    payment_quarters: 2,
-    payment_start_quarter: 'Q2 2025',
-    quarter_rates: [10, 10],
-    description: 'Office furniture and equipment',
-    terms_submitted_date: subDays(new Date(), 2).toISOString(),
-  },
-];
+// Import comprehensive mock data
+import { mockMDAPendingBillsData } from '@/data/comprehensiveMockData';
+
+// Use comprehensive mock data
+const mockPendingBills = mockMDAPendingBillsData;
 
 const MDABillsPage = () => {
   const { user } = useAuth();

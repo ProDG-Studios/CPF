@@ -5,142 +5,20 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { FileText, Clock, CheckCircle, XCircle, AlertCircle, Calendar, Building2 } from 'lucide-react';
-import { format, subDays, subMonths } from 'date-fns';
+import { format } from 'date-fns';
 
-// Mock data for unpaid payables
-const mockUnpaidPayables = [
-  {
-    id: '1',
-    invoice_number: 'INV-2024-001',
-    supplier_name: 'ABC Construction Ltd',
-    amount: 45000000,
-    invoice_date: subDays(new Date(), 120).toISOString(),
-    due_date: subDays(new Date(), 30).toISOString(),
-    description: 'Road construction phase 1',
-    status: 'overdue',
-    days_outstanding: 120,
-  },
-  {
-    id: '2',
-    invoice_number: 'INV-2024-002',
-    supplier_name: 'XYZ Supplies Co',
-    amount: 12500000,
-    invoice_date: subDays(new Date(), 90).toISOString(),
-    due_date: subDays(new Date(), 15).toISOString(),
-    description: 'Office furniture and equipment',
-    status: 'overdue',
-    days_outstanding: 90,
-  },
-  {
-    id: '3',
-    invoice_number: 'INV-2024-003',
-    supplier_name: 'Tech Solutions Inc',
-    amount: 8750000,
-    invoice_date: subDays(new Date(), 60).toISOString(),
-    due_date: subDays(new Date(), 5).toISOString(),
-    description: 'IT infrastructure upgrade',
-    status: 'overdue',
-    days_outstanding: 60,
-  },
-  {
-    id: '4',
-    invoice_number: 'INV-2024-004',
-    supplier_name: 'Global Services Ltd',
-    amount: 25000000,
-    invoice_date: subDays(new Date(), 45).toISOString(),
-    due_date: new Date().toISOString(),
-    description: 'Consulting services Q3',
-    status: 'pending',
-    days_outstanding: 45,
-  },
-  {
-    id: '5',
-    invoice_number: 'INV-2024-005',
-    supplier_name: 'Premier Contractors',
-    amount: 67000000,
-    invoice_date: subDays(new Date(), 30).toISOString(),
-    due_date: subDays(new Date(), -15).toISOString(),
-    description: 'Building renovation project',
-    status: 'pending',
-    days_outstanding: 30,
-  },
-];
+// Import comprehensive mock data
+import { 
+  mockUnpaidPayablesData, 
+  mockVerifiedPayablesData, 
+  mockTreasuryBillsData,
+  getPayablesStats 
+} from '@/data/comprehensiveMockData';
 
-// Mock data for verified payables
-const mockVerifiedPayables = [
-  {
-    id: '6',
-    invoice_number: 'INV-2024-V001',
-    supplier_name: 'National Builders',
-    amount: 35000000,
-    invoice_date: subMonths(new Date(), 3).toISOString(),
-    verified_date: subDays(new Date(), 10).toISOString(),
-    description: 'Hospital wing construction',
-    status: 'verified',
-    spv_offer: 32500000,
-  },
-  {
-    id: '7',
-    invoice_number: 'INV-2024-V002',
-    supplier_name: 'Medical Supplies Inc',
-    amount: 18500000,
-    invoice_date: subMonths(new Date(), 2).toISOString(),
-    verified_date: subDays(new Date(), 5).toISOString(),
-    description: 'Medical equipment supply',
-    status: 'verified',
-    spv_offer: 17200000,
-  },
-  {
-    id: '8',
-    invoice_number: 'INV-2024-V003',
-    supplier_name: 'Green Energy Co',
-    amount: 55000000,
-    invoice_date: subMonths(new Date(), 4).toISOString(),
-    verified_date: subDays(new Date(), 2).toISOString(),
-    description: 'Solar panel installation',
-    status: 'verified',
-    spv_offer: 51000000,
-  },
-];
-
-// Mock data for bills sent to Treasury
-const mockTreasuryBills = [
-  {
-    id: '9',
-    invoice_number: 'INV-2024-T001',
-    supplier_name: 'Highway Contractors Ltd',
-    amount: 125000000,
-    sent_to_treasury: subDays(new Date(), 3).toISOString(),
-    description: 'Highway expansion project',
-    status: 'pending_certification',
-    payment_quarters: 4,
-    start_quarter: 'Q2 2025',
-  },
-  {
-    id: '10',
-    invoice_number: 'INV-2024-T002',
-    supplier_name: 'EduTech Solutions',
-    amount: 22000000,
-    sent_to_treasury: subDays(new Date(), 7).toISOString(),
-    description: 'E-learning platform development',
-    status: 'certified',
-    certificate_number: 'CERT-2025-00123',
-    payment_quarters: 2,
-    start_quarter: 'Q1 2025',
-  },
-  {
-    id: '11',
-    invoice_number: 'INV-2024-T003',
-    supplier_name: 'Water Works Inc',
-    amount: 78000000,
-    sent_to_treasury: subDays(new Date(), 14).toISOString(),
-    description: 'Water treatment facility',
-    status: 'certified',
-    certificate_number: 'CERT-2025-00118',
-    payment_quarters: 6,
-    start_quarter: 'Q1 2025',
-  },
-];
+// Use comprehensive mock data
+const mockUnpaidPayables = mockUnpaidPayablesData;
+const mockVerifiedPayables = mockVerifiedPayablesData;
+const mockTreasuryBills = mockTreasuryBillsData;
 
 const MDAPayablesPage = () => {
   const [activeTab, setActiveTab] = useState('unpaid');
@@ -277,7 +155,7 @@ const MDAPayablesPage = () => {
                         </span>
                         <span className="flex items-center gap-1">
                           <CheckCircle className="w-3 h-3" />
-                          SPV Offer: ₦{payable.spv_offer.toLocaleString()}
+                          SPV: {payable.spv_name} | Offer: ₦{payable.spv_offer.toLocaleString()}
                         </span>
                       </div>
                     </div>
@@ -307,6 +185,7 @@ const MDAPayablesPage = () => {
                         </Badge>
                       </div>
                       <p className="text-sm text-muted-foreground">{bill.supplier_name}</p>
+                      <p className="text-sm text-muted-foreground">{bill.mda_name} • SPV: {bill.spv_name}</p>
                       <p className="text-sm text-muted-foreground">{bill.description}</p>
                       <div className="flex items-center gap-4 text-xs text-muted-foreground">
                         <span className="flex items-center gap-1">

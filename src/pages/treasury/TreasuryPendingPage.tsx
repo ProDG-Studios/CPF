@@ -40,48 +40,11 @@ interface MDA {
   name: string;
 }
 
-// Mock data for treasury overview
-const mockPendingBills = [
-  {
-    id: 'm1',
-    invoice_number: 'INV-2024-M001',
-    supplier_name: 'National Builders Ltd',
-    mda_name: 'Ministry of Works',
-    amount: 85000000,
-    offer_amount: 78200000,
-    offer_discount_rate: 8,
-    mda_approved_date: subDays(new Date(), 3).toISOString(),
-    payment_quarters: 4,
-    payment_start_quarter: 'Q2 2025',
-    description: 'Highway construction phase 2',
-  },
-  {
-    id: 'm2',
-    invoice_number: 'INV-2024-M002',
-    supplier_name: 'Tech Infrastructure Inc',
-    mda_name: 'Ministry of Communications',
-    amount: 45000000,
-    offer_amount: 42750000,
-    offer_discount_rate: 5,
-    mda_approved_date: subDays(new Date(), 5).toISOString(),
-    payment_quarters: 2,
-    payment_start_quarter: 'Q1 2025',
-    description: 'Data center upgrade',
-  },
-  {
-    id: 'm3',
-    invoice_number: 'INV-2024-M003',
-    supplier_name: 'Medical Supplies Corp',
-    mda_name: 'Ministry of Health',
-    amount: 120000000,
-    offer_amount: 108000000,
-    offer_discount_rate: 10,
-    mda_approved_date: subDays(new Date(), 7).toISOString(),
-    payment_quarters: 6,
-    payment_start_quarter: 'Q1 2025',
-    description: 'Hospital equipment procurement',
-  },
-];
+// Import comprehensive mock data
+import { mockTreasuryPendingBillsData, getTreasuryStats } from '@/data/comprehensiveMockData';
+
+// Use comprehensive mock data
+const mockPendingBills = mockTreasuryPendingBillsData;
 
 const TreasuryPendingPage = () => {
   const { user } = useAuth();
@@ -357,7 +320,7 @@ const TreasuryPendingPage = () => {
                             <Building2 className="w-3 h-3" />
                             {bill.mda_name}
                           </p>
-                          <p className="text-sm text-muted-foreground">{bill.supplier_name}</p>
+                          <p className="text-sm text-muted-foreground">{bill.supplier_name} • SPV: {bill.spv_name}</p>
                           <p className="text-sm text-muted-foreground flex items-center gap-1">
                             <Calendar className="w-3 h-3" />
                             MDA Approved: {format(new Date(bill.mda_approved_date), 'PPP')}

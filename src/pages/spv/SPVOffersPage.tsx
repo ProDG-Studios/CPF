@@ -40,31 +40,11 @@ interface SupplierProfile {
   company_name: string | null;
 }
 
-// Mock accepted offers that need terms set
-const mockAcceptedOffers = [
-  {
-    id: 'acc1',
-    invoice_number: 'INV-2024-A001',
-    supplier_name: 'Global Construction Ltd',
-    mda_name: 'Ministry of Infrastructure',
-    amount: 75000000,
-    offer_amount: 69000000,
-    offer_discount_rate: 8,
-    offer_accepted_date: subDays(new Date(), 2).toISOString(),
-    needs_terms: true,
-  },
-  {
-    id: 'acc2',
-    invoice_number: 'INV-2024-A002',
-    supplier_name: 'Premier Supplies Co',
-    mda_name: 'Ministry of Education',
-    amount: 32000000,
-    offer_amount: 30400000,
-    offer_discount_rate: 5,
-    offer_accepted_date: subDays(new Date(), 1).toISOString(),
-    needs_terms: true,
-  },
-];
+// Import comprehensive mock data
+import { mockAcceptedOffersData } from '@/data/comprehensiveMockData';
+
+// Use comprehensive mock data
+const mockAcceptedOffers = mockAcceptedOffersData;
 
 const SPVOffersPage = () => {
   const { user } = useAuth();
@@ -368,6 +348,9 @@ const SPVOffersPage = () => {
                         </div>
                         <p className="text-sm text-muted-foreground">{offer.supplier_name}</p>
                         <p className="text-sm text-muted-foreground">{offer.mda_name}</p>
+                        {offer.description && (
+                          <p className="text-sm text-muted-foreground line-clamp-1">{offer.description}</p>
+                        )}
                         <div className="flex items-center gap-4 text-xs text-muted-foreground">
                           <span className="flex items-center gap-1">
                             <Calendar className="w-3 h-3" />
