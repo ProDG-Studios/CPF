@@ -111,7 +111,7 @@ export function ReceivableNoteCard({
               <Coins className="w-3 h-3" />
               <span>Face Value</span>
             </div>
-            <p className="font-bold text-xl">₦{faceValue.toLocaleString()}</p>
+            <p className="font-bold text-xl">KES {faceValue.toLocaleString()}</p>
           </div>
           <div className="p-3 rounded-lg bg-muted/20">
             <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">

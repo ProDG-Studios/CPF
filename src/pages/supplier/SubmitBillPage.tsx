@@ -198,7 +198,7 @@ const SubmitBillPage = () => {
         const notifications = spvUsers.map(spv => ({
           user_id: spv.user_id,
           title: 'New Payable Available',
-          message: `A new invoice ${formData.invoice_number} worth ₦${parseFloat(formData.amount).toLocaleString()} is available for offers.`,
+          message: `A new invoice ${formData.invoice_number} worth KES ${parseFloat(formData.amount).toLocaleString()} is available for offers.`,
           type: 'info',
           bill_id: billData.id,
         }));
@@ -305,7 +305,7 @@ const SubmitBillPage = () => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="amount">Amount (₦) *</Label>
+                  <Label htmlFor="amount">Amount (KES) *</Label>
                   <Input
                     id="amount"
                     type="number"

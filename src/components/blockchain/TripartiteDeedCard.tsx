@@ -191,11 +191,11 @@ export function TripartiteDeedCard({
         <div className="grid grid-cols-3 gap-4">
           <div className="text-center p-3 rounded-lg bg-muted/20">
             <p className="text-xs text-muted-foreground">Principal Amount</p>
-            <p className="font-bold text-lg">₦{billAmount.toLocaleString()}</p>
+            <p className="font-bold text-lg">KES {billAmount.toLocaleString()}</p>
           </div>
           <div className="text-center p-3 rounded-lg bg-muted/20">
             <p className="text-xs text-muted-foreground">Purchase Price</p>
-            <p className="font-bold text-lg text-accent">₦{purchasePrice.toLocaleString()}</p>
+            <p className="font-bold text-lg text-accent">KES {purchasePrice.toLocaleString()}</p>
           </div>
           <div className="text-center p-3 rounded-lg bg-muted/20">
             <p className="text-xs text-muted-foreground">Discount Rate</p>

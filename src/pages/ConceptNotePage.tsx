@@ -79,20 +79,20 @@ const ConceptNotePage = () => {
       icon: Globe,
       title: 'Market Opportunity',
       subtitle: 'Nigeria & Ghana Focus',
-      content: 'Nigeria: ₦5-8T contractor debt, ₦18T+ pension AUM. Ghana: GH₢15-20B arrears, GH₢50B+ pension funds. Scalable to all emerging markets with government payment delays.'
+      content: 'Kenya: KES 500B+ contractor debt, KES 1.8T+ pension AUM. Ghana: GH₢15-20B arrears, GH₢50B+ pension funds. Scalable to all emerging markets with government payment delays.'
     }
   ];
 
   const stats = [
-    { value: '₦5-8T', label: 'Nigerian Contractor Debt' },
+    { value: 'KES 500B+', label: 'Kenyan Contractor Debt' },
     { value: '6-18', label: 'Months Payment Delay' },
-    { value: '₦18T+', label: 'Pension Fund AUM' },
+    { value: 'KES 1.8T+', label: 'Pension Fund AUM' },
     { value: '92%', label: 'Typical Advance Rate' },
   ];
 
   const phases = [
     { phase: '1', title: 'Proof of Concept', status: 'current', items: ['Platform complete', 'Demo operational', 'Testing underway'] },
-    { phase: '2', title: 'Pilot Program', status: 'upcoming', items: ['2-3 pilot MDAs', '10-20 suppliers', '₦1-5B transactions'] },
+    { phase: '2', title: 'Pilot Program', status: 'upcoming', items: ['2-3 pilot MDAs', '10-20 suppliers', 'KES 1-5B transactions'] },
     { phase: '3', title: 'National Rollout', status: 'future', items: ['All federal MDAs', 'Banking integration', 'Mobile app launch'] },
     { phase: '4', title: 'Regional Expansion', status: 'future', items: ['Ghana launch', 'West Africa', 'Multi-currency'] },
   ];

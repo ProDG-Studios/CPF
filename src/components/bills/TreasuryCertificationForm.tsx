@@ -73,12 +73,12 @@ const TreasuryCertificationForm = ({
           <Separator className="my-2" />
           <div className="flex justify-between">
             <span className="text-muted-foreground">Pending Bill Amount</span>
-            <span className="font-bold">₦{billAmount.toLocaleString()}</span>
+            <span className="font-bold">KES {billAmount.toLocaleString()}</span>
           </div>
           {offerAmount && (
             <div className="flex justify-between">
               <span className="text-muted-foreground">SPV Purchase Price</span>
-              <span className="font-medium text-accent">₦{offerAmount.toLocaleString()}</span>
+              <span className="font-medium text-accent">KES {offerAmount.toLocaleString()}</span>
             </div>
           )}
         </div>
@@ -103,7 +103,7 @@ const TreasuryCertificationForm = ({
             </div>
             <div className="flex justify-between">
               <span className="text-muted-foreground">Quarterly Amount</span>
-              <span className="font-medium">₦{quarterlyAmount.toLocaleString()}</span>
+              <span className="font-medium">KES {quarterlyAmount.toLocaleString()}</span>
             </div>
           </div>
         </div>
@@ -143,7 +143,7 @@ const TreasuryCertificationForm = ({
           
           <p>
             We understand that there currently exists Pending Bills amounting to{' '}
-            <strong>₦{billAmount.toLocaleString()}</strong> owed by <strong>{mdaName || 'the MDA'}</strong> 
+            <strong>KES {billAmount.toLocaleString()}</strong> owed by <strong>{mdaName || 'the MDA'}</strong> 
             in respect of contractual agreements for the supply of goods and services by the Verified 
             Suppliers.
           </p>
@@ -156,7 +156,7 @@ const TreasuryCertificationForm = ({
               National Budget</strong> according to the attached payment plan:
             </p>
             <ul className="text-xs list-disc list-inside mt-2">
-              <li>{paymentQuarters || 4} quarterly installments of ₦{quarterlyAmount.toLocaleString()} each</li>
+              <li>{paymentQuarters || 4} quarterly installments of KES {quarterlyAmount.toLocaleString()} each</li>
               <li>Starting {startQuarter || 'Q1 2025'}</li>
               <li>Certificate Reference: <strong>{certificateNumber}</strong></li>
             </ul>

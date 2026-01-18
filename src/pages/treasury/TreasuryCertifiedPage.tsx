@@ -70,7 +70,7 @@ const TreasuryCertifiedPage = () => {
             <CardContent className="py-4">
               <p className="text-sm text-emerald-600">Total Value</p>
               <p className="text-2xl font-bold text-emerald-700">
-                ₦{(bills.reduce((sum, b) => sum + Number(b.amount), 0) / 1000000).toFixed(1)}M
+                KES {(bills.reduce((sum, b) => sum + Number(b.amount), 0) / 1000000).toFixed(1)}M
               </p>
             </CardContent>
           </Card>
@@ -112,7 +112,7 @@ const TreasuryCertifiedPage = () => {
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="font-bold text-lg">₦{Number(bill.amount).toLocaleString()}</p>
+                      <p className="font-bold text-lg">KES {Number(bill.amount).toLocaleString()}</p>
                       <p className="text-xs text-muted-foreground">
                         {bill.treasury_certified_date 
                           ? format(new Date(bill.treasury_certified_date), 'PPP')

@@ -130,7 +130,7 @@ const MyBillsPage = () => {
         const mdaNotifications = mdaUsers.map((mdaUser) => ({
           user_id: mdaUser.user_id,
           title: 'Bill Pending Your Approval',
-          message: `Invoice ${selectedBill.invoice_number} worth ₦${Number(selectedBill.amount).toLocaleString()} has been accepted by supplier and requires MDA approval.`,
+          message: `Invoice ${selectedBill.invoice_number} worth KES ${Number(selectedBill.amount).toLocaleString()} has been accepted by supplier and requires MDA approval.`,
           type: 'info',
           bill_id: selectedBill.id,
         }));
@@ -363,14 +363,14 @@ const MyBillsPage = () => {
                       </div>
                     </div>
                     <div className="text-right space-y-2">
-                      <p className="text-lg font-bold">₦{Number(bill.amount).toLocaleString()}</p>
+                      <p className="text-lg font-bold">KES {Number(bill.amount).toLocaleString()}</p>
                       <Badge className={getStatusBadge(bill.status)}>
                         {bill.status.replace(/_/g, ' ')}
                       </Badge>
                       {bill.status === 'offer_made' && bill.offer_amount && (
                         <div className="mt-2">
                           <p className="text-sm font-medium text-purple-600">
-                            Offer: ₦{Number(bill.offer_amount).toLocaleString()}
+                            Offer: KES {Number(bill.offer_amount).toLocaleString()}
                           </p>
                           <Button 
                             size="sm" 
@@ -405,12 +405,12 @@ const MyBillsPage = () => {
                 <div className="p-4 bg-secondary rounded-lg space-y-3">
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Original Amount</span>
-                    <span className="font-medium">₦{Number(selectedBill.amount).toLocaleString()}</span>
+                    <span className="font-medium">KES {Number(selectedBill.amount).toLocaleString()}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Offer Amount</span>
                     <span className="font-bold text-accent">
-                      ₦{Number(selectedBill.offer_amount).toLocaleString()}
+                      KES {Number(selectedBill.offer_amount).toLocaleString()}
                     </span>
                   </div>
                   <div className="flex justify-between">
@@ -421,7 +421,7 @@ const MyBillsPage = () => {
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">You Receive Now</span>
                       <span className="font-bold text-lg text-green-600">
-                        ₦{Number(selectedBill.offer_amount).toLocaleString()}
+                        KES {Number(selectedBill.offer_amount).toLocaleString()}
                       </span>
                     </div>
                   </div>
@@ -468,7 +468,7 @@ const MyBillsPage = () => {
               {selectedBill && (
                 <div className="p-3 bg-secondary rounded-lg text-sm">
                   <p><span className="text-muted-foreground">Invoice:</span> {selectedBill.invoice_number}</p>
-                  <p><span className="text-muted-foreground">Offer:</span> ₦{Number(selectedBill.offer_amount).toLocaleString()}</p>
+                  <p><span className="text-muted-foreground">Offer:</span> KES {Number(selectedBill.offer_amount).toLocaleString()}</p>
                 </div>
               )}
               

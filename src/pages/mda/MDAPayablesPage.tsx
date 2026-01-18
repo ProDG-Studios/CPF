@@ -44,7 +44,7 @@ const MDAPayablesPage = () => {
                 <p className="text-sm text-red-600">Unpaid Payables</p>
               </div>
               <p className="text-2xl font-bold text-red-700">{mockUnpaidPayables.length}</p>
-              <p className="text-xs text-red-600">₦{(totalUnpaid / 1000000).toFixed(1)}M</p>
+              <p className="text-xs text-red-600">KES {(totalUnpaid / 1000000).toFixed(1)}M</p>
             </CardContent>
           </Card>
           <Card className="bg-green-50 border-green-200">
@@ -54,7 +54,7 @@ const MDAPayablesPage = () => {
                 <p className="text-sm text-green-600">Verified</p>
               </div>
               <p className="text-2xl font-bold text-green-700">{mockVerifiedPayables.length}</p>
-              <p className="text-xs text-green-600">₦{(totalVerified / 1000000).toFixed(1)}M</p>
+              <p className="text-xs text-green-600">KES {(totalVerified / 1000000).toFixed(1)}M</p>
             </CardContent>
           </Card>
           <Card className="bg-blue-50 border-blue-200">
@@ -74,7 +74,7 @@ const MDAPayablesPage = () => {
                 <p className="text-sm text-purple-600">Total Registered</p>
               </div>
               <p className="text-2xl font-bold text-purple-700">
-                ₦{((totalUnpaid + totalVerified + totalTreasury) / 1000000000).toFixed(2)}B
+                KES {((totalUnpaid + totalVerified + totalTreasury) / 1000000000).toFixed(2)}B
               </p>
             </CardContent>
           </Card>
@@ -124,7 +124,7 @@ const MDAPayablesPage = () => {
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="text-2xl font-bold">₦{payable.amount.toLocaleString()}</p>
+                      <p className="text-2xl font-bold">KES {payable.amount.toLocaleString()}</p>
                       <p className="text-sm text-muted-foreground">
                         Due: {format(new Date(payable.due_date), 'MMM d, yyyy')}
                       </p>
@@ -155,12 +155,12 @@ const MDAPayablesPage = () => {
                         </span>
                         <span className="flex items-center gap-1">
                           <CheckCircle className="w-3 h-3" />
-                          SPV: {payable.spv_name} | Offer: ₦{payable.spv_offer.toLocaleString()}
+                          SPV: {payable.spv_name} | Offer: KES {payable.spv_offer.toLocaleString()}
                         </span>
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="text-2xl font-bold">₦{payable.amount.toLocaleString()}</p>
+                      <p className="text-2xl font-bold">KES {payable.amount.toLocaleString()}</p>
                       <p className="text-sm text-green-600">
                         Discount: {(((payable.amount - payable.spv_offer) / payable.amount) * 100).toFixed(1)}%
                       </p>
@@ -203,9 +203,9 @@ const MDAPayablesPage = () => {
                       )}
                     </div>
                     <div className="text-right">
-                      <p className="text-2xl font-bold">₦{bill.amount.toLocaleString()}</p>
+                      <p className="text-2xl font-bold">KES {bill.amount.toLocaleString()}</p>
                       <p className="text-sm text-muted-foreground">
-                        ₦{(bill.amount / bill.payment_quarters).toLocaleString()}/quarter
+                        KES {(bill.amount / bill.payment_quarters).toLocaleString()}/quarter
                       </p>
                     </div>
                   </div>

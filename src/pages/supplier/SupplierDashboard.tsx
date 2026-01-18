@@ -114,7 +114,7 @@ const SupplierDashboard = () => {
             { label: 'Total Bills', value: stats.totalBills, icon: FileText, color: 'bg-blue-500', lightBg: 'bg-blue-500/10' },
             { label: 'Pending Review', value: stats.pendingBills, icon: Clock, color: 'bg-yellow-500', lightBg: 'bg-yellow-500/10' },
             { label: 'Offers Received', value: stats.offersReceived, icon: TrendingUp, color: 'bg-purple-500', lightBg: 'bg-purple-500/10' },
-            { label: 'Total Value', value: `₦${(stats.totalValue / 1000000).toFixed(1)}M`, icon: Wallet, color: 'bg-accent', lightBg: 'bg-accent/10' },
+            { label: 'Total Value', value: `KES ${(stats.totalValue / 1000000).toFixed(1)}M`, icon: Wallet, color: 'bg-accent', lightBg: 'bg-accent/10' },
           ].map((stat, index) => (
             <Card key={index} className="stat-card group cursor-pointer hover:shadow-lg transition-all duration-300">
               <CardContent className="p-5">
@@ -174,7 +174,7 @@ const SupplierDashboard = () => {
                           </div>
                         </div>
                         <div className="flex items-center gap-4">
-                          <span className="font-bold text-foreground">₦{Number(bill.amount).toLocaleString()}</span>
+                          <span className="font-bold text-foreground">KES {Number(bill.amount).toLocaleString()}</span>
                           <Badge className={cn("font-semibold", statusConfig.bg, statusConfig.text)}>{statusConfig.label}</Badge>
                           <ArrowRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
                         </div>

@@ -142,7 +142,7 @@ const BillDetailModal = ({ bill, open, onOpenChange, actionButton }: BillDetailM
             <div>
               <p className="text-xs text-muted-foreground uppercase">Invoice Amount</p>
               <p className="text-2xl font-bold text-foreground">
-                ₦{Number(bill.amount).toLocaleString()}
+                KES {Number(bill.amount).toLocaleString()}
               </p>
             </div>
             {bill.offer_amount && (
@@ -151,7 +151,7 @@ const BillDetailModal = ({ bill, open, onOpenChange, actionButton }: BillDetailM
                 <div>
                   <p className="text-xs text-muted-foreground uppercase">SPV Offer</p>
                   <p className="text-2xl font-bold text-accent">
-                    ₦{Number(bill.offer_amount).toLocaleString()}
+                    KES {Number(bill.offer_amount).toLocaleString()}
                   </p>
                 </div>
               </>
@@ -187,7 +187,7 @@ const BillDetailModal = ({ bill, open, onOpenChange, actionButton }: BillDetailM
                   <InfoRow label="Invoice Date" value={bill.invoice_date ? format(new Date(bill.invoice_date), 'PPP') : '—'} icon={Calendar} />
                   <InfoRow label="Due Date" value={bill.due_date ? format(new Date(bill.due_date), 'PPP') : '—'} icon={Calendar} />
                   <InfoRow label="Contract Reference" value={bill.contract_reference || '—'} icon={Briefcase} />
-                  <InfoRow label="Currency" value={bill.currency || 'NGN'} icon={Wallet} />
+                  <InfoRow label="Currency" value={bill.currency || 'KES'} icon={Wallet} />
                   <InfoRow label="Submitted" value={bill.created_at ? format(new Date(bill.created_at), 'PPP') : '—'} icon={Clock} />
                 </div>
                 {bill.description && (
@@ -253,7 +253,7 @@ const BillDetailModal = ({ bill, open, onOpenChange, actionButton }: BillDetailM
                     </h3>
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-1 bg-purple-50 dark:bg-purple-900/20 rounded-lg p-4 border border-purple-200 dark:border-purple-800">
                       <InfoRow label="SPV Name" value={bill.spv_name || '—'} icon={Building2} />
-                      <InfoRow label="Offer Amount" value={`₦${Number(bill.offer_amount).toLocaleString()}`} icon={Wallet} />
+                      <InfoRow label="Offer Amount" value={`KES ${Number(bill.offer_amount).toLocaleString()}`} icon={Wallet} />
                       <InfoRow label="Discount Rate" value={bill.offer_discount_rate ? `${bill.offer_discount_rate}%` : '—'} icon={Hash} />
                       <InfoRow label="Offer Date" value={bill.offer_date ? format(new Date(bill.offer_date), 'PPP') : '—'} icon={Calendar} />
                       {bill.offer_accepted_date && (
@@ -265,8 +265,8 @@ const BillDetailModal = ({ bill, open, onOpenChange, actionButton }: BillDetailM
                         Deed of Assignment
                       </p>
                       <p className="text-sm text-muted-foreground">
-                        By accepting this offer, the Supplier (Assignor) assigns the debt of ₦{Number(bill.amount).toLocaleString()} 
-                        owed by {bill.mda_name || 'the MDA'} to the SPV (Assignee) for a consideration of ₦{Number(bill.offer_amount).toLocaleString()}.
+                        By accepting this offer, the Supplier (Assignor) assigns the debt of KES {Number(bill.amount).toLocaleString()} 
+                        owed by {bill.mda_name || 'the MDA'} to the SPV (Assignee) for a consideration of KES {Number(bill.offer_amount).toLocaleString()}.
                       </p>
                     </div>
                   </div>
@@ -289,7 +289,7 @@ const BillDetailModal = ({ bill, open, onOpenChange, actionButton }: BillDetailM
                       {bill.payment_quarters && (
                         <InfoRow 
                           label="Quarterly Amount" 
-                          value={`₦${(Number(bill.amount) / bill.payment_quarters).toLocaleString()}`} 
+                          value={`KES ${(Number(bill.amount) / bill.payment_quarters).toLocaleString()}`}
                           icon={Wallet} 
                         />
                       )}
@@ -333,7 +333,7 @@ const BillDetailModal = ({ bill, open, onOpenChange, actionButton }: BillDetailM
                       </p>
                       <p className="text-sm text-muted-foreground">
                         This serves as formal commitment from the National Treasury to prioritize the payment of 
-                        the outstanding verified bill of ₦{Number(bill.amount).toLocaleString()} from the FY2026/27 
+                        the outstanding verified bill of KES {Number(bill.amount).toLocaleString()} from the FY2026/27
                         National Budget according to the attached payment plan 
                         ({bill.payment_quarters} quarterly installments starting {bill.payment_start_quarter}).
                       </p>

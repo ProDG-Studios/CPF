@@ -147,7 +147,7 @@ const SPVBillsPage = () => {
       await supabase.from('notifications').insert({
         user_id: selectedBill.supplier_id,
         title: 'New Offer Received!',
-        message: `You received an offer of ₦${offerAmount.toLocaleString()} for invoice ${selectedBill.invoice_number}. Review and accept or reject.`,
+        message: `You received an offer of KES ${offerAmount.toLocaleString()} for invoice ${selectedBill.invoice_number}. Review and accept or reject.`,
         type: 'success',
         bill_id: selectedBill.id,
       });
@@ -245,7 +245,7 @@ const SPVBillsPage = () => {
             <CardContent className="py-4">
               <p className="text-sm text-green-600">Total Value</p>
               <p className="text-2xl font-bold text-green-700">
-                ₦{(filteredBills.reduce((sum, b) => sum + Number(b.amount), 0) / 1000000).toFixed(1)}M
+                KES {(filteredBills.reduce((sum, b) => sum + Number(b.amount), 0) / 1000000).toFixed(1)}M
               </p>
             </CardContent>
           </Card>
@@ -253,8 +253,8 @@ const SPVBillsPage = () => {
             <CardContent className="py-4">
               <p className="text-sm text-purple-600">Average Bill</p>
               <p className="text-2xl font-bold text-purple-700">
-                ₦{filteredBills.length > 0 
-                  ? (filteredBills.reduce((sum, b) => sum + Number(b.amount), 0) / filteredBills.length / 1000000).toFixed(2) 
+                KES {filteredBills.length > 0 
+                  ? (filteredBills.reduce((sum, b) => sum + Number(b.amount), 0) / filteredBills.length / 1000000).toFixed(2)
                   : 0}M
               </p>
             </CardContent>
@@ -286,7 +286,7 @@ const SPVBillsPage = () => {
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <div className="text-2xl font-bold text-foreground">
-                    ₦{Number(bill.amount).toLocaleString()}
+                    KES {Number(bill.amount).toLocaleString()}
                   </div>
                   
                   <div className="text-sm space-y-1 text-muted-foreground">

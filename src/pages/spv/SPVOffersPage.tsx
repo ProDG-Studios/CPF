@@ -195,7 +195,7 @@ const SPVOffersPage = () => {
       await supabase.from('notifications').insert({
         user_id: selectedRejectedBill.supplier_id,
         title: 'New Offer Received',
-        message: `A revised offer of ₦${offerAmount.toLocaleString()} has been made on your invoice ${selectedRejectedBill.invoice_number}. Please review.`,
+        message: `A revised offer of KES ${offerAmount.toLocaleString()} has been made on your invoice ${selectedRejectedBill.invoice_number}. Please review.`,
         type: 'info',
         bill_id: selectedRejectedBill.id,
       });
@@ -376,11 +376,11 @@ const SPVOffersPage = () => {
                       <div className="text-right space-y-2">
                         <div>
                           <p className="text-sm text-muted-foreground">Invoice</p>
-                          <p className="text-xl font-bold">₦{offer.amount.toLocaleString()}</p>
+                          <p className="text-xl font-bold">KES {offer.amount.toLocaleString()}</p>
                         </div>
                         <div>
                           <p className="text-sm text-muted-foreground">Your Offer</p>
-                          <p className="text-lg font-semibold text-accent">₦{offer.offer_amount.toLocaleString()}</p>
+                          <p className="text-lg font-semibold text-accent">KES {offer.offer_amount.toLocaleString()}</p>
                         </div>
                         <Button onClick={() => handleSetTerms(offer)}>
                           <PenLine className="w-4 h-4 mr-2" />
@@ -421,7 +421,7 @@ const SPVOffersPage = () => {
                         </div>
                       </div>
                       <div className="text-right">
-                        <p className="font-bold text-lg">₦{Number(offer.offer_amount).toLocaleString()}</p>
+                        <p className="font-bold text-lg">KES {Number(offer.offer_amount).toLocaleString()}</p>
                         <Badge className="bg-yellow-100 text-yellow-700">Awaiting Response</Badge>
                       </div>
                     </div>
@@ -458,7 +458,7 @@ const SPVOffersPage = () => {
                         </div>
                       </div>
                       <div className="text-right space-y-2">
-                        <p className="font-bold text-lg">₦{Number(offer.amount).toLocaleString()}</p>
+                        <p className="font-bold text-lg">KES {Number(offer.amount).toLocaleString()}</p>
                         <Button 
                           size="sm" 
                           variant="outline"
@@ -507,7 +507,7 @@ const SPVOffersPage = () => {
                           </div>
                         </div>
                         <div className="text-right">
-                          <p className="font-bold text-lg">₦{Number(offer.offer_amount || offer.amount).toLocaleString()}</p>
+                          <p className="font-bold text-lg">KES {Number(offer.offer_amount || offer.amount).toLocaleString()}</p>
                           <Badge className={statusConfig.class}>
                             {statusConfig.icon}
                             <span className="ml-1">{statusConfig.label || offer.status.replace(/_/g, ' ')}</span>
@@ -539,11 +539,11 @@ const SPVOffersPage = () => {
               <div className="grid grid-cols-2 gap-4">
                 <div className="p-4 bg-secondary rounded-lg">
                   <p className="text-sm text-muted-foreground">Invoice Amount</p>
-                  <p className="text-xl font-bold">₦{selectedAcceptedOffer.amount.toLocaleString()}</p>
+                  <p className="text-xl font-bold">KES {selectedAcceptedOffer.amount.toLocaleString()}</p>
                 </div>
                 <div className="p-4 bg-accent/10 rounded-lg">
                   <p className="text-sm text-muted-foreground">Your Net Pay</p>
-                  <p className="text-xl font-bold text-accent">₦{selectedAcceptedOffer.offer_amount.toLocaleString()}</p>
+                  <p className="text-xl font-bold text-accent">KES {selectedAcceptedOffer.offer_amount.toLocaleString()}</p>
                 </div>
               </div>
 
@@ -653,7 +653,7 @@ const SPVOffersPage = () => {
                     <div key={q.quarter} className="flex items-center gap-4 p-3 bg-secondary/50 rounded-lg">
                       <div className="flex-1">
                         <p className="font-medium">{q.quarter}</p>
-                        <p className="text-sm text-muted-foreground">Principal: ₦{q.amount.toLocaleString()}</p>
+                        <p className="text-sm text-muted-foreground">Principal: KES {q.amount.toLocaleString()}</p>
                       </div>
                       <div className="flex items-center gap-2">
                         <Label className="text-sm">Coupon Rate:</Label>
@@ -668,7 +668,7 @@ const SPVOffersPage = () => {
                       </div>
                       <div className="text-right min-w-[100px]">
                         <p className="text-xs text-muted-foreground">Coupon</p>
-                        <p className="text-sm font-medium text-accent">₦{Math.round(q.amount * q.couponRate / 100).toLocaleString()}</p>
+                        <p className="text-sm font-medium text-accent">KES {Math.round(q.amount * q.couponRate / 100).toLocaleString()}</p>
                       </div>
                     </div>
                   ))}
@@ -678,7 +678,7 @@ const SPVOffersPage = () => {
                 <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
                   <div className="flex justify-between items-center">
                     <span className="text-sm font-medium text-green-700">Total SPV Margin:</span>
-                    <span className="text-lg font-bold text-green-700">₦{getTotalSpvMargin().toLocaleString()}</span>
+                    <span className="text-lg font-bold text-green-700">KES {getTotalSpvMargin().toLocaleString()}</span>
                   </div>
                   <p className="text-xs text-green-600 mt-1">Sum of all quarterly coupon payments</p>
                 </div>

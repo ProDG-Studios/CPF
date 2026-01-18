@@ -116,7 +116,7 @@ const MDADashboard = () => {
                   <FileText className="w-5 h-5 text-yellow-600" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold">₦{(stats.totalPending / 1000000).toFixed(1)}M</p>
+                  <p className="text-2xl font-bold">KES {(stats.totalPending / 1000000).toFixed(1)}M</p>
                   <p className="text-sm text-muted-foreground">Pending Value</p>
                 </div>
               </div>
@@ -130,7 +130,7 @@ const MDADashboard = () => {
                   <Building2 className="w-5 h-5 text-accent" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold">₦{(stats.totalApproved / 1000000).toFixed(1)}M</p>
+                  <p className="text-2xl font-bold">KES {(stats.totalApproved / 1000000).toFixed(1)}M</p>
                   <p className="text-sm text-muted-foreground">Approved Value</p>
                 </div>
               </div>
@@ -169,7 +169,7 @@ const MDADashboard = () => {
                             : 'Pending'}
                         </p>
                       </div>
-                      <span className="font-bold">₦{Number(bill.amount).toLocaleString()}</span>
+                      <span className="font-bold">KES {Number(bill.amount).toLocaleString()}</span>
                     </div>
                   ))}
                 </div>
@@ -204,7 +204,7 @@ const MDADashboard = () => {
                           {bill.status.replace(/_/g, ' ')}
                         </Badge>
                       </div>
-                      <span className="font-bold">₦{Number(bill.amount).toLocaleString()}</span>
+                      <span className="font-bold">KES {Number(bill.amount).toLocaleString()}</span>
                     </div>
                   ))}
                 </div>
