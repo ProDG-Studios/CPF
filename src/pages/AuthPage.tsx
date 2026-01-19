@@ -177,11 +177,11 @@ const AuthPage = () => {
           <div className="space-y-8">
             <div>
               <h2 className="text-4xl font-display leading-tight mb-4 text-white">
-                Malipo Polepole ya
-                <span className="block bg-gradient-to-r from-amber-400 via-amber-500 to-amber-400 bg-clip-text text-transparent">Pending Bills</span>
+                Receivables Securitisation
+                <span className="block bg-gradient-to-r from-amber-400 via-amber-500 to-amber-400 bg-clip-text text-transparent">Origination Platform</span>
               </h2>
               <p className="text-lg text-neutral-300 max-w-md">
-                Secure, transparent, and efficient bill securitization for suppliers, MDAs, and financial institutions.
+                <span className="font-semibold text-amber-300">Malipo Polepole ya Pending Bills</span> — Secure, transparent, and efficient bill securitization for suppliers, MDAs, and financial institutions.
               </p>
             </div>
 

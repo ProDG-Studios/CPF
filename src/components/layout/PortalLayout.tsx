@@ -171,7 +171,7 @@ const PortalLayout: React.FC<PortalLayoutProps> = ({ children }) => {
                 <Landmark className="w-5 h-5 text-black" />
               </div>
               <div className="flex flex-col">
-                <span className="text-sm font-bold bg-gradient-to-r from-amber-200 via-amber-400 to-amber-200 bg-clip-text text-transparent">Malipo Polepole</span>
+                <span className="text-sm font-bold bg-gradient-to-r from-amber-200 via-amber-400 to-amber-200 bg-clip-text text-transparent">RSO Platform</span>
                 <span className="text-[10px] text-neutral-500">{roleConfig.label}</span>
               </div>
             </div>
