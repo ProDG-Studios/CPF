@@ -168,8 +168,8 @@ const AuthPage = () => {
               <Landmark className="w-7 h-7 text-black" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold bg-gradient-to-r from-amber-200 via-amber-400 to-amber-200 bg-clip-text text-transparent">Receivables Securitisation</h1>
-              <p className="text-sm text-neutral-400">Origination Platform</p>
+              <h1 className="text-2xl font-bold bg-gradient-to-r from-amber-200 via-amber-400 to-amber-200 bg-clip-text text-transparent">Malipo Polepole</h1>
+              <p className="text-sm text-neutral-400">Pending Bills Platform</p>
             </div>
           </div>
 
@@ -177,11 +177,11 @@ const AuthPage = () => {
           <div className="space-y-8">
             <div>
               <h2 className="text-4xl font-display leading-tight mb-4 text-white">
-                Transforming Government
-                <span className="block bg-gradient-to-r from-amber-400 via-amber-500 to-amber-400 bg-clip-text text-transparent">Payment Solutions</span>
+                Receivables Securitisation
+                <span className="block bg-gradient-to-r from-amber-400 via-amber-500 to-amber-400 bg-clip-text text-transparent">Origination Platform</span>
               </h2>
               <p className="text-lg text-neutral-300 max-w-md">
-                Secure, transparent, and efficient bill securitization for suppliers, MDAs, and financial institutions.
+                <span className="font-semibold text-amber-300">Malipo Polepole ya Pending Bills</span> — Secure, transparent, and efficient bill securitization for suppliers, MDAs, and financial institutions.
               </p>
             </div>
 
@@ -205,7 +205,7 @@ const AuthPage = () => {
           {/* Footer */}
           <div className="flex items-center gap-3 text-sm text-neutral-500">
             <Coins className="w-4 h-4 text-amber-500/50" />
-            <span>© 2026 Receivables Securitisation Origination. All rights reserved.</span>
+            <span>© 2026 Malipo Polepole ya Pending Bills. All rights reserved.</span>
           </div>
         </div>
       </div>
@@ -219,8 +219,8 @@ const AuthPage = () => {
               <Landmark className="w-7 h-7 text-black" />
             </div>
             <div>
-              <h1 className="text-xl font-bold bg-gradient-to-r from-amber-200 via-amber-400 to-amber-200 bg-clip-text text-transparent">Receivables Securitisation</h1>
-              <p className="text-sm text-neutral-400">Origination Platform</p>
+              <h1 className="text-xl font-bold bg-gradient-to-r from-amber-200 via-amber-400 to-amber-200 bg-clip-text text-transparent">Malipo Polepole</h1>
+              <p className="text-sm text-neutral-400">Pending Bills Platform</p>
             </div>
           </div>
 
@@ -310,7 +310,7 @@ const AuthPage = () => {
             <form onSubmit={handleSignup} className="space-y-6 animate-fade-in">
               <div className="space-y-2">
                 <h2 className="text-2xl font-bold text-white">Create account</h2>
-                <p className="text-neutral-400">Get started with Receivables Securitisation Origination</p>
+                <p className="text-neutral-400">Get started with Malipo Polepole</p>
               </div>
 
               <div className="space-y-4">
@@ -411,6 +411,8 @@ const AuthPage = () => {
                 <div className="grid grid-cols-2 gap-1 text-neutral-400">
                   <div><span className="text-amber-200">apex@demo.com</span> (Apex Construction)</div>
                   <div><span className="text-amber-200">techsupply@demo.com</span> (TechSupply Co)</div>
+                  <div><span className="text-amber-200">buildright@demo.com</span> (BuildRight Kenya)</div>
+                  <div><span className="text-amber-200">medequip@demo.com</span> (MedEquip Solutions)</div>
                 </div>
               </div>
               
@@ -418,8 +420,8 @@ const AuthPage = () => {
               <div>
                 <p className="text-amber-400 font-semibold mb-1">SPVs</p>
                 <div className="grid grid-cols-2 gap-1 text-neutral-400">
-                  <div><span className="text-amber-200">alpha.capital@demo.com</span></div>
-                  <div><span className="text-amber-200">beta.investments@demo.com</span></div>
+                  <div><span className="text-amber-200">alpha.capital@demo.com</span> (Alpha Capital)</div>
+                  <div><span className="text-amber-200">beta.investments@demo.com</span> (Beta Investments)</div>
                 </div>
               </div>
               
@@ -427,18 +429,26 @@ const AuthPage = () => {
               <div>
                 <p className="text-amber-400 font-semibold mb-1">MDAs (use matching MDA for bills)</p>
                 <div className="grid grid-cols-2 gap-1 text-neutral-400">
-                  <div><span className="text-amber-200">fmw@demo.com</span> (Ministry of Works)</div>
-                  <div><span className="text-amber-200">fmh@demo.com</span> (Ministry of Health)</div>
-                  <div><span className="text-amber-200">fme@demo.com</span> (Ministry of Education)</div>
-                  <div><span className="text-amber-200">fmit@demo.com</span> (Ministry of IT)</div>
+                  <div><span className="text-amber-200">mow@demo.com</span> (Ministry of Works)</div>
+                  <div><span className="text-amber-200">moh@demo.com</span> (Ministry of Health)</div>
+                  <div><span className="text-amber-200">moe@demo.com</span> (Ministry of Education)</div>
+                  <div><span className="text-amber-200">moit@demo.com</span> (Ministry of ICT)</div>
                 </div>
               </div>
               
               {/* Treasury */}
               <div>
-                <p className="text-amber-400 font-semibold mb-1">Treasury</p>
+                <p className="text-amber-400 font-semibold mb-1">National Treasury</p>
                 <div className="text-neutral-400">
-                  <span className="text-amber-200">federal.treasury@demo.com</span> (Federal Treasury)
+                  <span className="text-amber-200">national.treasury@demo.com</span> (National Treasury)
+                </div>
+              </div>
+
+              {/* Admin */}
+              <div>
+                <p className="text-amber-400 font-semibold mb-1">Admin</p>
+                <div className="text-neutral-400">
+                  <span className="text-amber-200">admin@demo.com</span> (System Administrator)
                 </div>
               </div>
             </div>

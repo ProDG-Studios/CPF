@@ -20,10 +20,10 @@ import { useAuth } from "@/contexts/AuthContext";
 const navItems = [
   { path: "/admin", icon: LayoutDashboard, label: "Dashboard" },
   { path: "/admin/bills", icon: FileSearch, label: "Bills Explorer" },
+  { path: "/admin/users", icon: Users, label: "User Management" },
   { path: "/admin/workflow", icon: Workflow, label: "Transaction Flow" },
   { path: "/admin/payment-schedule", icon: Calendar, label: "Payment Schedule" },
   { path: "/admin/mdas", icon: Building2, label: "MDAs" },
-  { path: "/admin/suppliers", icon: Users, label: "Suppliers" },
   { path: "/admin/analytics", icon: TrendingUp, label: "Analytics" },
 ];
 

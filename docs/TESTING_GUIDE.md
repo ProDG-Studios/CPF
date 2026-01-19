@@ -1,4 +1,4 @@
-# CPF Bill Securitization Platform - Testing Guide
+# RSO Bill Securitization Platform - Testing Guide
 
 ## Complete End-to-End Test Scenario
 
@@ -12,7 +12,7 @@ This guide walks through a complete securitization workflow using a single bill 
 - **Bill ID:** BILL-2024-001
 - **Supplier:** MedEquip Solutions Ltd
 - **MDA:** Ministry of Health
-- **Amount:** ₦45,000,000
+- **Amount:** KES 45,000,000
 - **Description:** Medical equipment supply for General Hospital renovation
 
 ---
@@ -91,14 +91,14 @@ This guide walks through a complete securitization workflow using a single bill 
 
 | Step | Name | Responsible Party |
 |------|------|-------------------|
-| 1 | Bill Verification | CPF Team |
+| 1 | Bill Verification | RSO Team |
 | 2 | MDA Payment Plan | MDA Finance |
 | 3 | Sale Agreement | Legal Team |
 | 4 | Consent | MDA Head |
 | 5 | Treasury Agreement | Treasury |
-| 6 | Bond Issuance | CPF Team |
+| 6 | Bond Issuance | RSO Team |
 | 7 | Investment Funding | Investors |
-| 8 | Supplier Settlement | CPF Team |
+| 8 | Supplier Settlement | RSO Team |
 | 9 | Exchange Listing | Stock Exchange |
 | 10 | Treasury Servicing | Treasury |
 | 11 | Completion | All Parties |

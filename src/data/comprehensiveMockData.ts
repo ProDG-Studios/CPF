@@ -18,7 +18,7 @@ const mdaNames = [
   'Ministry of Works', 'Ministry of Health', 'Ministry of Education', 'Ministry of Transport',
   'Ministry of Agriculture', 'Ministry of Communications', 'Ministry of Finance', 'Ministry of Defense',
   'Ministry of Housing', 'Ministry of Water Resources', 'Ministry of Power', 'Ministry of Environment',
-  'Federal Road Safety Corps', 'Nigerian Customs Service', 'Federal Inland Revenue Service'
+  'Kenya Revenue Authority', 'Kenya National Highways Authority', 'National Construction Authority'
 ];
 
 // ============ SPV NAMES ============
@@ -230,7 +230,7 @@ export const mockSupplierReceivablesData = Array.from({ length: 25 }, (_, i) => 
     mda_name: mdaNames[i % mdaNames.length],
     mda_id: `mda-${(i % mdaNames.length) + 1}`,
     amount,
-    currency: 'NGN',
+    currency: 'KES',
     invoice_date: subDays(new Date(), Math.floor(Math.random() * 90) + 10).toISOString(),
     due_date: addDays(new Date(), Math.floor(Math.random() * 60)).toISOString(),
     description: descriptions[i % descriptions.length],
@@ -256,7 +256,7 @@ export const mockSPVBrowsePayablesData = Array.from({ length: 24 }, (_, i) => {
     invoice_date: subDays(new Date(), Math.floor(Math.random() * 60) + 10).toISOString(),
     due_date: addDays(new Date(), Math.floor(Math.random() * 90) + 30).toISOString(),
     amount,
-    currency: 'NGN',
+    currency: 'KES',
     description: descriptions[i % descriptions.length],
     work_description: `Detailed work: ${descriptions[i % descriptions.length]}`,
     contract_reference: `CON-${2024}-${String(Math.floor(Math.random() * 9999)).padStart(4, '0')}`,
@@ -267,7 +267,7 @@ export const mockSPVBrowsePayablesData = Array.from({ length: 24 }, (_, i) => {
     mda_name: mdaNames[i % mdaNames.length],
     supplier_name: supplierNames[i % supplierNames.length],
     supplier_company: `${supplierNames[i % supplierNames.length]} Holdings`,
-    supplier_address: `${Math.floor(Math.random() * 200) + 1} Industrial Road, Lagos`,
+    supplier_address: `${Math.floor(Math.random() * 200) + 1} Industrial Road, Nairobi`,
     days_outstanding: Math.floor(Math.random() * 120) + 30,
   };
 });

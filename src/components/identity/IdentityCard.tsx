@@ -75,7 +75,7 @@ const IdentityCard = ({ variant = 'compact', className, showEditButton = true }:
     if (role === 'supplier') return profile?.company_name || profile?.full_name || 'Supplier';
     if (role === 'spv') return profile?.spv_name || profile?.full_name || 'SPV';
     if (role === 'mda') return profile?.mda_name || profile?.full_name || 'MDA Official';
-    if (role === 'treasury') return profile?.treasury_office || profile?.full_name || 'Treasury Officer';
+    if (role === 'treasury') return profile?.treasury_office || profile?.full_name || 'National Treasury';
     return profile?.full_name || 'User';
   };
 

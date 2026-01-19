@@ -278,7 +278,7 @@ const SubmitBillPage = () => {
                   <SelectItem value="goods">Goods - Physical products, equipment, materials</SelectItem>
                   <SelectItem value="services">Services - Professional services, labor, consulting</SelectItem>
                   <SelectItem value="works">Works - Construction, infrastructure, renovation</SelectItem>
-                  <SelectItem value="mixed">Mixed - Combination of goods and services</SelectItem>
+                  <SelectItem value="labour">Labour - Employment related compensations</SelectItem>
                 </SelectContent>
               </Select>
             </CardContent>

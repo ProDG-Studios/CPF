@@ -8,6 +8,14 @@ export default defineConfig(({ mode }) => ({
   server: {
     host: "::",
     port: 8080,
+    allowedHosts: [
+      "vggcpf.onrender.com",
+      ".onrender.com",
+      "cpf.vgg.app",
+      "rso.vgg.app",
+      "localhost",
+      "127.0.0.1",
+    ],
     hmr: {
       overlay: false,
     },
@@ -15,12 +23,7 @@ export default defineConfig(({ mode }) => ({
   preview: {
     host: "::",
     port: process.env.PORT ? parseInt(process.env.PORT) : 4173,
-    allowedHosts: [
-      "vggcpf.onrender.com",
-      ".onrender.com",
-      "localhost",
-      "127.0.0.1",
-    ],
+    allowedHosts: true,
   },
   plugins: [
     react(),

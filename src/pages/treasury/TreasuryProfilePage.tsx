@@ -88,7 +88,7 @@ const TreasuryProfilePage = () => {
                     id="phone"
                     value={formData.phone}
                     onChange={(e) => updateField('phone', e.target.value)}
-                    placeholder="+234 xxx xxx xxxx"
+                    placeholder="+254 xxx xxx xxx"
                   />
                 </div>
               </div>
@@ -111,8 +111,8 @@ const TreasuryProfilePage = () => {
                       <SelectValue placeholder="Select office" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="Federal Treasury">Federal Treasury</SelectItem>
-                      <SelectItem value="State Treasury">State Treasury</SelectItem>
+                      <SelectItem value="National Treasury">National Treasury</SelectItem>
+                      <SelectItem value="County Treasury">County Treasury</SelectItem>
                       <SelectItem value="Central Bank Liaison">Central Bank Liaison</SelectItem>
                     </SelectContent>
                   </Select>
