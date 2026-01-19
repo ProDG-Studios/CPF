@@ -318,7 +318,7 @@ const SPVBillsPage = () => {
                       onClick={() => openOfferModal(bill)}
                     >
                       <Wallet className="w-4 h-4 mr-2" />
-                      Make Offer
+                      Buy
                     </Button>
                   </div>
                 </CardContent>
@@ -336,7 +336,7 @@ const SPVBillsPage = () => {
             actionButton={
               <Button onClick={() => { setShowDetailModal(false); setShowOfferModal(true); }}>
                 <Wallet className="w-4 h-4 mr-2" />
-                Make Offer
+                Buy
               </Button>
             }
           />
