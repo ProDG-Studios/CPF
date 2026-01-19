@@ -55,10 +55,10 @@ const CPFLogo = ({ className, size = "md", showText = true, collapsed = false }:
       {showText && !collapsed && (
         <div className="overflow-hidden">
           <h1 className="font-display text-lg font-bold text-foreground tracking-tight">
-            CPF Platform
+            RSO Platform
           </h1>
           <p className="text-xs text-muted-foreground font-medium tracking-wide uppercase">
-            Settlement System
+            Receivables Securitisation
           </p>
         </div>
       )}

@@ -68,7 +68,7 @@ const TreasuryPendingPage = () => {
     supplier: { signed: true, date: '2025-01-10', name: '' },
     spv: { signed: true, date: '2025-01-12', name: 'Capital Finance Partners' },
     mda: { signed: true, date: '2025-01-14', name: '' },
-    treasury: { signed: false, date: '', name: 'National Treasury' },
+    treasury: { signed: false, date: '', name: 'National Treasury of Kenya' },
   });
 
   // Amend form state
@@ -165,7 +165,7 @@ const TreasuryPendingPage = () => {
     // Update treasury signature
     setSignatures(prev => ({
       ...prev,
-      treasury: { signed: true, date: format(new Date(), 'yyyy-MM-dd'), name: 'National Treasury' },
+      treasury: { signed: true, date: format(new Date(), 'yyyy-MM-dd'), name: 'National Treasury of Kenya' },
     }));
 
     setShowSigningModal(false);
@@ -440,7 +440,7 @@ const TreasuryPendingPage = () => {
                         </div>
                       </div>
 
-                      <div className="pl-16 p-3 bg-secondary/50 rounded-lg grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+                      <div className="pl-16 p-3 bg-secondary/50 rounded-lg grid grid-cols-2 md:grid-cols-5 gap-3 text-sm">
                         <div>
                           <p className="text-muted-foreground">Discount Rate</p>
                           <p className="font-medium">{bill.offer_discount_rate}%</p>
@@ -456,6 +456,10 @@ const TreasuryPendingPage = () => {
                         <div>
                           <p className="text-muted-foreground">Per Quarter</p>
                           <p className="font-medium">KES {(bill.amount / bill.payment_quarters).toLocaleString()}</p>
+                        </div>
+                        <div>
+                          <p className="text-muted-foreground">Interest Amount</p>
+                          <p className="font-medium text-amber-600">KES {(bill.amount - bill.offer_amount).toLocaleString()}</p>
                         </div>
                       </div>
                     </div>
@@ -519,7 +523,7 @@ const TreasuryPendingPage = () => {
                             {bill.payment_quarters} quarters starting {bill.payment_start_quarter}
                           </p>
                           <p className="text-sm text-muted-foreground">
-                            Quarterly: ₦{(Number(bill.amount) / bill.payment_quarters).toLocaleString()}
+                            Quarterly: KES {(Number(bill.amount) / bill.payment_quarters).toLocaleString()}
                           </p>
                         </div>
                       )}
@@ -535,12 +539,12 @@ const TreasuryPendingPage = () => {
                     <div className="text-right space-y-3">
                       <div>
                         <p className="text-sm text-muted-foreground">Invoice Amount</p>
-                        <p className="text-xl font-bold">₦{Number(bill.amount).toLocaleString()}</p>
+                        <p className="text-xl font-bold">KES {Number(bill.amount).toLocaleString()}</p>
                       </div>
                       {bill.offer_amount && (
                         <div>
                           <p className="text-sm text-muted-foreground">SPV Amount</p>
-                          <p className="text-lg font-semibold text-accent">₦{Number(bill.offer_amount).toLocaleString()}</p>
+                          <p className="text-lg font-semibold text-accent">KES {Number(bill.offer_amount).toLocaleString()}</p>
                         </div>
                       )}
                       <Badge className="bg-orange-100 text-orange-700">MDA Approved</Badge>
